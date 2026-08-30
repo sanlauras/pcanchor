@@ -1,0 +1,31 @@
+﻿# 測定環境
+# GPU,Radeon RX 9070 XT 16GB (ASUS)
+# CPU,Ryzen 7 9800X3D
+# メモリ,32GB (16GB x2) DDR5
+# モニター,フルHD (1920x1080) / VSRで高解像度描画
+# 計測ツール,CapFrameX 1.8.6 / Capture time 120s / hotkey F11 / Remove outliers ON で統一
+# Resizable BAR,ON
+# HAGS,ON
+# Win Game Mode,ON
+# Sensor Logging,ON
+# GPUドライバ版,★未記入
+# 測定日,2026-08-29
+
+# --- 判明した事実（サイトに載せられる情報）---
+# Apexのfps上限,300fps（エンジン仕様・解除不可）
+# 9070XT+9800X3D / Apex,1440p最高でも300張り付き。4K最低でも300張り付き。この構成はApexにはオーバースペック
+# 測定ゲームの選定,Valorantは上限解除可能なため全条件を同一ゲームで測定できる。Apexは上限300で測定不能
+
+# --- Valorant 測定前チェック ---
+# フレームレートを常に制限,オフ
+# 垂直同期,オフ
+# マルチスレッドレンダリング,有効で固定（全条件共通）
+
+条件,ゲーム,解像度,画質設定,avg_fps,1%_low,0.2%_low,VRAM使用GB,GPU使用率%,GPU律速(Y/N),メモ
+A,Valorant,1920x1080,全て低,970.3,676.5,605.5,6.09,57,N,CPU律速(GPU57%/電力81W)。CPU Total40%=シングルスレッド律速。Remove outliers適用後の値。除去前はavg952.7/P0.1=49.9(起動時スパイク)。rec18:11:46
+B,Valorant,3840x2160,全て高,464.6,387.1,374.6,8.19,99,Y,完全GPU律速(GPU Limit Time 100%/電力316.5W/クロック2821MHz)。CPU Total34%。VRAM8.19GB=8GBカードでは不足する条件。rec18:16:46
+C,Valorant,2560x1440,全て高,868.8,653.7,598.2,7.28,97,△,GPU使用率97%だがGPU Limit Time 85%=15%はCPU制約。CPU Total51%/電力101.1Wに上昇。CPU天井970.3に接近し混入。解像度係数は過小評価の可能性。rec18:19:35
+D,Valorant,3840x2160,全て低,807.5,611.8,566.6,8.41,99,△,GPU Limit Time 90%=10%はCPU制約。CPU Total39%。VRAMがB(8.19)より増加=画質低下でVRAMは減らない。rec18:25:39
+,,,,,,,,,,
+# 参考（Apexで測定済みなら記入）
+ref,Apex,3840x2160,全て最高,,,,,,,ゲーム間の重さの差の材料

@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GPU・CPU スペック一覧 | 検証済みデータベース</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans+JP:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#E4E8EE; --panel:#FBFCFD; --ink:#111620; --dim:#5C6674;
+  --rule:#C0C8D4; --rule-soft:#D9DFE7;
+  --accent:#1B39CE; --accent-soft:rgba(27,57,206,.10); --accent-bar:rgba(27,57,206,.16);
+  --signal:#9E3A12;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --sans:'IBM Plex Sans JP',system-ui,sans-serif;
+  --cond:'IBM Plex Sans Condensed','IBM Plex Sans JP',sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--ink); font-family:var(--sans);
+  font-size:15px; line-height:1.6; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+
+/* ---------- masthead ---------- */
+.mast{padding:56px 0 30px;border-bottom:1.5px solid var(--ink)}
+.eyebrow{
+  font-family:var(--mono); font-size:11px; letter-spacing:.18em;
+  text-transform:uppercase; color:var(--signal); margin:0 0 14px;
+}
+.mast h1{
+  font-family:var(--cond); font-weight:700; font-size:clamp(34px,6vw,58px);
+  line-height:1.02; letter-spacing:-.015em; margin:0 0 16px;
+}
+.thesis{max-width:60ch;margin:0;color:var(--dim);font-size:15px}
+.thesis b{color:var(--ink);font-weight:600}
+.tally{display:flex;gap:26px;flex-wrap:wrap;margin-top:26px}
+.tally div{font-family:var(--mono);font-size:12px;color:var(--dim)}
+.tally strong{
+  display:block;font-size:26px;font-weight:600;color:var(--ink);
+  letter-spacing:-.02em;line-height:1.1
+}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex;gap:0;margin:0;border-bottom:1px solid var(--rule)}
+.tabs button{
+  appearance:none;background:none;border:0;border-bottom:2px solid transparent;
+  font-family:var(--cond);font-weight:700;font-size:19px;letter-spacing:.01em;
+  padding:16px 22px 13px;cursor:pointer;color:var(--dim);margin-bottom:-1px;
+}
+.tabs button:hover{color:var(--ink)}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tabs button span{font-family:var(--mono);font-size:11px;font-weight:500;margin-left:8px;color:var(--dim)}
+
+/* ---------- toolbar ---------- */
+.tools{display:flex;gap:14px;flex-wrap:wrap;align-items:center;padding:18px 0 14px}
+.search{position:relative;flex:1 1 260px;max-width:340px}
+.search input{
+  width:100%;font-family:var(--sans);font-size:14px;padding:9px 12px 9px 32px;
+  background:var(--panel);border:1px solid var(--rule);border-radius:2px;color:var(--ink)
+}
+.search input:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+.search::before{
+  content:"";position:absolute;left:12px;top:50%;width:11px;height:11px;
+  margin-top:-7px;border:1.5px solid var(--dim);border-radius:50%
+}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{
+  appearance:none;font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;
+  padding:6px 11px;background:transparent;border:1px solid var(--rule);
+  border-radius:2px;cursor:pointer;color:var(--dim)
+}
+.chip:hover{border-color:var(--ink);color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--panel)}
+.hint{font-family:var(--mono);font-size:11px;color:var(--dim);margin-left:auto}
+
+/* ---------- table ---------- */
+.tablewrap{background:var(--panel);border:1px solid var(--rule);border-radius:2px;overflow-x:auto}
+table.grid{border-collapse:collapse;width:100%;min-width:960px}
+.grid thead th{
+  position:sticky;top:0;z-index:2;background:var(--panel);
+  font-family:var(--mono);font-size:10.5px;font-weight:500;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--dim);text-align:right;
+  padding:11px 12px;border-bottom:1.5px solid var(--ink);white-space:nowrap;cursor:pointer;
+  user-select:none
+}
+.grid thead th:first-child,.grid thead th.txt{text-align:left}
+.grid thead th:hover{color:var(--ink)}
+.grid thead th[data-active="1"]{color:var(--accent)}
+.grid thead th[data-active="1"]::after{content:" ▾";font-size:9px}
+.grid thead th[data-active="1"][data-dir="asc"]::after{content:" ▴"}
+.grid tbody tr{border-bottom:1px solid var(--rule-soft);cursor:pointer}
+.grid tbody tr:hover{background:var(--accent-soft)}
+.grid tbody tr[data-open="1"]{background:var(--accent-soft)}
+.grid td{
+  padding:9px 12px;text-align:right;font-family:var(--mono);
+  font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap
+}
+.grid td.txt{text-align:left;font-family:var(--sans);font-size:14px}
+.namecell{position:relative}
+/* SIGNATURE: the active sort metric renders as a bar behind the name */
+.bar{
+  position:absolute;left:0;top:0;bottom:0;background:var(--accent-bar);
+  z-index:0;pointer-events:none
+}
+.namecell > *{position:relative;z-index:1}
+.name{font-weight:500}
+.vtag{
+  font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--dim);
+  border:1px solid var(--rule);padding:1px 5px;border-radius:2px;margin-right:8px
+}
+.x3d{color:var(--signal);border-color:var(--signal)}
+.pick{
+  appearance:none;width:15px;height:15px;margin:0;accent-color:var(--accent);cursor:pointer
+}
+
+/* provenance */
+.prov{font-family:var(--mono);font-size:10px;color:var(--signal);letter-spacing:.04em}
+
+/* expanded detail */
+tr.detail td{padding:0;background:var(--paper)}
+.detailbox{padding:18px 16px;border-bottom:1px solid var(--rule)}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px 22px}
+.dgrid dt{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--dim)}
+.dgrid dd{margin:2px 0 0;font-family:var(--mono);font-size:15px;font-weight:500}
+.dnote{
+  margin-top:16px;padding-top:12px;border-top:1px solid var(--rule-soft);
+  font-size:12.5px;color:var(--dim);max-width:70ch
+}
+
+/* ---------- compare tray ---------- */
+.tray{
+  position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--ink);
+  color:var(--panel);transform:translateY(101%);transition:transform .22s ease
+}
+.tray[data-on="1"]{transform:translateY(0)}
+.trayin{
+  max-width:1240px;margin:0 auto;padding:13px 20px;display:flex;
+  gap:14px;align-items:center;flex-wrap:wrap
+}
+.traylist{display:flex;gap:8px;flex-wrap:wrap;flex:1}
+.traychip{
+  font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.12);
+  padding:5px 9px;border-radius:2px
+}
+.traychip button{
+  appearance:none;background:none;border:0;color:inherit;cursor:pointer;
+  margin-left:7px;padding:0;opacity:.65;font-size:13px;line-height:1
+}
+.traychip button:hover{opacity:1}
+.btn{
+  appearance:none;font-family:var(--cond);font-weight:700;font-size:15px;
+  padding:9px 20px;border:0;border-radius:2px;cursor:pointer;
+  background:var(--panel);color:var(--ink)
+}
+.btn:hover{background:#fff}
+.btn.ghost{background:transparent;color:var(--panel);border:1px solid rgba(255,255,255,.35)}
+
+/* ---------- compare overlay ---------- */
+.ov{
+  position:fixed;inset:0;z-index:30;background:rgba(17,22,32,.6);
+  display:none;padding:24px;overflow:auto
+}
+.ov[data-on="1"]{display:block}
+.ovcard{
+  max-width:1000px;margin:0 auto;background:var(--panel);
+  border-radius:2px;padding:26px
+}
+.ovhead{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px}
+.ovhead h2{font-family:var(--cond);font-size:26px;margin:0}
+.cmp{border-collapse:collapse;width:100%}
+.cmp th,.cmp td{
+  padding:9px 12px;border-bottom:1px solid var(--rule-soft);
+  font-family:var(--mono);font-size:13.5px;text-align:right;font-variant-numeric:tabular-nums
+}
+.cmp th:first-child,.cmp td:first-child{
+  text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--dim);width:170px
+}
+.cmp thead th{font-family:var(--sans);font-size:14px;font-weight:600;border-bottom:1.5px solid var(--ink)}
+.cmp td.best{color:var(--accent);font-weight:600}
+
+/* ---------- notice ---------- */
+.notice{
+  margin:26px 0 0;padding:18px 20px;background:var(--panel);
+  border-left:3px solid var(--signal);border-radius:2px
+}
+.notice h3{font-family:var(--cond);font-size:17px;margin:0 0 7px}
+.notice p{margin:0;font-size:13.5px;color:var(--dim);max-width:74ch}
+footer{padding:36px 0 90px;font-family:var(--mono);font-size:11px;color:var(--dim)}
+
+/* ---------- mobile ---------- */
+@media (max-width:900px){
+  .tablewrap{background:none;border:0;overflow:visible}
+  table.grid,.grid tbody,.grid tr,.grid td{display:block;min-width:0;width:auto}
+  .grid thead{display:none}
+  .grid tbody tr{
+    background:var(--panel);border:1px solid var(--rule);border-radius:2px;
+    margin-bottom:9px;padding:13px;position:relative
+  }
+  .grid td{
+    padding:3px 0;text-align:left;display:flex;justify-content:space-between;
+    gap:14px;white-space:normal
+  }
+  .grid td::before{
+    content:attr(data-l);font-family:var(--mono);font-size:10px;
+    letter-spacing:.07em;text-transform:uppercase;color:var(--dim);flex:none
+  }
+  .grid td.namecell{display:block;padding-bottom:9px;margin-bottom:7px;border-bottom:1px solid var(--rule-soft)}
+  .grid td.namecell::before{content:none}
+  .grid td.pickcell{position:absolute;top:13px;right:13px;padding:0}
+  .grid td.pickcell::before{content:none}
+  tr.detail{border:0!important;background:none!important;padding:0!important;margin:0 0 9px!important}
+  .name{font-size:16px}
+  .hint{margin-left:0;width:100%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="mast">
+    <p class="eyebrow">Verified spec database</p>
+    <h1>GPU・CPU<br>スペック一覧</h1>
+    <p class="thesis">
+      GTX 10世代からRTX 50世代まで、Ryzen 5000からCore Ultra 200Sまで。
+      全モデルのスペックを<b>メーカー公式資料と照合して1件ずつ検証</b>しています。
+      他サイトの数値は転載していません。
+    </p>
+    <div class="tally">
+      <div><strong id="t-gpu">78</strong>GPUモデル</div>
+      <div><strong id="t-cpu">42</strong>CPUモデル</div>
+      <div><strong id="t-ver">118</strong>ソース確認済み</div>
+      <div><strong id="t-fix">3</strong>誤りを発見・修正</div>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="gpu">GPU<span>78</span></button>
+    <button role="tab" aria-selected="false" data-tab="cpu">CPU<span>42</span></button>
+  </nav>
+
+  <div class="tools">
+    <div class="search"><input id="q" type="search" placeholder="モデル名で検索" aria-label="モデル名で検索"></div>
+    <div class="chips" id="vendors"></div>
+    <div class="chips" id="gens"></div>
+    <p class="hint" id="hint"></p>
+  </div>
+
+  <div class="tablewrap">
+    <table class="grid">
+      <thead id="thead"></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="notice">
+    <h3>性能指数はまだ載せていません</h3>
+    <p>
+      「このGPUは何点」という総合スコアは、実測データが揃うまで公開しません。
+      合成ベンチのスコアを転載すれば今すぐ出せますが、それは実ゲームの
+      fpsと線形に対応しないうえ、他社の計測結果でしかないためです。
+      現在、実測によるキャリブレーションを進めています。
+    </p>
+  </div>
+
+  <footer>
+    出典: NVIDIA / AMD / Intel 各社公式製品ページおよびアーキテクチャ資料<br>
+    クロックはリファレンス仕様値。OCモデルは個体により異なります。
+  </footer>
+</div>
+
+<div class="tray" id="tray">
+  <div class="trayin">
+    <div class="traylist" id="traylist"></div>
+    <button class="btn ghost" id="clear">全て解除</button>
+    <button class="btn" id="docmp">比較する</button>
+  </div>
+</div>
+
+<div class="ov" id="ov">
+  <div class="ovcard">
+    <div class="ovhead">
+      <h2 id="ovtitle">スペック比較</h2>
+      <button class="btn ghost" id="ovclose" style="color:var(--ink);border-color:var(--rule)">閉じる</button>
+    </div>
+    <div style="overflow-x:auto"><table class="cmp" id="cmp"></table></div>
+  </div>
+</div>
+
+<script>
+const DATA = {"gpu":[{"n":"GeForce GTX 1050 Ti","v":"NVIDIA","a":"Pascal","y":2016,"shaders":768,"clock":1392,"vram":4.0,"mtype":"GDDR5","bus":128,"mspeed":7.0,"bw":112.0,"tdp":75,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce GTX 1060 3GB","v":"NVIDIA","a":"Pascal","y":2016,"shaders":1152,"clock":1708,"vram":3.0,"mtype":"GDDR5","bus":192,"mspeed":8.0,"bw":192.0,"tdp":120,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce GTX 1060 6GB","v":"NVIDIA","a":"Pascal","y":2016,"shaders":1280,"clock":1708,"vram":6.0,"mtype":"GDDR5","bus":192,"mspeed":8.0,"bw":192.0,"tdp":120,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce GTX 1070","v":"NVIDIA","a":"Pascal","y":2016,"shaders":1920,"clock":1683,"vram":8.0,"mtype":"GDDR5","bus":256,"mspeed":8.0,"bw":256.0,"tdp":150,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce GTX 1070 Ti","v":"NVIDIA","a":"Pascal","y":2017,"shaders":2432,"clock":1683,"vram":8.0,"mtype":"GDDR5","bus":256,"mspeed":8.0,"bw":256.0,"tdp":180,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce GTX 1080","v":"NVIDIA","a":"Pascal","y":2016,"shaders":2560,"clock":1733,"vram":8.0,"mtype":"GDDR5X","bus":256,"mspeed":10.0,"bw":320.0,"tdp":180,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce GTX 1080 Ti","v":"NVIDIA","a":"Pascal","y":2017,"shaders":3584,"clock":1582,"vram":11.0,"mtype":"GDDR5X","bus":352,"mspeed":11.0,"bw":484.0,"tdp":250,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce GTX 1650 (GDDR5)","v":"NVIDIA","a":"Turing","y":2019,"shaders":896,"clock":1665,"vram":4.0,"mtype":"GDDR5","bus":128,"mspeed":8.0,"bw":128.0,"tdp":75,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce GTX 1650 (GDDR6)","v":"NVIDIA","a":"Turing","y":2020,"shaders":896,"clock":1590,"vram":4.0,"mtype":"GDDR6","bus":128,"mspeed":12.0,"bw":192.0,"tdp":75,"ic":0,"ver":"準OK(兄弟モデルから整合確認)"},{"n":"GeForce GTX 1650 SUPER","v":"NVIDIA","a":"Turing","y":2019,"shaders":1280,"clock":1725,"vram":4.0,"mtype":"GDDR6","bus":128,"mspeed":12.0,"bw":192.0,"tdp":100,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce GTX 1660","v":"NVIDIA","a":"Turing","y":2019,"shaders":1408,"clock":1785,"vram":6.0,"mtype":"GDDR5","bus":192,"mspeed":8.0,"bw":192.0,"tdp":120,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce GTX 1660 SUPER","v":"NVIDIA","a":"Turing","y":2019,"shaders":1408,"clock":1785,"vram":6.0,"mtype":"GDDR6","bus":192,"mspeed":14.0,"bw":336.0,"tdp":125,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce GTX 1660 Ti","v":"NVIDIA","a":"Turing","y":2019,"shaders":1536,"clock":1770,"vram":6.0,"mtype":"GDDR6","bus":192,"mspeed":12.0,"bw":288.0,"tdp":120,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 2060 6GB","v":"NVIDIA","a":"Turing","y":2019,"shaders":1920,"clock":1680,"vram":6.0,"mtype":"GDDR6","bus":192,"mspeed":14.0,"bw":336.0,"tdp":160,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 2060 12GB","v":"NVIDIA","a":"Turing","y":2021,"shaders":2176,"clock":1650,"vram":12.0,"mtype":"GDDR6","bus":192,"mspeed":14.0,"bw":336.0,"tdp":184,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 2060 SUPER","v":"NVIDIA","a":"Turing","y":2019,"shaders":2176,"clock":1650,"vram":8.0,"mtype":"GDDR6","bus":256,"mspeed":14.0,"bw":448.0,"tdp":175,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 2070","v":"NVIDIA","a":"Turing","y":2018,"shaders":2304,"clock":1620,"vram":8.0,"mtype":"GDDR6","bus":256,"mspeed":14.0,"bw":448.0,"tdp":175,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 2070 SUPER","v":"NVIDIA","a":"Turing","y":2019,"shaders":2560,"clock":1770,"vram":8.0,"mtype":"GDDR6","bus":256,"mspeed":14.0,"bw":448.0,"tdp":215,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 2080","v":"NVIDIA","a":"Turing","y":2018,"shaders":2944,"clock":1710,"vram":8.0,"mtype":"GDDR6","bus":256,"mspeed":14.0,"bw":448.0,"tdp":215,"ic":0,"ver":"準OK(兄弟モデルから整合確認)"},{"n":"GeForce RTX 2080 SUPER","v":"NVIDIA","a":"Turing","y":2019,"shaders":3072,"clock":1815,"vram":8.0,"mtype":"GDDR6","bus":256,"mspeed":15.5,"bw":496.0,"tdp":250,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 2080 Ti","v":"NVIDIA","a":"Turing","y":2018,"shaders":4352,"clock":1545,"vram":11.0,"mtype":"GDDR6","bus":352,"mspeed":14.0,"bw":616.0,"tdp":250,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 3050 6GB","v":"NVIDIA","a":"Ampere","y":2024,"shaders":2304,"clock":1470,"vram":6.0,"mtype":"GDDR6","bus":96,"mspeed":14.0,"bw":168.0,"tdp":70,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 3050 8GB","v":"NVIDIA","a":"Ampere","y":2022,"shaders":2560,"clock":1777,"vram":8.0,"mtype":"GDDR6","bus":128,"mspeed":14.0,"bw":224.0,"tdp":130,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 3060 8GB","v":"NVIDIA","a":"Ampere","y":2022,"shaders":3584,"clock":1777,"vram":8.0,"mtype":"GDDR6","bus":128,"mspeed":15.0,"bw":240.0,"tdp":170,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 3060 12GB","v":"NVIDIA","a":"Ampere","y":2021,"shaders":3584,"clock":1777,"vram":12.0,"mtype":"GDDR6","bus":192,"mspeed":15.0,"bw":360.0,"tdp":170,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 3060 Ti","v":"NVIDIA","a":"Ampere","y":2020,"shaders":4864,"clock":1665,"vram":8.0,"mtype":"GDDR6","bus":256,"mspeed":14.0,"bw":448.0,"tdp":200,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 3070","v":"NVIDIA","a":"Ampere","y":2020,"shaders":5888,"clock":1725,"vram":8.0,"mtype":"GDDR6","bus":256,"mspeed":14.0,"bw":448.0,"tdp":220,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 3070 Ti","v":"NVIDIA","a":"Ampere","y":2021,"shaders":6144,"clock":1770,"vram":8.0,"mtype":"GDDR6X","bus":256,"mspeed":19.0,"bw":608.0,"tdp":290,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 3080 10GB","v":"NVIDIA","a":"Ampere","y":2020,"shaders":8704,"clock":1710,"vram":10.0,"mtype":"GDDR6X","bus":320,"mspeed":19.0,"bw":760.0,"tdp":320,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 3080 12GB","v":"NVIDIA","a":"Ampere","y":2022,"shaders":8960,"clock":1710,"vram":12.0,"mtype":"GDDR6X","bus":384,"mspeed":19.0,"bw":912.0,"tdp":350,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 3080 Ti","v":"NVIDIA","a":"Ampere","y":2021,"shaders":10240,"clock":1665,"vram":12.0,"mtype":"GDDR6X","bus":384,"mspeed":19.0,"bw":912.0,"tdp":350,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 3090","v":"NVIDIA","a":"Ampere","y":2020,"shaders":10496,"clock":1695,"vram":24.0,"mtype":"GDDR6X","bus":384,"mspeed":19.5,"bw":936.0,"tdp":350,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 3090 Ti","v":"NVIDIA","a":"Ampere","y":2022,"shaders":10752,"clock":1860,"vram":24.0,"mtype":"GDDR6X","bus":384,"mspeed":21.0,"bw":1008.0,"tdp":450,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 4060","v":"NVIDIA","a":"Ada","y":2023,"shaders":3072,"clock":2460,"vram":8.0,"mtype":"GDDR6","bus":128,"mspeed":17.0,"bw":272.0,"tdp":115,"ic":24,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 4060 Ti 8GB","v":"NVIDIA","a":"Ada","y":2023,"shaders":4352,"clock":2535,"vram":8.0,"mtype":"GDDR6","bus":128,"mspeed":18.0,"bw":288.0,"tdp":160,"ic":32,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 4060 Ti 16GB","v":"NVIDIA","a":"Ada","y":2023,"shaders":4352,"clock":2535,"vram":16.0,"mtype":"GDDR6","bus":128,"mspeed":18.0,"bw":288.0,"tdp":165,"ic":32,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 4070","v":"NVIDIA","a":"Ada","y":2023,"shaders":5888,"clock":2475,"vram":12.0,"mtype":"GDDR6X","bus":192,"mspeed":21.0,"bw":504.0,"tdp":200,"ic":36,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 4070 SUPER","v":"NVIDIA","a":"Ada","y":2024,"shaders":7168,"clock":2475,"vram":12.0,"mtype":"GDDR6X","bus":192,"mspeed":21.0,"bw":504.0,"tdp":220,"ic":48,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 4070 Ti","v":"NVIDIA","a":"Ada","y":2023,"shaders":7680,"clock":2610,"vram":12.0,"mtype":"GDDR6X","bus":192,"mspeed":21.0,"bw":504.0,"tdp":285,"ic":48,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 4070 Ti SUPER","v":"NVIDIA","a":"Ada","y":2024,"shaders":8448,"clock":2610,"vram":16.0,"mtype":"GDDR6X","bus":256,"mspeed":21.0,"bw":672.0,"tdp":285,"ic":48,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 4080","v":"NVIDIA","a":"Ada","y":2022,"shaders":9728,"clock":2505,"vram":16.0,"mtype":"GDDR6X","bus":256,"mspeed":22.4,"bw":716.8,"tdp":320,"ic":64,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 4080 SUPER","v":"NVIDIA","a":"Ada","y":2024,"shaders":10240,"clock":2550,"vram":16.0,"mtype":"GDDR6X","bus":256,"mspeed":23.0,"bw":736.0,"tdp":320,"ic":64,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 4090","v":"NVIDIA","a":"Ada","y":2022,"shaders":16384,"clock":2520,"vram":24.0,"mtype":"GDDR6X","bus":384,"mspeed":21.0,"bw":1008.0,"tdp":450,"ic":72,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 5050","v":"NVIDIA","a":"Blackwell","y":2025,"shaders":2560,"clock":2572,"vram":8.0,"mtype":"GDDR6","bus":128,"mspeed":20.0,"bw":320.0,"tdp":130,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 5060","v":"NVIDIA","a":"Blackwell","y":2025,"shaders":3840,"clock":2497,"vram":8.0,"mtype":"GDDR7","bus":128,"mspeed":28.0,"bw":448.0,"tdp":145,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 5060 Ti 8GB","v":"NVIDIA","a":"Blackwell","y":2025,"shaders":4608,"clock":2572,"vram":8.0,"mtype":"GDDR7","bus":128,"mspeed":28.0,"bw":448.0,"tdp":180,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 5060 Ti 16GB","v":"NVIDIA","a":"Blackwell","y":2025,"shaders":4608,"clock":2572,"vram":16.0,"mtype":"GDDR7","bus":128,"mspeed":28.0,"bw":448.0,"tdp":180,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 5070","v":"NVIDIA","a":"Blackwell","y":2025,"shaders":6144,"clock":2512,"vram":12.0,"mtype":"GDDR7","bus":192,"mspeed":28.0,"bw":672.0,"tdp":250,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 5070 Ti","v":"NVIDIA","a":"Blackwell","y":2025,"shaders":8960,"clock":2452,"vram":16.0,"mtype":"GDDR7","bus":256,"mspeed":28.0,"bw":896.0,"tdp":300,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 5080","v":"NVIDIA","a":"Blackwell","y":2025,"shaders":10752,"clock":2617,"vram":16.0,"mtype":"GDDR7","bus":256,"mspeed":30.0,"bw":960.0,"tdp":360,"ic":0,"ver":"OK(ソース確認済)"},{"n":"GeForce RTX 5090","v":"NVIDIA","a":"Blackwell","y":2025,"shaders":21760,"clock":2407,"vram":32.0,"mtype":"GDDR7","bus":512,"mspeed":28.0,"bw":1792.0,"tdp":575,"ic":0,"ver":"OK(ソース確認済)"},{"n":"Radeon RX 5500 XT 4GB","v":"AMD","a":"RDNA","y":2019,"shaders":1408,"clock":1845,"vram":4.0,"mtype":"GDDR6","bus":128,"mspeed":14.0,"bw":224.0,"tdp":130,"ic":0,"ver":"OK(ソース確認済)"},{"n":"Radeon RX 5500 XT 8GB","v":"AMD","a":"RDNA","y":2019,"shaders":1408,"clock":1845,"vram":8.0,"mtype":"GDDR6","bus":128,"mspeed":14.0,"bw":224.0,"tdp":130,"ic":0,"ver":"OK(ソース確認済)"},{"n":"Radeon RX 5600 XT","v":"AMD","a":"RDNA","y":2020,"shaders":2304,"clock":1620,"vram":6.0,"mtype":"GDDR6","bus":192,"mspeed":12.0,"bw":288.0,"tdp":150,"ic":0,"ver":"OK(ソース確認済)"},{"n":"Radeon RX 5700","v":"AMD","a":"RDNA","y":2019,"shaders":2304,"clock":1725,"vram":8.0,"mtype":"GDDR6","bus":256,"mspeed":14.0,"bw":448.0,"tdp":180,"ic":0,"ver":"OK(ソース確認済)"},{"n":"Radeon RX 5700 XT","v":"AMD","a":"RDNA","y":2019,"shaders":2560,"clock":1905,"vram":8.0,"mtype":"GDDR6","bus":256,"mspeed":14.0,"bw":448.0,"tdp":225,"ic":0,"ver":"OK(ソース確認済)"},{"n":"Radeon RX 6400","v":"AMD","a":"RDNA2","y":2022,"shaders":768,"clock":2321,"vram":4.0,"mtype":"GDDR6","bus":64,"mspeed":16.0,"bw":128.0,"tdp":53,"ic":16,"ver":"OK(ソース確認済)"},{"n":"Radeon RX 6500 XT","v":"AMD","a":"RDNA2","y":2022,"shaders":1024,"clock":2815,"vram":4.0,"mtype":"GDDR6","bus":64,"mspeed":18.0,"bw":144.0,"tdp":107,"ic":16,"ver":"OK(ソース確認済)"},{"n":"Radeon RX 6600","v":"AMD","a":"RDNA2","y":2021,"shaders":1792,"clock":2491,"vram":8.0,"mtype":"GDDR6","bus":128,"mspeed":14.0,"bw":224.0,"tdp":132,"ic":32,"ver":"OK(ソース確認済)"},{"n":"Radeon RX 6600 XT","v":"AMD","a":"RDNA2","y":2021,"shaders":2048,"clock":2589,"vram":8.0,"mtype":"GDDR6","bus":128,"mspeed":16.0,"bw":256.0,"tdp":160,"ic":32,"ver":"OK(ソース確認済)"},{"n":"Radeon RX 6650 XT","v":"AMD","a":"RDNA2","y":2022,"shaders":2048,"clock":2635,"vram":8.0,"mtype":"GDDR6","bus":128,"mspeed":17.5,"bw":280.0,"tdp":180,"ic":32,"ver":"OK(ソース確認済)"},{"n":"Radeon RX 6700 XT","v":"AMD","a":"RDNA2","y":2021,"shaders":2560,"clock":2581,"vram":12.0,"mtype":"GDDR6","bus":192,"mspeed":16.0,"bw":384.0,"tdp":230,"ic":96,"ver":"OK(ソース確認済)"},{"n":"Radeon RX 6750 XT","v":"AMD","a":"RDNA2","y":2022,"shaders":2560,"clock":2600,"vram":12.0,"mtype":"GDDR6","bus":192,"mspeed":18.0,"bw":432.0,"tdp":250,"ic":96,"ver":"OK(ソース確認済)"},{"n":"Radeon RX 6800","v":"AMD","a":"RDNA2","y":2020,"shaders":3840,"clock":2105,"vram":16.0,"mtype":"GDDR6","bus":256,"mspeed":16.0,"bw":512.0,"tdp":250,"ic":128,"ver":"OK(ソース確認済)"},{"n":"Radeon RX 6800 XT","v":"AMD","a":"RDNA2","y":2020,"shaders":4608,"clock":2250,"vram":16.0,"mtype":"GDDR6","bus":256,"mspeed":16.0,"bw":512.0,"tdp":300,"ic":128,"ver":"OK(ソース確認済)"},{"n":"Radeon RX 6900 XT","v":"AMD","a":"RDNA2","y":2020,"shaders":5120,"clock":2250,"vram":16.0,"mtype":"GDDR6","bus":256,"mspeed":16.0,"bw":512.0,"tdp":300,"ic":128,"ver":"OK(ソース確認済)"},{"n":"Radeon RX 6950 XT","v":"AMD","a":"RDNA2","y":2022,"shaders":5120,"clock":2310,"vram":16.0,"mtype":"GDDR6","bus":256,"mspeed":18.0,"bw":576.0,"tdp":335,"ic":128,"ver":"OK(ソース確認済)"},{"n":"Radeon RX 7600","v":"AMD","a":"RDNA3","y":2023,"shaders":2048,"clock":2655,"vram":8.0,"mtype":"GDDR6","bus":128,"mspeed":18.0,"bw":288.0,"tdp":165,"ic":32,"ver":"OK(ソース確認済)"},{"n":"Radeon RX 7600 XT","v":"AMD","a":"RDNA3","y":2024,"shaders":2048,"clock":2755,"vram":16.0,"mtype":"GDDR6","bus":128,"mspeed":18.0,"bw":288.0,"tdp":190,"ic":32,"ver":"OK(ソース確認済)"},{"n":"Radeon RX 7700 XT","v":"AMD","a":"RDNA3","y":2023,"shaders":3456,"clock":2544,"vram":12.0,"mtype":"GDDR6","bus":192,"mspeed":18.0,"bw":432.0,"tdp":245,"ic":48,"ver":"OK(ソース確認済)"},{"n":"Radeon RX 7800 XT","v":"AMD","a":"RDNA3","y":2023,"shaders":3840,"clock":2430,"vram":16.0,"mtype":"GDDR6","bus":256,"mspeed":19.5,"bw":624.0,"tdp":263,"ic":64,"ver":"OK(ソース確認済)"},{"n":"Radeon RX 7900 GRE","v":"AMD","a":"RDNA3","y":2023,"shaders":5120,"clock":2245,"vram":16.0,"mtype":"GDDR6","bus":256,"mspeed":18.0,"bw":576.0,"tdp":260,"ic":64,"ver":"OK(ソース確認済)"},{"n":"Radeon RX 7900 XT","v":"AMD","a":"RDNA3","y":2022,"shaders":5376,"clock":2400,"vram":20.0,"mtype":"GDDR6","bus":320,"mspeed":20.0,"bw":800.0,"tdp":300,"ic":80,"ver":"OK(ソース確認済)"},{"n":"Radeon RX 7900 XTX","v":"AMD","a":"RDNA3","y":2022,"shaders":6144,"clock":2500,"vram":24.0,"mtype":"GDDR6","bus":384,"mspeed":20.0,"bw":960.0,"tdp":355,"ic":96,"ver":"OK(ソース確認済)"},{"n":"Radeon RX 9060 XT 8GB","v":"AMD","a":"RDNA4","y":2025,"shaders":2048,"clock":3130,"vram":8.0,"mtype":"GDDR6","bus":128,"mspeed":20.0,"bw":320.0,"tdp":150,"ic":32,"ver":"OK(ソース確認済)"},{"n":"Radeon RX 9060 XT 16GB","v":"AMD","a":"RDNA4","y":2025,"shaders":2048,"clock":3130,"vram":16.0,"mtype":"GDDR6","bus":128,"mspeed":20.0,"bw":320.0,"tdp":160,"ic":32,"ver":"OK(ソース確認済)"},{"n":"Radeon RX 9070","v":"AMD","a":"RDNA4","y":2025,"shaders":3584,"clock":2540,"vram":16.0,"mtype":"GDDR6","bus":256,"mspeed":20.0,"bw":640.0,"tdp":220,"ic":64,"ver":"OK(ソース確認済)"},{"n":"Radeon RX 9070 XT","v":"AMD","a":"RDNA4","y":2025,"shaders":4096,"clock":2970,"vram":16.0,"mtype":"GDDR6","bus":256,"mspeed":20.0,"bw":640.0,"tdp":304,"ic":64,"ver":"OK(ソース確認済)"}],"cpu":[{"n":"Ryzen 9 9950X3D","v":"AMD","a":"Zen 5","y":2025,"cores":16,"threads":32,"base":4.3,"boost":5.7,"l3":128.0,"l2":16.0,"tdp":170,"socket":"AM5","mem":"DDR5","x3d":true,"ver":"OK(ソース確認済)"},{"n":"Ryzen 9 9950X","v":"AMD","a":"Zen 5","y":2024,"cores":16,"threads":32,"base":4.3,"boost":5.7,"l3":64.0,"l2":16.0,"tdp":170,"socket":"AM5","mem":"DDR5","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Ryzen 9 9900X3D","v":"AMD","a":"Zen 5","y":2025,"cores":12,"threads":24,"base":4.4,"boost":5.5,"l3":128.0,"l2":12.0,"tdp":120,"socket":"AM5","mem":"DDR5","x3d":true,"ver":"OK(ソース確認済)"},{"n":"Ryzen 9 9900X","v":"AMD","a":"Zen 5","y":2024,"cores":12,"threads":24,"base":4.4,"boost":5.6,"l3":64.0,"l2":12.0,"tdp":120,"socket":"AM5","mem":"DDR5","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Ryzen 7 9800X3D","v":"AMD","a":"Zen 5","y":2024,"cores":8,"threads":16,"base":4.7,"boost":5.2,"l3":96.0,"l2":8.0,"tdp":120,"socket":"AM5","mem":"DDR5","x3d":true,"ver":"OK(ソース確認済)"},{"n":"Ryzen 7 9700X","v":"AMD","a":"Zen 5","y":2024,"cores":8,"threads":16,"base":3.8,"boost":5.5,"l3":32.0,"l2":8.0,"tdp":65,"socket":"AM5","mem":"DDR5","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Ryzen 5 9600X","v":"AMD","a":"Zen 5","y":2024,"cores":6,"threads":12,"base":3.9,"boost":5.4,"l3":32.0,"l2":6.0,"tdp":65,"socket":"AM5","mem":"DDR5","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Ryzen 9 7950X3D","v":"AMD","a":"Zen 4","y":2023,"cores":16,"threads":32,"base":4.2,"boost":5.7,"l3":128.0,"l2":16.0,"tdp":120,"socket":"AM5","mem":"DDR5","x3d":true,"ver":"OK(ソース確認済)"},{"n":"Ryzen 9 7950X","v":"AMD","a":"Zen 4","y":2022,"cores":16,"threads":32,"base":4.5,"boost":5.7,"l3":64.0,"l2":16.0,"tdp":170,"socket":"AM5","mem":"DDR5","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Ryzen 9 7900X3D","v":"AMD","a":"Zen 4","y":2023,"cores":12,"threads":24,"base":4.4,"boost":5.6,"l3":128.0,"l2":12.0,"tdp":120,"socket":"AM5","mem":"DDR5","x3d":true,"ver":"準OK(同世代整合)"},{"n":"Ryzen 9 7900X","v":"AMD","a":"Zen 4","y":2022,"cores":12,"threads":24,"base":4.7,"boost":5.6,"l3":64.0,"l2":12.0,"tdp":170,"socket":"AM5","mem":"DDR5","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Ryzen 7 7800X3D","v":"AMD","a":"Zen 4","y":2023,"cores":8,"threads":16,"base":4.2,"boost":5.0,"l3":96.0,"l2":8.0,"tdp":120,"socket":"AM5","mem":"DDR5","x3d":true,"ver":"OK(ソース確認済)"},{"n":"Ryzen 7 7700X","v":"AMD","a":"Zen 4","y":2022,"cores":8,"threads":16,"base":4.5,"boost":5.4,"l3":32.0,"l2":8.0,"tdp":105,"socket":"AM5","mem":"DDR5","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Ryzen 5 7600X","v":"AMD","a":"Zen 4","y":2022,"cores":6,"threads":12,"base":4.7,"boost":5.3,"l3":32.0,"l2":6.0,"tdp":105,"socket":"AM5","mem":"DDR5","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Ryzen 5 7600","v":"AMD","a":"Zen 4","y":2023,"cores":6,"threads":12,"base":3.8,"boost":5.1,"l3":32.0,"l2":6.0,"tdp":65,"socket":"AM5","mem":"DDR5","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Ryzen 5 7500F","v":"AMD","a":"Zen 4","y":2023,"cores":6,"threads":12,"base":3.7,"boost":5.0,"l3":32.0,"l2":6.0,"tdp":65,"socket":"AM5","mem":"DDR5","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Ryzen 7 5800X3D","v":"AMD","a":"Zen 3","y":2022,"cores":8,"threads":16,"base":3.4,"boost":4.5,"l3":96.0,"l2":4.0,"tdp":105,"socket":"AM4","mem":"DDR4","x3d":true,"ver":"OK(ソース確認済)"},{"n":"Ryzen 9 5950X","v":"AMD","a":"Zen 3","y":2020,"cores":16,"threads":32,"base":3.4,"boost":4.9,"l3":64.0,"l2":8.0,"tdp":105,"socket":"AM4","mem":"DDR4","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Ryzen 9 5900X","v":"AMD","a":"Zen 3","y":2020,"cores":12,"threads":24,"base":3.7,"boost":4.8,"l3":64.0,"l2":6.0,"tdp":105,"socket":"AM4","mem":"DDR4","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Ryzen 7 5800X","v":"AMD","a":"Zen 3","y":2020,"cores":8,"threads":16,"base":3.8,"boost":4.7,"l3":32.0,"l2":4.0,"tdp":105,"socket":"AM4","mem":"DDR4","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Ryzen 7 5700X","v":"AMD","a":"Zen 3","y":2022,"cores":8,"threads":16,"base":3.4,"boost":4.6,"l3":32.0,"l2":4.0,"tdp":65,"socket":"AM4","mem":"DDR4","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Ryzen 5 5600X","v":"AMD","a":"Zen 3","y":2020,"cores":6,"threads":12,"base":3.7,"boost":4.6,"l3":32.0,"l2":3.0,"tdp":65,"socket":"AM4","mem":"DDR4","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Ryzen 5 5600","v":"AMD","a":"Zen 3","y":2022,"cores":6,"threads":12,"base":3.5,"boost":4.4,"l3":32.0,"l2":3.0,"tdp":65,"socket":"AM4","mem":"DDR4","x3d":false,"ver":"準OK(同世代整合)"},{"n":"Core Ultra 9 285K","v":"Intel","a":"Arrow Lake","y":2024,"cores":24,"threads":24,"base":3.7,"boost":5.7,"l3":36.0,"l2":40.0,"tdp":125,"socket":"LGA1851","mem":"DDR5","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Core Ultra 7 265K","v":"Intel","a":"Arrow Lake","y":2024,"cores":20,"threads":20,"base":3.9,"boost":5.5,"l3":30.0,"l2":36.0,"tdp":125,"socket":"LGA1851","mem":"DDR5","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Core Ultra 5 245K","v":"Intel","a":"Arrow Lake","y":2024,"cores":14,"threads":14,"base":4.2,"boost":5.2,"l3":24.0,"l2":26.0,"tdp":125,"socket":"LGA1851","mem":"DDR5","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Core i9-14900K","v":"Intel","a":"Raptor Lake-R","y":2023,"cores":24,"threads":32,"base":3.2,"boost":6.0,"l3":36.0,"l2":32.0,"tdp":125,"socket":"LGA1700","mem":"DDR4/DDR5","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Core i7-14700K","v":"Intel","a":"Raptor Lake-R","y":2023,"cores":20,"threads":28,"base":3.4,"boost":5.6,"l3":33.0,"l2":28.0,"tdp":125,"socket":"LGA1700","mem":"DDR4/DDR5","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Core i5-14600K","v":"Intel","a":"Raptor Lake-R","y":2023,"cores":14,"threads":20,"base":3.5,"boost":5.3,"l3":24.0,"l2":20.0,"tdp":125,"socket":"LGA1700","mem":"DDR4/DDR5","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Core i5-14400F","v":"Intel","a":"Raptor Lake-R","y":2024,"cores":10,"threads":16,"base":2.5,"boost":4.7,"l3":20.0,"l2":9.5,"tdp":65,"socket":"LGA1700","mem":"DDR4/DDR5","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Core i9-13900K","v":"Intel","a":"Raptor Lake","y":2022,"cores":24,"threads":32,"base":3.0,"boost":5.8,"l3":36.0,"l2":32.0,"tdp":125,"socket":"LGA1700","mem":"DDR4/DDR5","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Core i7-13700K","v":"Intel","a":"Raptor Lake","y":2022,"cores":16,"threads":24,"base":3.4,"boost":5.4,"l3":30.0,"l2":24.0,"tdp":125,"socket":"LGA1700","mem":"DDR4/DDR5","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Core i5-13600K","v":"Intel","a":"Raptor Lake","y":2022,"cores":14,"threads":20,"base":3.5,"boost":5.1,"l3":24.0,"l2":20.0,"tdp":125,"socket":"LGA1700","mem":"DDR4/DDR5","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Core i5-13400F","v":"Intel","a":"Raptor Lake","y":2023,"cores":10,"threads":16,"base":2.5,"boost":4.6,"l3":20.0,"l2":9.5,"tdp":65,"socket":"LGA1700","mem":"DDR4/DDR5","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Core i9-12900K","v":"Intel","a":"Alder Lake","y":2021,"cores":16,"threads":24,"base":3.2,"boost":5.2,"l3":30.0,"l2":14.0,"tdp":125,"socket":"LGA1700","mem":"DDR4/DDR5","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Core i7-12700K","v":"Intel","a":"Alder Lake","y":2021,"cores":12,"threads":20,"base":3.6,"boost":5.0,"l3":25.0,"l2":12.0,"tdp":125,"socket":"LGA1700","mem":"DDR4/DDR5","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Core i5-12600K","v":"Intel","a":"Alder Lake","y":2021,"cores":10,"threads":16,"base":3.7,"boost":4.9,"l3":20.0,"l2":9.5,"tdp":125,"socket":"LGA1700","mem":"DDR4/DDR5","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Core i5-12400F","v":"Intel","a":"Alder Lake","y":2022,"cores":6,"threads":12,"base":2.5,"boost":4.4,"l3":18.0,"l2":7.5,"tdp":65,"socket":"LGA1700","mem":"DDR4/DDR5","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Core i9-11900K","v":"Intel","a":"Rocket Lake","y":2021,"cores":8,"threads":16,"base":3.5,"boost":5.3,"l3":16.0,"l2":4.0,"tdp":125,"socket":"LGA1200","mem":"DDR4","x3d":false,"ver":"準OK(同世代整合)"},{"n":"Core i5-11400F","v":"Intel","a":"Rocket Lake","y":2021,"cores":6,"threads":12,"base":2.6,"boost":4.4,"l3":12.0,"l2":3.0,"tdp":65,"socket":"LGA1200","mem":"DDR4","x3d":false,"ver":"OK(ソース確認済)"},{"n":"Core i9-10900K","v":"Intel","a":"Comet Lake","y":2020,"cores":10,"threads":20,"base":3.7,"boost":5.3,"l3":20.0,"l2":2.5,"tdp":125,"socket":"LGA1200","mem":"DDR4","x3d":false,"ver":"準OK(同世代整合)"},{"n":"Core i5-10400F","v":"Intel","a":"Comet Lake","y":2020,"cores":6,"threads":12,"base":2.9,"boost":4.3,"l3":12.0,"l2":1.5,"tdp":65,"socket":"LGA1200","mem":"DDR4","x3d":false,"ver":"準OK(同世代整合)"}]};
+
+const COLS = {
+  gpu:[
+    {k:'n',   l:'モデル',      t:'txt'},
+    {k:'a',   l:'アーキ',      t:'txt'},
+    {k:'y',   l:'発売',        t:'num', f:v=>v},
+    {k:'shaders',l:'シェーダー',t:'num', f:v=>v.toLocaleString(), bar:1},
+    {k:'clock',l:'ブースト',   t:'num', f:v=>v+' MHz', bar:1},
+    {k:'vram',l:'VRAM',        t:'num', f:v=>v+' GB', bar:1},
+    {k:'bw',  l:'帯域幅',      t:'num', f:v=>v+' GB/s', bar:1},
+    {k:'tdp', l:'TDP',         t:'num', f:v=>v+' W', bar:1}
+  ],
+  cpu:[
+    {k:'n',   l:'モデル',      t:'txt'},
+    {k:'a',   l:'アーキ',      t:'txt'},
+    {k:'y',   l:'発売',        t:'num', f:v=>v},
+    {k:'cores',l:'コア',       t:'num', f:v=>v, bar:1},
+    {k:'threads',l:'スレッド', t:'num', f:v=>v, bar:1},
+    {k:'boost',l:'ブースト',   t:'num', f:v=>v.toFixed(1)+' GHz', bar:1},
+    {k:'l3',  l:'L3キャッシュ',t:'num', f:v=>v+' MB', bar:1},
+    {k:'tdp', l:'TDP',         t:'num', f:v=>v+' W', bar:1}
+  ]
+};
+
+const DETAIL = {
+  gpu:[['アーキテクチャ',r=>r.a],['発売年',r=>r.y],['シェーダーユニット',r=>r.shaders.toLocaleString()],
+       ['ブーストクロック',r=>r.clock+' MHz'],['VRAM',r=>r.vram+' GB '+r.mtype],
+       ['メモリバス',r=>r.bus+' bit'],['メモリ速度',r=>r.mspeed+' Gbps'],
+       ['メモリ帯域幅',r=>r.bw+' GB/s'],['TDP',r=>r.tdp+' W'],
+       ['Infinity Cache / L2',r=>r.ic?r.ic+' MB':'—']],
+  cpu:[['アーキテクチャ',r=>r.a],['発売年',r=>r.y],['コア / スレッド',r=>r.cores+' / '+r.threads],
+       ['ベースクロック',r=>r.base.toFixed(1)+' GHz'],['ブーストクロック',r=>r.boost.toFixed(1)+' GHz'],
+       ['L3キャッシュ',r=>r.l3+' MB'],['L2キャッシュ',r=>r.l2+' MB'],['TDP',r=>r.tdp+' W'],
+       ['ソケット',r=>r.socket],['対応メモリ',r=>r.mem],['3D V-Cache',r=>r.x3d?'搭載':'—']]
+};
+
+const S = {tab:'gpu', q:'', vendor:null, gen:null, sort:'y', dir:'desc', open:null, picked:[]};
+const $ = s=>document.querySelector(s);
+
+function rows(){
+  let r = DATA[S.tab].slice();
+  if(S.q){const q=S.q.toLowerCase(); r=r.filter(x=>x.n.toLowerCase().includes(q));}
+  if(S.vendor) r=r.filter(x=>x.v===S.vendor);
+  if(S.gen)    r=r.filter(x=>x.a===S.gen);
+  const k=S.sort, m=S.dir==='asc'?1:-1;
+  r.sort((a,b)=>{
+    const A=a[k],B=b[k];
+    if(typeof A==='string') return A.localeCompare(B)*m;
+    return (A-B)*m;
+  });
+  return r;
+}
+
+function drawFilters(){
+  const all = DATA[S.tab];
+  const vs = [...new Set(all.map(x=>x.v))];
+  $('#vendors').innerHTML = vs.map(v=>
+    `<button class="chip" data-v="${v}" aria-pressed="${S.vendor===v}">${v}</button>`).join('');
+  const gs = [...new Set(all.map(x=>x.a))];
+  $('#gens').innerHTML = gs.map(a=>
+    `<button class="chip" data-g="${a}" aria-pressed="${S.gen===a}">${a}</button>`).join('');
+}
+
+function drawHead(){
+  const cs = COLS[S.tab];
+  $('#thead').innerHTML = '<tr><th></th>' + cs.map(c=>
+    `<th class="${c.t==='txt'?'txt':''}" data-k="${c.k}"
+        data-active="${S.sort===c.k?1:0}" data-dir="${S.dir}">${c.l}</th>`
+  ).join('') + '<th class="txt">検証</th></tr>';
+}
+
+function drawBody(){
+  const cs = COLS[S.tab], rs = rows();
+  const barCol = cs.find(c=>c.k===S.sort && c.bar);
+  const max = barCol ? Math.max(...rs.map(r=>r[barCol.k])) : 0;
+  let html = '';
+  rs.forEach((r,i)=>{
+    const id = r.n;
+    const isOpen = S.open===id;
+    const checked = S.picked.includes(id)?'checked':'';
+    const w = barCol ? (r[barCol.k]/max*100) : 0;
+    html += `<tr data-id="${id}" data-open="${isOpen?1:0}">`;
+    html += `<td class="pickcell"><input class="pick" type="checkbox" ${checked}
+             data-pick="${id}" aria-label="${id}を比較に追加"></td>`;
+    cs.forEach((c,ci)=>{
+      const v = r[c.k];
+      if(ci===0){
+        html += `<td class="txt namecell" data-l="${c.l}">`;
+        if(barCol) html += `<span class="bar" style="width:${w}%"></span>`;
+        html += `<span class="vtag ${r.x3d?'x3d':''}">${r.v}</span>`;
+        html += `<span class="name">${v}</span>`;
+        if(r.x3d) html += `<span class="vtag x3d" style="margin-left:8px">3D V-Cache</span>`;
+        html += `</td>`;
+      } else {
+        html += `<td class="${c.t==='txt'?'txt':''}" data-l="${c.l}">${c.f?c.f(v):v}</td>`;
+      }
+    });
+    const ok = r.ver.indexOf('準')===0 ? '準確認' : '確認済';
+    html += `<td class="txt" data-l="検証"><span class="prov">${ok}</span></td></tr>`;
+    if(isOpen){
+      const span = cs.length+2;
+      html += `<tr class="detail"><td colspan="${span}"><div class="detailbox"><dl class="dgrid">`;
+      DETAIL[S.tab].forEach(([lab,fn])=>{
+        html += `<div><dt>${lab}</dt><dd>${fn(r)}</dd></div>`;
+      });
+      html += `</dl><p class="dnote">検証状態: ${r.ver}／クロックはリファレンス仕様値です。`;
+      html += `メーカーによってはFounders Editionなど工場OCモデルが別クロックで販売されます。</p>`;
+      html += `</div></td></tr>`;
+    }
+  });
+  $('#tbody').innerHTML = html;
+  $('#hint').textContent = `${rs.length}件を表示 ／ 列見出しで並べ替え・行をタップで詳細`;
+}
+
+function drawTray(){
+  const on = S.picked.length>0;
+  $('#tray').dataset.on = on?1:0;
+  $('#traylist').innerHTML = S.picked.map(id=>
+    `<span class="traychip">${id}<button data-un="${id}" aria-label="解除">×</button></span>`).join('')
+    + (on?`<span class="traychip" style="background:none;opacity:.6">最大3件</span>`:'');
+}
+
+function draw(){ drawHead(); drawBody(); drawTray(); }
+
+function compare(){
+  const rs = DATA[S.tab].filter(r=>S.picked.includes(r.n));
+  if(!rs.length) return;
+  let h = '<thead><tr><th></th>' + rs.map(r=>`<th>${r.n}</th>`).join('') + '</tr></thead><tbody>';
+  DETAIL[S.tab].forEach(([lab,fn])=>{
+    const vals = rs.map(r=>fn(r));
+    const nums = rs.map(r=>{const m=String(fn(r)).replace(/,/g,'').match(/[\d.]+/);return m?parseFloat(m[0]):NaN;});
+    const valid = nums.filter(n=>!isNaN(n));
+    const best = valid.length===rs.length && lab!=='TDP' && lab!=='発売年' ? Math.max(...nums) : null;
+    h += `<tr><td>${lab}</td>` + vals.map((v,i)=>
+      `<td class="${best!==null && nums[i]===best && valid.length>1?'best':''}">${v}</td>`).join('') + '</tr>';
+  });
+  h += '</tbody>';
+  $('#cmp').innerHTML = h;
+  $('#ovtitle').textContent = `スペック比較 — ${rs.length}モデル`;
+  $('#ov').dataset.on = 1;
+}
+
+/* events */
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected','false'));
+  b.setAttribute('aria-selected','true');
+  S.tab=b.dataset.tab; S.vendor=null; S.gen=null; S.open=null; S.picked=[];
+  S.sort='y'; S.dir='desc';
+  drawFilters(); draw();
+});
+$('#q').oninput = e=>{S.q=e.target.value; S.open=null; drawBody();};
+$('#vendors').onclick = e=>{
+  const b=e.target.closest('[data-v]'); if(!b) return;
+  S.vendor = S.vendor===b.dataset.v ? null : b.dataset.v;
+  S.open=null; drawFilters(); drawBody();
+};
+$('#gens').onclick = e=>{
+  const b=e.target.closest('[data-g]'); if(!b) return;
+  S.gen = S.gen===b.dataset.g ? null : b.dataset.g;
+  S.open=null; drawFilters(); drawBody();
+};
+$('#thead').onclick = e=>{
+  const th=e.target.closest('[data-k]'); if(!th) return;
+  const k=th.dataset.k;
+  if(S.sort===k) S.dir = S.dir==='asc'?'desc':'asc';
+  else {S.sort=k; S.dir = k==='n'||k==='a' ? 'asc':'desc';}
+  S.open=null; draw();
+};
+$('#tbody').onclick = e=>{
+  const pick = e.target.closest('[data-pick]');
+  if(pick){
+    const id=pick.dataset.pick;
+    if(S.picked.includes(id)) S.picked=S.picked.filter(x=>x!==id);
+    else if(S.picked.length<3) S.picked.push(id);
+    else pick.checked=false;
+    drawTray(); return;
+  }
+  const tr = e.target.closest('tr[data-id]'); if(!tr) return;
+  S.open = S.open===tr.dataset.id ? null : tr.dataset.id;
+  drawBody();
+};
+$('#traylist').onclick = e=>{
+  const b=e.target.closest('[data-un]'); if(!b) return;
+  S.picked=S.picked.filter(x=>x!==b.dataset.un); drawBody();
+};
+$('#clear').onclick = ()=>{S.picked=[]; drawBody();};
+$('#docmp').onclick = compare;
+$('#ovclose').onclick = ()=>{$('#ov').dataset.on=0;};
+$('#ov').onclick = e=>{if(e.target.id==='ov') $('#ov').dataset.on=0;};
+document.addEventListener('keydown', e=>{if(e.key==='Escape') $('#ov').dataset.on=0;});
+
+drawFilters(); draw();
+</script>
+</body>
+</html>

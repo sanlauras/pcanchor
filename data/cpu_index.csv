@@ -1,0 +1,43 @@
+﻿rank,cpu_name,vendor,arch,index,fps_valorant_ceiling,cores,l3_cache_mb,has_3d_vcache
+1,Ryzen 9 9950X3D,AMD,Zen 5,100.0,970.3,16,128,Y
+2,Ryzen 7 9800X3D,AMD,Zen 5,100.0,970.3,8,96,Y
+3,Ryzen 9 9900X3D,AMD,Zen 5,89.4,867.7,12,128,Y
+4,Ryzen 9 9950X,AMD,Zen 5,88.3,856.6,16,64,N
+5,Ryzen 9 9900X,AMD,Zen 5,86.7,841.5,12,64,N
+6,Ryzen 9 7950X3D,AMD,Zen 4,86.3,837.0,16,128,Y
+7,Ryzen 7 9700X,AMD,Zen 5,85.2,826.5,8,32,N
+8,Ryzen 7 7800X3D,AMD,Zen 4,82.9,804.8,8,96,Y
+9,Core Ultra 9 285K,Intel,Arrow Lake,82.3,798.3,24,36,N
+10,Core i9-14900K,Intel,Raptor Lake-R,81.5,790.9,24,36,N
+11,Ryzen 5 9600X,AMD,Zen 5,79.5,770.9,6,32,N
+12,Core i9-13900K,Intel,Raptor Lake,78.8,764.5,24,36,N
+13,Ryzen 9 7900X3D,AMD,Zen 4,78.7,763.4,12,128,Y
+14,Core Ultra 7 265K,Intel,Arrow Lake,76.3,740.1,20,30,N
+15,Ryzen 9 7950X,AMD,Zen 4,76.1,738.9,16,64,N
+16,Ryzen 9 7900X,AMD,Zen 4,74.8,725.9,12,64,N
+17,Core i7-14700K,Intel,Raptor Lake-R,74.7,724.4,20,33,N
+18,Ryzen 7 7700X,AMD,Zen 4,72.1,700.0,8,32,N
+19,Core i7-13700K,Intel,Raptor Lake,70.5,683.9,16,30,N
+20,Core Ultra 5 245K,Intel,Arrow Lake,68.5,664.9,14,24,N
+21,Ryzen 5 7600X,AMD,Zen 4,67.3,652.7,6,32,N
+22,Core i9-12900K,Intel,Alder Lake,66.7,646.8,16,30,N
+23,Ryzen 7 5800X3D,AMD,Zen 3,66.1,641.0,8,96,Y
+24,Core i5-14600K,Intel,Raptor Lake-R,65.7,637.8,14,24,N
+25,Ryzen 5 7600,AMD,Zen 4,64.7,628.0,6,32,N
+26,Ryzen 5 7500F,AMD,Zen 4,63.5,615.7,6,32,N
+27,Core i5-13600K,Intel,Raptor Lake,63.3,613.8,14,24,N
+28,Core i7-12700K,Intel,Alder Lake,61.5,596.7,12,25,N
+29,Ryzen 9 5950X,AMD,Zen 3,57.9,562.1,16,64,N
+30,Core i5-12600K,Intel,Alder Lake,57.1,554.4,10,20,N
+31,Ryzen 9 5900X,AMD,Zen 3,56.7,550.6,12,64,N
+32,Core i5-14400F,Intel,Raptor Lake-R,55.8,541.4,10,20,N
+33,Ryzen 7 5800X,AMD,Zen 3,55.6,539.2,8,32,N
+34,Core i5-13400F,Intel,Raptor Lake,54.6,529.9,10,20,N
+35,Ryzen 7 5700X,AMD,Zen 3,54.4,527.7,8,32,N
+36,Ryzen 5 5600X,AMD,Zen 3,51.7,501.3,6,32,N
+37,Core i9-11900K,Intel,Rocket Lake,50.4,489.5,8,16,N
+38,Ryzen 5 5600,AMD,Zen 3,49.4,479.5,6,32,N
+39,Core i5-12400F,Intel,Alder Lake,47.5,460.7,6,18,N
+40,Core i9-10900K,Intel,Comet Lake,46.1,447.0,10,20,N
+41,Core i5-11400F,Intel,Rocket Lake,36.8,357.2,6,12,N
+42,Core i5-10400F,Intel,Comet Lake,31.1,301.3,6,12,N
