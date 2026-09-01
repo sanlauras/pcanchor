@@ -35,6 +35,26 @@ npm run lint
 
 ステージング等で変えたいときだけ設定する。
 
+## デプロイ
+
+Cloudflare Pages に静的ファイルを置くだけ。
+全ページが静的生成なのでサーバーは不要（`output: 'export'`）。
+
+| 設定 | 値 |
+|---|---|
+| ビルドコマンド | `npm run build` |
+| 出力ディレクトリ | `out` |
+| 本番ブランチ | `main` |
+| Node バージョン | `.nvmrc` の `24`（`.mts` の実行に必要） |
+
+ドメイン `pcanchor.jp` はお名前.comで取得。移管はせず、
+ネームサーバーを Cloudflare のものに向けて DNS だけ Cloudflare で管理する。
+www ありは非www へリダイレクトして統一する（canonical が非www のため）。
+
+`output: 'export'` は歯止めでもある。サーバー依存の機能
+（Route Handlers・ISR・Server Actions・リダイレクト等）を使うと
+ビルドが落ちるので、意図せずホスティング要件が上がることがない。
+
 ## 構成
 
 ```

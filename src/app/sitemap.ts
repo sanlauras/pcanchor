@@ -1,4 +1,8 @@
 import type { MetadataRoute } from 'next';
+
+// メタデータのルートは内部的に Route Handler なので、
+// 静的書き出し（output: 'export'）では静的化を明示する必要がある
+export const dynamic = 'force-static';
 import { cpus, gpus } from '@/lib/data';
 import { GAMES } from '@/lib/fps/games';
 import { absoluteUrl } from '@/lib/site';
