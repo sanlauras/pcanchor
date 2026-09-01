@@ -1,26 +1,138 @@
 @import "tailwindcss";
 
+/*
+ * 全テーマ共通のトークン。暗いサイバー系で固定し、明暗の切り替えは持たない。
+ * 背景・罫線・アクセントはテーマごとに下のブロックで決まる。
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
+
+  --ink: #dbe2ec;
+  --dim: #7f8b9c;
+  /* アイキャッチの小見出しに使う。アクセントを1色に絞るため accent に揃える */
+  --signal: var(--accent);
 }
+
+/* ===========================================================================
+ * テーマ（訪問者が選べる常設機能）
+ *
+ * html の data-theme 属性で切り替える。既定は cyan。
+ * 追加するときはこの下にブロックを1つ足すだけでよい。
+ * ThemePicker.tsx の THEMES にも同じ id を足すこと。
+ *
+ * 背景は濃さを変えず、アクセントに合わせてごくわずかに色味だけ寄せている。
+ * 透過率は色ごとに変えてある（同じ値だとシアンとライムが明るく見えるため）。
+ * 追加時は必ずコントラストを確認すること（本文・副次テキスト・アクセント）。
+ * =========================================================================== */
+
+/* CYAN — 既定 */
+:root,
+:root[data-theme="cyan"] {
+  --paper: #0b0e14;
+  --panel: #10141c;
+  --rule: #232b38;
+  --rule-soft: #181e28;
+  --accent: #22d3ee;
+  --accent-soft: rgba(34, 211, 238, 0.09);
+  --accent-bar: rgba(34, 211, 238, 0.17);
+}
+
+/* AMBER — 背景をわずかに暖色へ */
+:root[data-theme="amber"] {
+  --paper: #100e0a;
+  --panel: #171410;
+  --rule: #322a1f;
+  --rule-soft: #241f17;
+  --accent: #f0a83c;
+  --accent-soft: rgba(240, 168, 60, 0.12);
+  --accent-bar: rgba(240, 168, 60, 0.22);
+}
+
+/* LIME — 背景をわずかに緑へ */
+:root[data-theme="lime"] {
+  --paper: #0a0f0b;
+  --panel: #101611;
+  --rule: #223026;
+  --rule-soft: #18211b;
+  --accent: #9ae64c;
+  --accent-soft: rgba(154, 230, 76, 0.09);
+  --accent-bar: rgba(154, 230, 76, 0.17);
+}
+
+/* =========================================================================== */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-paper: var(--paper);
+  --color-panel: var(--panel);
+  --color-ink: var(--ink);
+  --color-dim: var(--dim);
+  --color-rule: var(--rule);
+  --color-rule-soft: var(--rule-soft);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-bar: var(--accent-bar);
+  --color-signal: var(--signal);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  --font-cond: var(--font-plex-cond), system-ui, sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * 一覧表のモバイル表示。
+ * 狭い画面ではテーブルを1行=1カードに組み替え、各セルの data-label を
+ * 見出しとして左側に出す（プロトタイプの data-l と同じ考え方）。
+ */
+@media (max-width: 767px) {
+  .spec-table,
+  .spec-table tbody,
+  .spec-table tr,
+  .spec-table td {
+    display: block;
+    width: auto;
+  }
+
+  .spec-table thead {
+    display: none;
+  }
+
+  .spec-table tr.spec-row {
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    background: var(--panel);
+    margin-bottom: 10px;
+    padding: 10px 12px;
+    position: relative;
+  }
+
+  .spec-table tr.spec-detail-row {
+    margin: -10px 0 10px;
+  }
+
+  .spec-table td {
+    padding: 3px 0;
+    text-align: left;
+    border: 0;
+  }
+
+  .spec-table td[data-label]::before {
+    content: attr(data-label);
+    display: inline-block;
+    width: 8.5em;
+    color: var(--dim);
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+
+  /* モデル名セルは見出しを出さず、カードの表題として扱う */
+  .spec-table td.spec-name-cell::before {
+    content: none;
+  }
 }

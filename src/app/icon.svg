@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" fill="#0b0e14"/>
+  <!-- 錨（アンカー）を簡略化した形。サイト名の由来 -->
+  <g stroke="#22d3ee" stroke-width="2.4" fill="none" stroke-linecap="round">
+    <path d="M16 9v15"/>
+    <path d="M10 14h12"/>
+    <path d="M8 19a8 8 0 0 0 16 0"/>
+  </g>
+  <circle cx="16" cy="7" r="2.6" fill="none" stroke="#22d3ee" stroke-width="2.4"/>
+</svg>
