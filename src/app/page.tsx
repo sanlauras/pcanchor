@@ -45,7 +45,7 @@ export default function Home() {
           GAMING PC FPS PREDICTOR
         </p>
         <h1 className="mb-4 font-cond text-[clamp(2rem,6vw,3.4rem)] leading-none font-bold tracking-tight">
-          fps-predictor
+          {SITE.name}
         </h1>
         <p className="max-w-[60ch] text-dim">
           ゲーミングPCのfps予想ツールと、GPU/CPUスペックデータベース。
