@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { IBM_Plex_Mono, IBM_Plex_Sans_Condensed } from 'next/font/google';
 import Link from 'next/link';
+import { Analytics } from '@/components/Analytics';
 import { ThemePicker } from '@/components/ThemePicker';
 import { SITE } from '@/lib/site';
 import './globals.css';
@@ -98,6 +99,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
     >
       <body className="flex min-h-full flex-col">
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
+        <Analytics />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
