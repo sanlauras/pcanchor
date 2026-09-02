@@ -46,6 +46,12 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
   },
+  // Google Search Console の所有権確認。全ページの head に入る。
+  // Cloudflare Pages は .html 拡張子を自動で落とすため、
+  // ファイル方式ではなくメタタグ方式を使っている。
+  verification: {
+    google: 'N05x0Q_9dPRmn4rp6M4lhw9EX6ykCmzRdXGfgWgmbxs',
+  },
 };
 
 const nav = [
