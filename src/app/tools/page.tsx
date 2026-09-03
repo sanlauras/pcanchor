@@ -19,9 +19,9 @@ const tools = [
 ];
 
 const planned = [
-  '構成の消費電力・電源容量の目安',
   '実測fpsの投稿と集計',
-  'モデル別の詳細ページ（GPU 78 / CPU 42）',
+  '構成の消費電力・電源容量の目安',
+  '対応ゲームの追加（Apex Legends ほか）',
 ];
 
 export default function ToolsPage() {

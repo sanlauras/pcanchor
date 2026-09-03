@@ -23,6 +23,8 @@ export const GAMES: GameProfile[] = [
     confidenceLabel: '自前の実測（CapFrameX・4条件）',
     gpuWeight: 1,
     cpuWeight: 1,
+    // 競技勢は低設定が多いが、Valorant は高設定でも十分fpsが出るため高を基準にする
+    featuredPresetId: 'high',
     source: null,
     notes: [
       '設定でfps上限を解除できるため、全条件を同一タイトルで実測できた唯一のゲームです。',
@@ -60,6 +62,8 @@ export const GAMES: GameProfile[] = [
     gpuWeight: 40 / 467.5,
     // 観測された最大 651fps ÷ Valorant CPU天井 970.3（同じ Ryzen 7 9800X3D）
     cpuWeight: 651 / 970.3,
+    // Fortnite の競技勢はほぼ Performance モードを使うため、これを基準にする
+    featuredPresetId: 'performance',
     // 作者から「出典の記載は不要」との回答を得ているため、画面には出さない。
     // 検算のための記録は CONTEXT.md「Fortnite の係数の算出過程」に残してある。
     // 元動画: https://www.youtube.com/watch?v=A5ACNelDcRU
@@ -120,6 +124,8 @@ export const GAMES: GameProfile[] = [
     confidenceLabel: '係数なし',
     gpuWeight: 0,
     cpuWeight: 0,
+    // 係数が無く presets が空なので、ページも生成されない
+    featuredPresetId: '',
     source: null,
     notes: [
       'エンジン仕様で300fpsが上限です。+fps_max 0 でも解除できないため、上限より上を測定できず係数が取れていません。',

@@ -46,22 +46,27 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
   const lightest = game.presets.reduce((a, b) => (a.factor > b.factor ? a : b));
   const heaviest = game.presets.reduce((a, b) => (a.factor < b.factor ? a : b));
 
+  // 主役はゲームごとに指定した基準プリセット（Fortnite なら Performance）。
+  // 対になる列には、その反対側（軽い方が主役なら最も重い設定）を出す。
+  const featured = game.presets.find((p) => p.id === game.featuredPresetId) ?? heaviest;
+  const other = featured.id === heaviest.id ? lightest : heaviest;
+
   const ranked = rankGpusForGame({
     gpus,
     cpu,
     gameId: game.id,
-    presetId: heaviest.id,
+    presetId: featured.id,
     resolution: BASE_RESOLUTION,
   });
 
-  const rankedLight = rankGpusForGame({
+  const rankedOther = rankGpusForGame({
     gpus,
     cpu,
     gameId: game.id,
-    presetId: lightest.id,
+    presetId: other.id,
     resolution: BASE_RESOLUTION,
   });
-  const lightByName = new Map(rankedLight.map((r) => [r.gpu.name, r.fps]));
+  const otherByName = new Map(rankedOther.map((r) => [r.gpu.name, r.fps]));
 
   // 60 / 144 / 240 fps に届く最小構成を探す（安い順ではなく指数の低い順）
   const thresholds = [60, 144, 240];
@@ -94,9 +99,24 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
           </p>
         </header>
 
+        {game.highlight && (
+          <div className="mt-7 border border-accent bg-accent-soft p-4">
+            <p className="font-cond text-base font-bold text-ink">
+              {game.highlight.title}
+            </p>
+            <p className="mt-1 max-w-[70ch] text-xs text-dim">
+              {game.highlight.body}
+              このページの数値も「{game.highlight.measuredLabel}」の値なので、
+              「{game.highlight.lighterLabel}」では約{' '}
+              {game.highlight.lighterMultiplier.toFixed(2)} 倍（+
+              {Math.round((game.highlight.lighterMultiplier - 1) * 100)}%）を目安にしてください。
+            </p>
+          </div>
+        )}
+
         <section className="py-7">
           <h2 className="mb-1 font-cond text-xl font-bold">
-            目標fpsに届く最小のGPU（{BASE_RESOLUTION} / {heaviest.label}）
+            目標fpsに届く最小のGPU（{BASE_RESOLUTION} / {featured.label}）
           </h2>
           <p className="mb-4 max-w-[70ch] text-xs text-dim">
             この条件で各fpsに届く、最も性能指数が低いGPUです。
@@ -133,7 +153,8 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
         <section className="mt-4">
           <h2 className="mb-1 font-cond text-xl font-bold">GPU別の推定fps</h2>
           <p className="mb-3 max-w-[70ch] text-xs text-dim">
-            {BASE_RESOLUTION} での推定値です。他の解像度や、CPUを変えた場合は
+            {BASE_RESOLUTION} / {featured.label} を基準にした推定値です。
+            他の解像度や画質、CPUを変えた場合は
             <Link href="/tools/fps" className="text-accent underline">
               fps予想ツール
             </Link>
@@ -145,10 +166,10 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
                 <tr className="border-y border-ink">
                   <th className="px-2 py-2 text-left font-cond text-xs">GPU</th>
                   <th className="px-2 py-2 text-right font-cond text-xs whitespace-nowrap">
-                    {heaviest.label}
+                    {featured.label}
                   </th>
                   <th className="px-2 py-2 text-right font-cond text-xs whitespace-nowrap">
-                    {lightest.label}
+                    {other.label}
                   </th>
                   <th className="px-2 py-2 text-right font-cond text-xs whitespace-nowrap">
                     VRAM
@@ -167,7 +188,7 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
                       {r.fps.toFixed(0)}
                     </td>
                     <td className="px-2 py-2 text-right font-mono text-dim tabular-nums whitespace-nowrap">
-                      {(lightByName.get(r.gpu.name) ?? 0).toFixed(0)}
+                      {(otherByName.get(r.gpu.name) ?? 0).toFixed(0)}
                     </td>
                     <td className="px-2 py-2 text-right font-mono text-xs text-dim tabular-nums whitespace-nowrap">
                       {r.gpu.vramGb} GB
@@ -188,6 +209,7 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
               <li key={n}>・{n}</li>
             ))}
             <li>・根拠: {game.confidenceLabel}</li>
+            {featured.note && <li>・{featured.label}: {featured.note}</li>}
             <li>
               ・解像度の下げ方や設定の効き方はゲームごとに違います。
               {game.name} では、画質を「{heaviest.label}」から「{lightest.label}」に

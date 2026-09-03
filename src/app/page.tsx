@@ -71,11 +71,16 @@ export default function Home() {
 
       <section className="border-l-2 border-rule pb-8 pl-4 text-sm text-dim">
         <h2 className="mb-1.5 font-cond text-base font-bold text-ink">
-          fps予想ツールは準備中です
+          数値の扱いについて
         </h2>
         <p className="max-w-[60ch]">
-          予想の精度は実測データの量で決まります。現在の実測は1構成のみのため、
-          先にスペックデータベースを公開し、実測の投稿を集めてから予想ツールを仕上げます。
+          掲載している性能指数と推定fpsは、誤差 ±15〜20% の推定値です。
+          実測は1構成のみで、他のモデルはそこからの外挿になります。
+          根拠が足りない値は出しません。1% Low（カクつき）と終盤の高負荷時のfpsは、
+          現時点で十分なデータが無いため公開していません。
+        </p>
+        <p className="mt-2 max-w-[60ch]">
+          精度は実測データの量で決まります。訪問者から実測を集める仕組みを準備しています。
         </p>
       </section>
     </main>

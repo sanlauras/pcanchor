@@ -94,6 +94,11 @@ export type GameProfile = {
   /** Valorant の CPU天井 を 1.0 とした CPU側の重さ */
   cpuWeight: number;
   presets: PresetProfile[];
+  /**
+   * ゲーム別ページで基準にするプリセット。
+   * そのゲームで実際に多く使われる設定を選ぶ（競技系なら軽い設定が基準になる）。
+   */
+  featuredPresetId: string;
   /** 係数の出典。自前の実測なら null */
   source: { label: string; url: string } | null;
   /** 結果画面に必ず出す注意書き */
