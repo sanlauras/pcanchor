@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "data:build": "node scripts/build-data.mts",
+    "og": "node scripts/make-og.mjs",
     "predev": "npm run data:build",
     "dev": "next dev",
     "prebuild": "npm run data:build",
