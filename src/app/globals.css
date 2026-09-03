@@ -9,6 +9,8 @@
 
   --ink: #dbe2ec;
   --dim: #7f8b9c;
+  /* ロゴの字間。ヘッダーとヒーローの2か所で同じ値を使うため変数にしている */
+  --display-tracking: 0.01em;
   /* アイキャッチの小見出しに使う。アクセントを1色に絞るため accent に揃える */
   --signal: var(--accent);
 }
@@ -75,7 +77,14 @@
 
   --font-sans: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, monospace;
-  --font-cond: var(--font-plex-cond), system-ui, sans-serif;
+  /* ロゴ専用。輪郭がざらつく書体なので、読ませる文章には使わない */
+  --font-display: var(--font-rubik-dist), var(--font-plex-cond), system-ui, sans-serif;
+  /*
+   * 見出し。フォントの選択は1文字ずつ行われるので、この順番に意味がある。
+   * 英数字（GPU名・fps値・指数）は Plex Condensed の締まった字面のまま、
+   * Plex に無い日本語だけが --font-jp に落ちる。
+   */
+  --font-cond: var(--font-plex-cond), var(--font-jp), system-ui, sans-serif;
 }
 
 body {

@@ -40,14 +40,29 @@ const entries = [
 export default function Home() {
   return (
     <main className="mx-auto max-w-[1240px] px-5">
-      <header className="border-b border-ink pt-14 pb-8">
-        <p className="mb-3 font-mono text-[11px] tracking-[0.18em] text-signal uppercase">
+      {/*
+        和文と欧文を1行に混ぜると字幅も太さも揃わないため、欧文の社名を主役にして
+        日本語名を下に添える構成にしている。飾りのある書体はこのロゴだけに使い、
+        読ませる文章には使わない。
+        h1 には英語名と日本語名の両方を入れてある（どちらで検索されても拾えるようにし、
+        読み上げも「PC ANCHOR / PCアンカー」と自然につながる）。
+      */}
+      <header className="border-b border-ink pt-14 pb-9">
+        <p className="mb-5 font-mono text-[11px] tracking-[0.18em] text-signal uppercase">
           GAMING PC FPS PREDICTOR
         </p>
-        <h1 className="mb-4 font-cond text-[clamp(2rem,6vw,3.4rem)] leading-none font-bold tracking-tight">
-          {SITE.name}
+        <h1>
+          <span className="block overflow-hidden font-display text-[clamp(2.4rem,11vw,7rem)] leading-[1.05] tracking-[var(--display-tracking)] uppercase">
+            {SITE.nameEn}
+          </span>
+          <span className="mt-4 flex items-center gap-3">
+            <span aria-hidden className="h-px w-9 shrink-0 bg-accent" />
+            <span className="font-cond text-base font-bold tracking-[0.2em] text-dim sm:text-lg">
+              {SITE.name}
+            </span>
+          </span>
         </h1>
-        <p className="max-w-[60ch] text-dim">
+        <p className="mt-6 max-w-[60ch] text-dim">
           ゲーミングPCのfps予想ツールと、GPU/CPUスペックデータベース。
           モデル別の性能はメーカー公式スペックから自前で計算。ゲーム別の係数は
           自前の実測と、許諾を得た第三者の測定から算出しています（出典を明記）。

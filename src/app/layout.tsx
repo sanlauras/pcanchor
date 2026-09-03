@@ -1,5 +1,10 @@
 import type { Metadata } from 'next';
-import { IBM_Plex_Mono, IBM_Plex_Sans_Condensed } from 'next/font/google';
+import {
+  IBM_Plex_Mono,
+  IBM_Plex_Sans_Condensed,
+  Rubik_Distressed,
+  Zen_Kaku_Gothic_New,
+} from 'next/font/google';
 import Link from 'next/link';
 import { Analytics } from '@/components/Analytics';
 import { ThemePicker } from '@/components/ThemePicker';
@@ -17,7 +22,7 @@ if(q)localStorage.setItem('theme',v);
 }catch(e){document.documentElement.dataset.theme='cyan';}})();`;
 
 // 日本語本文は端末のシステムフォントを使う（日本語ウェブフォントは重いため）。
-// 数値と見出しだけ、プロトタイプと同じ IBM Plex を読み込む。
+// 数値と欧文の見出しはプロトタイプと同じ IBM Plex。
 const plexMono = IBM_Plex_Mono({
   variable: '--font-plex-mono',
   subsets: ['latin'],
@@ -29,6 +34,48 @@ const plexCond = IBM_Plex_Sans_Condensed({
   subsets: ['latin'],
   weight: ['600', '700'],
 });
+
+/*
+ * 見出しの日本語フォント。
+ *
+ * IBM Plex Sans Condensed には日本語のグリフが1文字も無いため、
+ * これが無いと日本語の見出しは端末の既定フォントで出てしまう。
+ * サイト全体で71か所の見出しに効くので、読みやすさを優先して
+ * 素直なゴシックを1書体だけ入れる（飾りはロゴの欧文書体だけで出す）。
+ *
+ * subsets は「preload するファイル」を選ぶ指定で、日本語のグリフ自体は
+ * unicode-range 付きで全部入る。latin だけを preload させ、日本語は
+ * 実際に使う文字のぶんだけ遅延取得させている（1チャンク約11KB）。
+ * display:'swap' なのでフォント待ちで表示は止まらない。
+ */
+const jpHeading = Zen_Kaku_Gothic_New({
+  variable: '--font-jp',
+  subsets: ['latin'],
+  weight: ['700', '900'],
+  display: 'swap',
+});
+
+/*
+ * ロゴ（ヘッダー左上とトップのヒーロー）に使う欧文ディスプレイフォント。
+ *
+ * 輪郭がざらついて欠ける書体。字の構造自体は壊れないので、
+ * ロゴサイズ(20px)でも読める範囲に崩れが収まる。
+ * 飾りはこのロゴだけに閉じ込め、読ませる文章には使わない。
+ * 欧文のみ・1ファイルなので数十KB。
+ */
+const dispRubik = Rubik_Distressed({
+  variable: '--font-rubik-dist',
+  subsets: ['latin'],
+  weight: '400',
+  display: 'swap',
+});
+
+const fontVars = [
+  plexMono.variable,
+  plexCond.variable,
+  jpHeading.variable,
+  dispRubik.variable,
+].join(' ');
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
@@ -95,7 +142,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
     <html
       lang="ja"
       suppressHydrationWarning
-      className={`${plexMono.variable} ${plexCond.variable} h-full antialiased`}
+      className={`${fontVars} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
@@ -107,8 +154,12 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
 
         <header className="border-b border-rule">
           <div className="mx-auto flex max-w-[1240px] flex-wrap items-center gap-x-6 gap-y-2 px-5 py-3">
-            <Link href="/" className="font-cond text-lg font-bold tracking-tight">
-              {SITE.name}
+            {/* ロゴはヒーローと同じ書体・同じ英語表記で揃える */}
+            <Link
+              href="/"
+              className="font-display text-xl leading-none tracking-[var(--display-tracking)] uppercase"
+            >
+              {SITE.nameEn}
             </Link>
             <nav className="flex flex-wrap gap-1" aria-label="メイン">
               {nav.map((item) => (
