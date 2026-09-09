@@ -4,6 +4,7 @@ import {
   type Prediction,
   type PresetProfile,
   type ResolutionId,
+  highestRefresh,
   predict,
   resolutionFactor,
 } from './model';
@@ -39,6 +40,8 @@ export type Diagnosis = {
   upgrades: Upgrade[];
   /** 交換しても意味がないと言い切れる側 */
   pointless: string | null;
+  /** 平均fpsだけ見ていると読み違える、カクつき側の話。1% Low が無ければ null */
+  stutterNote: string | null;
   vramWarning: string | null;
   memoryNote: string | null;
   psuNote: string | null;
@@ -215,12 +218,45 @@ export function diagnose(args: {
         'メーカーの推奨電源容量は当サイトでは保有していないため、推奨W数の断定はしていません。'
       : null;
 
+  /*
+   * カクつき側の診断。
+   *
+   * 平均fpsだけ見て「240Hzモニターを買えば活かせる」と判断すると外す。
+   * 平均が届くHzと、1% Low が届くHzを比べて、その差を言葉にする。
+   */
+  let stutterNote: string | null = null;
+  if (p.fps1Low) {
+    const avgHz = highestRefresh(p.fps);
+    const lowHz = highestRefresh(p.fps1Low.min);
+    const ratio = p.fps1Low.min / p.fps;
+
+    if (avgHz === null) {
+      stutterNote =
+        `平均が ${fmt(p.fps)} fps で、60Hzにも届いていません。` +
+        `カクつきの底は ${fmt(p.fps1Low.min)} fps です。`;
+    } else if (lowHz === null) {
+      stutterNote =
+        `平均は ${avgHz}Hz に届きますが、カクつきの底は ${fmt(p.fps1Low.min)} fps で、` +
+        `60Hzにも届きません。数字ほど滑らかには感じません。`;
+    } else if (lowHz < avgHz) {
+      stutterNote =
+        `平均は ${avgHz}Hz に届きますが、カクつきの底は ${fmt(p.fps1Low.min)} fps ` +
+        `（平均の ${pct(ratio)}）で ${lowHz}Hz 相当です。` +
+        `${avgHz}Hz のモニターを買っても活かしきれません。`;
+    } else {
+      stutterNote =
+        `カクつきの底も ${lowHz}Hz に届いています（平均の ${pct(ratio)}）。` +
+        `平均と底の差が小さく、体感も数字どおりになりやすい条件です。`;
+    }
+  }
+
   return {
     headline,
     detail,
     freeActions,
     upgrades,
     pointless,
+    stutterNote,
     vramWarning,
     memoryNote,
     psuNote,

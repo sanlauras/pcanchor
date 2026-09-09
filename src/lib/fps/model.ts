@@ -150,6 +150,36 @@ export function errorRange(fps: number): { min: number; max: number } {
   return { min: fps * (1 - FPS_ERROR), max: fps * (1 + FPS_ERROR) };
 }
 
+/** よくあるゲーミングモニターのリフレッシュレート */
+export const REFRESH_RATES = [60, 144, 165, 240, 360] as const;
+
+/**
+ * そのHzのモニターを活かせるか。
+ *
+ * clear   … 平均も 1% Low も足りる
+ * stutter … 平均は足りるが、カクつきの底が届かない（買っても活かしきれない）
+ * short   … 平均が足りない
+ */
+export type RefreshLevel = 'clear' | 'stutter' | 'short';
+
+export type RefreshVerdict = { hz: number; level: RefreshLevel };
+
+export function refreshVerdicts(p: Prediction): RefreshVerdict[] | null {
+  if (!p.fps1Low) return null;
+  // 判定にはレンジの低い側を使う。高い側で判定すると実際より良く見えるため
+  const low = p.fps1Low.min;
+  return REFRESH_RATES.map((hz) => ({
+    hz,
+    level: p.fps < hz ? 'short' : low < hz ? 'stutter' : 'clear',
+  }));
+}
+
+/** そのfpsで張り付けられる最も高いリフレッシュレート。どれにも届かなければ null */
+export function highestRefresh(fps: number): number | null {
+  const hit = REFRESH_RATES.filter((hz) => fps >= hz);
+  return hit.length > 0 ? hit[hit.length - 1]! : null;
+}
+
 export function predict(input: {
   /** GPUの Valorant 4K全て高 の推定fps（gpu_index.csv 由来） */
   gpuFps4kHigh: number;

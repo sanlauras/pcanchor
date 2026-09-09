@@ -4,7 +4,14 @@ import { useMemo, useState } from 'react';
 import { cpus, gpus } from '@/lib/data';
 import { diagnose } from '@/lib/fps/diagnose';
 import { GAMES, findGame } from '@/lib/fps/games';
-import { RESOLUTIONS, type ResolutionId, errorRange, predict } from '@/lib/fps/model';
+import {
+  type Prediction,
+  RESOLUTIONS,
+  type ResolutionId,
+  errorRange,
+  predict,
+  refreshVerdicts,
+} from '@/lib/fps/model';
 
 const DEFAULT_GPU = 'Radeon RX 9070 XT';
 const DEFAULT_CPU = 'Ryzen 7 9800X3D';
@@ -133,40 +140,52 @@ export function FpsTool() {
               平均だけ見て決めると、Fortnite の Performance のように
               「平均は高いのに実際はカクつく」設定を選んでしまうため。
             */}
-            <div className="mt-2 flex flex-wrap gap-x-10 gap-y-4">
-              <div>
-                <p className="font-mono text-5xl font-semibold tabular-nums text-accent">
-                  {result.prediction.fps.toFixed(0)}
+            <p className="mt-2 font-mono text-5xl font-semibold tabular-nums text-accent">
+              {result.prediction.fps.toFixed(0)}
+            </p>
+            <p className="mt-1 font-mono text-xs text-dim">
+              平均fps（推定）・およそ {errorRange(result.prediction.fps).min.toFixed(0)}〜
+              {errorRange(result.prediction.fps).max.toFixed(0)}
+            </p>
+            <p className="mt-1 text-xs text-dim">推定値です。誤差 ±15〜20%。</p>
+
+            {/*
+              1% Low は独立した枠で出す。
+              平均fpsの脇に小さく置くと見落とされるが、Fortnite の Performance のように
+              平均の3割程度しか出ない設定があり、平均だけ見て決めると必ず外すため。
+            */}
+            {result.prediction.fps1Low && preset.lowRatio && (
+              <div className="mt-4 border border-accent bg-accent-soft p-4">
+                <p className="font-cond text-base font-bold text-ink">
+                  カクつきの底は {result.prediction.fps1Low.min.toFixed(0)} fps です
                 </p>
-                <p className="mt-1 font-mono text-xs text-dim">平均fps（推定）</p>
-                <p className="mt-0.5 font-mono text-[10px] text-dim">
-                  およそ {errorRange(result.prediction.fps).min.toFixed(0)}〜
-                  {errorRange(result.prediction.fps).max.toFixed(0)}
+
+                <div className="mt-3 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                  <span className="font-mono text-3xl font-semibold tabular-nums text-ink">
+                    {result.prediction.fps1Low.min.toFixed(0)}
+                    <span className="text-xl text-dim">〜</span>
+                    {result.prediction.fps1Low.max.toFixed(0)}
+                  </span>
+                  <span className="font-mono text-xs text-dim">
+                    1% Low（推定）・平均の {Math.round(preset.lowRatio.min * 100)}〜
+                    {Math.round(preset.lowRatio.max * 100)}%
+                  </span>
+                </div>
+
+                {result.diagnosis.stutterNote && (
+                  <p className="mt-2 max-w-[62ch] text-xs text-dim">
+                    {result.diagnosis.stutterNote}
+                  </p>
+                )}
+
+                {/* モニターのHzごとの判定。買い物の判断に直結する部分 */}
+                <MonitorVerdicts prediction={result.prediction} />
+
+                <p className="mt-3 max-w-[62ch] text-[11px] text-dim">
+                  1% Low は「遅い方から1%のフレーム」の速度で、カクつきの目安です。
+                  平均が高くてもここが低いと、体感は数字ほど滑らかになりません。
                 </p>
               </div>
-
-              {result.prediction.fps1Low && preset.lowRatio && (
-                <div className="border-l border-rule-soft pl-6">
-                  <p className="font-mono text-5xl font-semibold tabular-nums text-ink">
-                    {result.prediction.fps1Low.min.toFixed(0)}
-                    <span className="text-2xl text-dim">〜</span>
-                    {result.prediction.fps1Low.max.toFixed(0)}
-                  </p>
-                  <p className="mt-1 font-mono text-xs text-dim">1% Low（推定）</p>
-                  <p className="mt-0.5 font-mono text-[10px] text-dim">
-                    平均の {Math.round(preset.lowRatio.min * 100)}〜
-                    {Math.round(preset.lowRatio.max * 100)}%
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <p className="mt-3 text-xs text-dim">推定値です。誤差 ±15〜20%。</p>
-            {result.prediction.fps1Low && (
-              <p className="mt-1 max-w-[62ch] text-xs text-dim">
-                1% Low は「遅い方から1%のフレーム」の速度で、カクつきの目安です。
-                平均が高くてもここが低いと、実際の体感は数字ほど滑らかになりません。
-              </p>
             )}
 
             {/*
@@ -370,6 +389,48 @@ export function FpsTool() {
 }
 
 /* ------------------------------------------------------------------ 部品 */
+
+/**
+ * モニターのリフレッシュレートごとに、そのHzを活かせるかを出す。
+ *
+ * 平均だけで判定すると「240Hzを買えば活かせる」と読み違えるので、
+ * 平均とカクつきの底の両方で見る。判定の定義は model.ts の RefreshLevel。
+ */
+function MonitorVerdicts({ prediction }: { prediction: Prediction }) {
+  const verdicts = refreshVerdicts(prediction);
+  if (!verdicts) return null;
+
+  const style = {
+    clear: { mark: '○', cls: 'border-accent text-accent' },
+    stutter: { mark: '△', cls: 'border-rule text-ink' },
+    short: { mark: '✕', cls: 'border-rule-soft text-dim opacity-60' },
+  } as const;
+
+  return (
+    <div className="mt-3 border-t border-accent/25 pt-3">
+      <p className="mb-2 font-mono text-[10px] tracking-wider text-dim uppercase">
+        モニターを活かせるか
+      </p>
+      <ul className="flex flex-wrap gap-2">
+        {verdicts.map((v) => {
+          const st = style[v.level];
+          return (
+            <li
+              key={v.hz}
+              className={`flex items-center gap-1.5 border px-2 py-1 font-mono text-xs ${st.cls}`}
+            >
+              <span aria-hidden>{st.mark}</span>
+              {v.hz}Hz
+            </li>
+          );
+        })}
+      </ul>
+      <p className="mt-2 text-[11px] text-dim">
+        ○ 平均もカクつきの底も足りる ／ △ 平均は足りるが底が届かない ／ ✕ 平均が足りない
+      </p>
+    </div>
+  );
+}
 
 function Field({
   label, required, children,
