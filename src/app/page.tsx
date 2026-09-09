@@ -4,7 +4,7 @@ import { tally } from '@/lib/data/summary';
 import { SITE } from '@/lib/site';
 
 export const metadata: Metadata = {
-  title: `${SITE.name}｜ゲーミングPCのfps予想とスペック比較`,
+  title: `${SITE.name}｜ゲーム別fps予想とゲーミングPCスペック比較`,
   description:
     'GPUとCPUを選ぶと、VALORANT・Fortnite で何fps出るかとボトルネックが分かります。GPU 78モデル・CPU 42モデルのスペックと性能指数も掲載。実測を基準にした推定値です。',
   alternates: { canonical: '/' },
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 const entries = [
   {
     href: '/tools/fps',
-    label: 'fps予想・ボトルネック診断',
+    label: 'ゲーム別fps予想・ボトルネック診断',
     count: 'ツール',
     note: 'GPUとCPUを選ぶだけ。どちらが足を引っ張っているかまで分かります',
   },
@@ -63,7 +63,7 @@ export default function Home() {
           </span>
         </h1>
         <p className="mt-6 max-w-[60ch] text-dim">
-          ゲーミングPCのfps予想ツールと、GPU/CPUスペックデータベース。
+          ゲーミングPCのゲーム別fps予想ツールと、GPU/CPUスペックデータベース。
           モデル別の性能はメーカー公式スペックから自前で計算。ゲーム別の係数は
           自前の実測と、許諾を得た第三者の測定から算出しています（出典を明記）。
           他社のfps数値表の転載はしていません。

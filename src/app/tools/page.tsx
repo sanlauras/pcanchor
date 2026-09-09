@@ -5,14 +5,14 @@ import { Breadcrumbs } from '@/components/Breadcrumbs';
 export const metadata: Metadata = {
   title: 'ゲーミングPC向けツール一覧',
   description:
-    'ゲーミングPC向けのツール。fps予想とボトルネック診断、GPU/CPUスペックデータベース。',
+    'ゲーミングPC向けのツール。ゲーム別のfps予想とボトルネック診断、GPU/CPUスペックデータベース。',
   alternates: { canonical: '/tools' },
 };
 
 const tools = [
   {
     href: '/tools/fps',
-    label: 'fps予想・ボトルネック診断',
+    label: 'ゲーム別fps予想・ボトルネック診断',
     note: 'GPUとCPUを選ぶと推定fpsと、どちらが足を引っ張っているかが出ます',
     status: '公開中',
   },

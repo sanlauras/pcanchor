@@ -179,7 +179,7 @@ export default async function CpuDetailPage({ params }: PageProps<'/cpu/[slug]'>
           <p className="text-sm text-dim">
             他のGPUと組み合わせた場合や、ボトルネックがどちらにあるかは
             <Link href="/tools/fps" className="text-accent underline">
-              fps予想・ボトルネック診断
+              ゲーム別fps予想・ボトルネック診断
             </Link>
             で確認できます。他のモデルとの比較は
             <Link href="/cpu" className="text-accent underline">

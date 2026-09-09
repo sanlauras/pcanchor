@@ -156,7 +156,7 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
             {BASE_RESOLUTION} / {featured.label} を基準にした推定値です。
             他の解像度や画質、CPUを変えた場合は
             <Link href="/tools/fps" className="text-accent underline">
-              fps予想ツール
+              ゲーム別fps予想ツール
             </Link>
             で確認できます。
           </p>
@@ -231,7 +231,7 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
                 {Math.round(featured.lowRatio.max * 100)}% でした。
                 構成ごとの値は
                 <Link href="/tools/fps" className="text-accent underline">
-                  fps予想ツール
+                  ゲーム別fps予想ツール
                 </Link>
                 で出せます。
               </li>
@@ -249,7 +249,7 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
             <p className="text-sm text-dim">
               自分の構成で調べるなら
               <Link href="/tools/fps" className="text-accent underline">
-                fps予想・ボトルネック診断
+                ゲーム別fps予想・ボトルネック診断
               </Link>
               が便利です。GPUとCPUを選ぶだけで、どちらが足を引っ張っているかまで出ます。
             </p>

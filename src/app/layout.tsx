@@ -80,7 +80,7 @@ const fontVars = [
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {
-    default: `${SITE.name}｜ゲーミングPCのfps予想とスペック比較`,
+    default: `${SITE.name}｜ゲーム別fps予想とゲーミングPCスペック比較`,
     template: `%s｜${SITE.name}`,
   },
   description: SITE.description,
@@ -88,7 +88,7 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'ja_JP',
     siteName: SITE.name,
-    title: `${SITE.name}｜ゲーミングPCのfps予想とスペック比較`,
+    title: `${SITE.name}｜ゲーム別fps予想とゲーミングPCスペック比較`,
     description: SITE.description,
   },
   twitter: {
@@ -103,7 +103,7 @@ export const metadata: Metadata = {
 };
 
 const nav = [
-  { href: '/tools/fps', label: 'fps予想' },
+  { href: '/tools/fps', label: 'ゲーム別fps予想' },
   { href: '/gpu', label: 'GPU' },
   { href: '/cpu', label: 'CPU' },
   { href: '/games', label: 'ゲーム別' },

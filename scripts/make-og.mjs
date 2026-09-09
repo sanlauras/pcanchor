@@ -219,7 +219,7 @@ async function main() {
               key: 'tagline',
               style: { fontFamily: 'ZenKaku', fontSize: 22, color: INK, lineHeight: 1.35 },
             },
-            'ゲーミングPCのfps予想とスペック比較',
+            'ゲーム別fps予想とスペック比較',
           ),
           h(
             'div',

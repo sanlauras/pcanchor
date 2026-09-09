@@ -112,7 +112,7 @@ Board    MSI B650 GAMING PLUS WIFI
             ばらつきをそのままレンジで表示しています。
             算出方法は
             <Link href="/tools/fps" className="text-accent underline">
-              fps予想ツール
+              ゲーム別fps予想ツール
             </Link>
             のページに掲載しています。
           </p>

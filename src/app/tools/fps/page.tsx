@@ -9,7 +9,7 @@ import { assertModelReproducesMeasurements } from '@/lib/fps/selftest';
 assertModelReproducesMeasurements();
 
 export const metadata: Metadata = {
-  title: 'fps予想とボトルネック診断｜GPUとCPUを選ぶだけ',
+  title: 'ゲーム別fps予想とボトルネック診断｜GPUとCPUを選ぶだけ',
   description:
     'GPUとCPUを選ぶと、VALORANT・Fortnite の推定fpsが出ます。GPU律速かCPU律速か、どこを変えればfpsが伸びるかまで診断。メーカー公式スペックと実測から計算した推定値です（誤差±15〜20%）。',
   alternates: { canonical: '/tools/fps' },
@@ -22,7 +22,7 @@ export default function FpsToolPage() {
         <Breadcrumbs
           trail={[
             { href: '/tools', label: 'ツール' },
-            { href: '/tools/fps', label: 'fps予想・ボトルネック診断' },
+            { href: '/tools/fps', label: 'ゲーム別fps予想・ボトルネック診断' },
           ]}
         />
         <header className="border-b border-ink pt-12 pb-7">
@@ -30,7 +30,7 @@ export default function FpsToolPage() {
             TOOL / FPS PREDICTOR
           </p>
           <h1 className="mb-4 font-cond text-[clamp(2rem,6vw,3.4rem)] leading-none font-bold tracking-tight">
-            fps予想・ボトルネック診断
+            ゲーム別fps予想・ボトルネック診断
           </h1>
           <p className="max-w-[60ch] text-dim">
             GPUとCPUを選ぶと、推定fpsと
