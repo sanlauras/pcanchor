@@ -19,7 +19,7 @@ const entries = [
   },
   {
     href: '/games',
-    label: 'ゲーム別の推奨スペック',
+    label: 'ゲーム別の推奨GPU',
     count: 'VALORANT / Fortnite',
     note: 'GPU別に何fps出るかを一覧で',
   },

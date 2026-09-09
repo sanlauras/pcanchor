@@ -5,9 +5,9 @@ import { gpus } from '@/lib/data';
 import { GAMES } from '@/lib/fps/games';
 
 export const metadata: Metadata = {
-  title: 'ゲーム別の推奨スペック一覧',
+  title: 'ゲーム別の推奨GPU一覧',
   description:
-    'VALORANT・Fortnite の推奨スペックと、GPU別に何fps出るかの一覧。解像度・画質別の推定値をメーカー公式スペックと実測から計算しています。',
+    'VALORANT・Fortnite の推奨GPUを、GPU別に何fps出るかの一覧で掲載。推奨スペックの目安になります。解像度・画質別の推定値をメーカー公式スペックと実測から計算しています。',
   alternates: { canonical: '/games' },
 };
 
@@ -24,7 +24,7 @@ export default function GamesPage() {
           GAMES
         </p>
         <h1 className="mb-4 font-cond text-[clamp(2rem,6vw,3.4rem)] leading-none font-bold tracking-tight">
-          ゲーム別の推奨スペック
+          ゲーム別の推奨GPU
         </h1>
         <p className="max-w-[60ch] text-dim">
           GPU {gpus.length}モデルそれぞれで何fps出るかを、ゲームごとに一覧にしています。
