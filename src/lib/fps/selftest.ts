@@ -25,6 +25,14 @@ type Case = {
   /** 許容する相対誤差 */
   tolerance: number;
   expectBottleneck?: 'gpu' | 'cpu' | 'cap' | 'balanced';
+  /**
+   * この条件で実測された 1% Low ÷ 平均fps。
+   * プリセットに宣言した lowRatio がこの値を含むかを検証する。
+   *
+   * fps値そのものではなく比を書いているのは、第三者の測定値を
+   * コードに残さないため（CLAUDE.md 絶対ルール1）。
+   */
+  expectedLowRatio?: number;
 };
 
 /** 自前の実測機（RX 9070 XT + Ryzen 7 9800X3D） */
@@ -39,22 +47,26 @@ const CASES: Case[] = [
     label: 'Valorant 条件B 4K/全て高（完全GPU律速）',
     gameId: 'valorant', presetId: 'high', resolution: '4k', ...OWN,
     expected: 464.6, tolerance: 0.001,
+    expectedLowRatio: 0.833,
   },
   {
     label: 'Valorant 条件C 1440p/全て高',
     gameId: 'valorant', presetId: 'high', resolution: '1440p', ...OWN,
     // 解像度係数1.87は小数2桁に丸めた実測値なので、その分だけ緩める
     expected: 868.8, tolerance: 0.005,
+    expectedLowRatio: 0.752,
   },
   {
     label: 'Valorant 条件D 4K/全て低',
     gameId: 'valorant', presetId: 'low', resolution: '4k', ...OWN,
     expected: 807.5, tolerance: 0.005,
+    expectedLowRatio: 0.758,
   },
   {
     label: 'Valorant 条件A 1080p/全て低（CPU天井で頭打ち）',
     gameId: 'valorant', presetId: 'low', resolution: '1080p', ...OWN,
     expected: 970.3, tolerance: 0.001, expectBottleneck: 'cpu',
+    expectedLowRatio: 0.697,
   },
 
   // ------------------------------------- Fortnite（4K = 係数の基準点。ぴったり合う）
@@ -62,21 +74,25 @@ const CASES: Case[] = [
     label: 'Fortnite 4K/Epic（GPU 97%）',
     gameId: 'fortnite', presetId: 'epic', resolution: '4k', ...BOSS,
     expected: 40, tolerance: 0.01, expectBottleneck: 'gpu',
+    expectedLowRatio: 0.75,
   },
   {
     label: 'Fortnite 4K/中（GPU 97%）',
     gameId: 'fortnite', presetId: 'medium', resolution: '4k', ...BOSS,
     expected: 208, tolerance: 0.01, expectBottleneck: 'gpu',
+    expectedLowRatio: 0.601,
   },
   {
     label: 'Fortnite 4K/低（GPU 98%）',
     gameId: 'fortnite', presetId: 'low', resolution: '4k', ...BOSS,
     expected: 315, tolerance: 0.01, expectBottleneck: 'gpu',
+    expectedLowRatio: 0.613,
   },
   {
     label: 'Fortnite 4K/Performance（GPU 98%）',
     gameId: 'fortnite', presetId: 'performance', resolution: '4k', ...BOSS,
     expected: 525, tolerance: 0.01, expectBottleneck: 'gpu',
+    expectedLowRatio: 0.276,
   },
 
   // ------------------------------- Fortnite（4K以外。ここが係数の当てはまりを見る本番）
@@ -85,37 +101,44 @@ const CASES: Case[] = [
     gameId: 'fortnite', presetId: 'epic', resolution: '1440p', ...BOSS,
     // 3点フィットのため 1440p は -8% ずれる。シーンのばらつき(約10%)の範囲内
     expected: 73, tolerance: 0.12,
+    expectedLowRatio: 0.671,
   },
   {
     label: 'Fortnite 1080p/Epic',
     gameId: 'fortnite', presetId: 'epic', resolution: '1080p', ...BOSS,
     expected: 96, tolerance: 0.05,
+    expectedLowRatio: 0.594,
   },
   {
     label: 'Fortnite 1440p/中',
     gameId: 'fortnite', presetId: 'medium', resolution: '1440p', ...BOSS,
     expected: 301, tolerance: 0.05,
+    expectedLowRatio: 0.542,
   },
   {
     label: 'Fortnite 1080p/中',
     gameId: 'fortnite', presetId: 'medium', resolution: '1080p', ...BOSS,
     expected: 400, tolerance: 0.05,
+    expectedLowRatio: 0.427,
   },
   {
     label: 'Fortnite 1440p/低',
     gameId: 'fortnite', presetId: 'low', resolution: '1440p', ...BOSS,
     expected: 459, tolerance: 0.05,
+    expectedLowRatio: 0.481,
   },
   {
     label: 'Fortnite 1440p/Performance（CPU天井で頭打ち）',
     gameId: 'fortnite', presetId: 'performance', resolution: '1440p', ...BOSS,
     expected: 651, tolerance: 0.02, expectBottleneck: 'cpu',
+    expectedLowRatio: 0.261,
   },
   {
     label: 'Fortnite 1080p/Performance（CPU天井で頭打ち）',
     gameId: 'fortnite', presetId: 'performance', resolution: '1080p', ...BOSS,
     // 読み取り値593はシーンが重かった回。CPU天井651で頭打ちになる予測とは約10%ずれる
     expected: 593, tolerance: 0.12, expectBottleneck: 'cpu',
+    expectedLowRatio: 0.261,
   },
   {
     label: 'Fortnite 1080p/低（GPU79%の混在領域）',
@@ -123,6 +146,7 @@ const CASES: Case[] = [
     // GPUもCPUも飽和していない混在領域。min()では表せず、モデルは過大評価する。
     // CONTEXT.md「この指数の限界」にある既知の制約。誤差の上限を固定するために置いている
     expected: 504, tolerance: 0.2,
+    expectedLowRatio: 0.528,
   },
 ];
 
@@ -156,6 +180,22 @@ export function assertModelReproducesMeasurements(): void {
       problems.push(
         `${c.label}: 律速の判定が ${c.expectBottleneck} のはずが ${got.bottleneck}`,
       );
+    }
+
+    // 1% Low の比。宣言したレンジが実測の比を含んでいるか
+    if (c.expectedLowRatio !== undefined) {
+      const r = preset.lowRatio;
+      if (!r) {
+        problems.push(`${c.label}: lowRatio が未設定`);
+      } else if (c.expectedLowRatio < r.min || c.expectedLowRatio > r.max) {
+        problems.push(
+          `${c.label}: 実測の1%Low比 ${c.expectedLowRatio} が` +
+            ` 宣言レンジ ${r.min}〜${r.max} の外にある`,
+        );
+      }
+      if (got.fps1Low === null) {
+        problems.push(`${c.label}: 1% Low が計算されていない`);
+      }
     }
   }
 

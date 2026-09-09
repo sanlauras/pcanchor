@@ -160,8 +160,13 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
             </Link>
             で確認できます。
           </p>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-sm">
+          {/*
+            スマホでは globals.css の @media で1行=1カードに組み替わる。
+            見出しが長い（「最高（Epic / Lumen Epic）」等）ため、
+            そのままだと横スクロールになってしまう。
+          */}
+          <div className="md:overflow-x-auto">
+            <table className="spec-table w-full border-collapse text-sm">
               <thead>
                 <tr className="border-y border-ink">
                   <th className="px-2 py-2 text-left font-cond text-xs">GPU</th>
@@ -178,19 +183,28 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
               </thead>
               <tbody>
                 {ranked.map((r) => (
-                  <tr key={r.gpu.slug} className="border-b border-rule-soft">
+                  <tr key={r.gpu.slug} className="spec-row border-b border-rule-soft">
                     <th scope="row" className="px-2 py-2 text-left font-normal">
                       <Link href={`/gpu/${r.gpu.slug}`} className="hover:text-accent">
                         {r.gpu.name}
                       </Link>
                     </th>
-                    <td className="px-2 py-2 text-right font-mono tabular-nums whitespace-nowrap">
+                    <td
+                      data-label={featured.label}
+                      className="px-2 py-2 text-right font-mono tabular-nums whitespace-nowrap"
+                    >
                       {r.fps.toFixed(0)}
                     </td>
-                    <td className="px-2 py-2 text-right font-mono text-dim tabular-nums whitespace-nowrap">
+                    <td
+                      data-label={other.label}
+                      className="px-2 py-2 text-right font-mono text-dim tabular-nums whitespace-nowrap"
+                    >
                       {(otherByName.get(r.gpu.name) ?? 0).toFixed(0)}
                     </td>
-                    <td className="px-2 py-2 text-right font-mono text-xs text-dim tabular-nums whitespace-nowrap">
+                    <td
+                      data-label="VRAM"
+                      className="px-2 py-2 text-right font-mono text-xs text-dim tabular-nums whitespace-nowrap"
+                    >
                       {r.gpu.vramGb} GB
                     </td>
                   </tr>
@@ -210,6 +224,18 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
             ))}
             <li>・根拠: {game.confidenceLabel}</li>
             {featured.note && <li>・{featured.label}: {featured.note}</li>}
+            {featured.lowRatio && (
+              <li>
+                ・この表は平均fpsです。{featured.label} の 1% Low（カクつき）は
+                平均の {Math.round(featured.lowRatio.min * 100)}〜
+                {Math.round(featured.lowRatio.max * 100)}% でした。
+                構成ごとの値は
+                <Link href="/tools/fps" className="text-accent underline">
+                  fps予想ツール
+                </Link>
+                で出せます。
+              </li>
+            )}
             <li>
               ・解像度の下げ方や設定の効き方はゲームごとに違います。
               {game.name} では、画質を「{heaviest.label}」から「{lightest.label}」に

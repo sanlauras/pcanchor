@@ -123,11 +123,25 @@ export function SpecTable<T>({
         </p>
       </div>
 
+      {/*
+        比較機能の入口。選ぶまで下の比較トレイが出ないので、
+        ここに書いておかないと機能があること自体に気づけない。
+      */}
+      <p className="-mt-1 pb-3 text-xs text-dim">
+        行の左のチェックを入れると、最大 {MAX_COMPARE} 件まで並べて比較できます。
+        モデル名を押すと詳細が開きます。
+      </p>
+
       <div className="md:overflow-x-auto">
         <table className="spec-table w-full border-collapse text-sm">
           <thead>
             <tr className="border-y border-ink">
-              <th className="w-8" />
+              <th
+                scope="col"
+                className="w-10 px-1 py-2 text-left font-cond text-[10px] font-semibold text-dim"
+              >
+                比較
+              </th>
               {columns.map((c) => {
                 const active = c.id === sortId;
                 return (

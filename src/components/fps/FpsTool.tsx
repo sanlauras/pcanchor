@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { cpus, gpus } from '@/lib/data';
 import { diagnose } from '@/lib/fps/diagnose';
 import { GAMES, findGame } from '@/lib/fps/games';
-import { RESOLUTIONS, type ResolutionId, predict } from '@/lib/fps/model';
+import { RESOLUTIONS, type ResolutionId, errorRange, predict } from '@/lib/fps/model';
 
 const DEFAULT_GPU = 'Radeon RX 9070 XT';
 const DEFAULT_CPU = 'Ryzen 7 9800X3D';
@@ -128,13 +128,46 @@ export function FpsTool() {
             <p className="font-mono text-[10px] tracking-wider text-dim uppercase">
               {game.name} / {res.short} / {preset.label}
             </p>
-            <p className="mt-2 flex items-baseline gap-2">
-              <span className="font-mono text-5xl font-semibold tabular-nums text-accent">
-                {result.prediction.fps.toFixed(0)}
-              </span>
-              <span className="font-mono text-sm text-dim">fps（平均・推定）</span>
-            </p>
-            <p className="mt-2 text-xs text-dim">推定値です。誤差 ±15〜20%。</p>
+            {/*
+              平均fpsと 1% Low を同格で並べる。
+              平均だけ見て決めると、Fortnite の Performance のように
+              「平均は高いのに実際はカクつく」設定を選んでしまうため。
+            */}
+            <div className="mt-2 flex flex-wrap gap-x-10 gap-y-4">
+              <div>
+                <p className="font-mono text-5xl font-semibold tabular-nums text-accent">
+                  {result.prediction.fps.toFixed(0)}
+                </p>
+                <p className="mt-1 font-mono text-xs text-dim">平均fps（推定）</p>
+                <p className="mt-0.5 font-mono text-[10px] text-dim">
+                  およそ {errorRange(result.prediction.fps).min.toFixed(0)}〜
+                  {errorRange(result.prediction.fps).max.toFixed(0)}
+                </p>
+              </div>
+
+              {result.prediction.fps1Low && preset.lowRatio && (
+                <div className="border-l border-rule-soft pl-6">
+                  <p className="font-mono text-5xl font-semibold tabular-nums text-ink">
+                    {result.prediction.fps1Low.min.toFixed(0)}
+                    <span className="text-2xl text-dim">〜</span>
+                    {result.prediction.fps1Low.max.toFixed(0)}
+                  </p>
+                  <p className="mt-1 font-mono text-xs text-dim">1% Low（推定）</p>
+                  <p className="mt-0.5 font-mono text-[10px] text-dim">
+                    平均の {Math.round(preset.lowRatio.min * 100)}〜
+                    {Math.round(preset.lowRatio.max * 100)}%
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <p className="mt-3 text-xs text-dim">推定値です。誤差 ±15〜20%。</p>
+            {result.prediction.fps1Low && (
+              <p className="mt-1 max-w-[62ch] text-xs text-dim">
+                1% Low は「遅い方から1%のフレーム」の速度で、カクつきの目安です。
+                平均が高くてもここが低いと、実際の体感は数字ほど滑らかになりません。
+              </p>
+            )}
 
             {/*
               「どういう条件での数値か」を取り違えると体感と大きく食い違うため、
@@ -296,24 +329,38 @@ export function FpsTool() {
 
         <details className="border-t border-rule-soft text-xs text-dim">
           <summary className="cursor-pointer list-none py-2 marker:content-none hover:text-ink">
-            1% Low と「終盤の高負荷時」を出していない理由
+            1% Low の出し方と、その限界
             <span className="ml-2 font-mono text-[10px] text-accent">［読む］</span>
           </summary>
           <div className="max-w-[80ch] space-y-2 pb-3">
             <p>
-              どちらも根拠が足りないため出していません。他サイトが載せている数値を
-              転載すれば今すぐ出せますが、それは他社の計測結果であり、当サイトでは使いません。
+              平均fpsに対する 1% Low の比を、ゲーム別・画質プリセット別に実測から
+              求めています。比は1つの値ではなく実測のばらつきをそのままレンジで
+              持たせているので、
+              <strong className="font-medium text-ink">
+                レンジが狭い条件ほど信用できる
+              </strong>
+              と読んでください。
             </p>
             <p>
-              <strong className="font-medium text-ink">1% Low</strong> —
-              平均fpsに対する比が、Valorant では 0.70〜0.83、Fortnite では 0.26〜0.75 と、
-              ゲームによっても条件によっても大きく変わります。共通の固定比では出せません。
-              GPU使用率が高いほど比が上がる傾向は2タイトルで共通して見えているので、
-              データが増えれば出せる可能性があります。
+              比は条件で大きく変わります。Valorant は 0.70〜0.83 ですが、
+              Fortnite の Performance は 0.26〜0.28 です。
+              同じ「平均500fps」でも体感がまるで違います。
+              GPU使用率が高いほど比が上がる傾向は2タイトルで共通しています。
             </p>
             <p>
-              <strong className="font-medium text-ink">終盤の高負荷時</strong> —
-              実測データがありません。何をもって高負荷とするかの定義から決める必要があります。
+              <strong className="font-medium text-ink">限界</strong> —
+              自前の実測は1構成のみで、画質プリセットあたり2点しかありません。
+              Fortnite側は実プレイの映像から求めたもので、テストシーンを固定できて
+              いません（平均fpsで約10%のばらつきがあります）。
+              またゲームと画質ごとの比なので、GPUとCPUの組み合わせによる違いは
+              反映していません。実測の投稿が集まれば精度を上げられます。
+            </p>
+            <p>
+              <strong className="font-medium text-ink">終盤の高負荷時のfps</strong> —
+              こちらは実測データが無いため出していません。何をもって高負荷とするかの
+              定義から決める必要があります。他サイトの数値を転載すれば今すぐ出せますが、
+              それは他社の計測結果であり、当サイトでは使いません。
             </p>
           </div>
         </details>

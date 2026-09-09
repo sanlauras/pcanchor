@@ -61,6 +61,14 @@ export type PresetProfile = {
   k: number;
   /** 4K でのVRAM使用量の実測(MB)。無ければ null */
   vram4kMb: number | null;
+  /**
+   * 1% Low ÷ 平均fps の実測レンジ。データが無ければ null。
+   *
+   * 固定の1点ではなくレンジで持つ。比が安定している条件は自然に狭いレンジになり、
+   * 「どのくらい信用できるか」が表示にそのまま出るため。
+   * 算出過程は CONTEXT.md「1% Low の比」にある。
+   */
+  lowRatio: { min: number; max: number } | null;
   /** このプリセット固有の注意書き */
   note?: string;
 };
@@ -117,6 +125,8 @@ export type Prediction = {
   cap: number | null;
   /** 実際の予想fps。上の3つの最小値 */
   fps: number;
+  /** 1% Low（カクつきの目安）の推定レンジ。係数が無ければ null */
+  fps1Low: { min: number; max: number } | null;
   bottleneck: Bottleneck;
   /** 予想fpsに対する余力。0.38 なら「38%の余力」 */
   gpuHeadroom: number;
@@ -126,6 +136,20 @@ export type Prediction = {
 /** 律速と判定する境界。この幅に収まっていれば拮抗とみなす */
 const BALANCED_BAND = 0.05;
 
+/**
+ * 予想fpsの誤差幅。
+ *
+ * CLAUDE.md 絶対ルール3 と CONTEXT.md では ±15〜20% としている。
+ * 実数のレンジを出すときは広い側(20%)を使う。狭い側を使うと
+ * 実際より正確に見えてしまうため。
+ */
+export const FPS_ERROR = 0.2;
+
+/** 「およそ N〜M fps」を出すための範囲。誤差の説明を数値で見せる用 */
+export function errorRange(fps: number): { min: number; max: number } {
+  return { min: fps * (1 - FPS_ERROR), max: fps * (1 + FPS_ERROR) };
+}
+
 export function predict(input: {
   /** GPUの Valorant 4K全て高 の推定fps（gpu_index.csv 由来） */
   gpuFps4kHigh: number;
@@ -133,7 +157,7 @@ export function predict(input: {
   cpuCeiling: number;
   resolution: ResolutionId;
   game: Pick<GameProfile, 'cap' | 'gpuWeight' | 'cpuWeight'>;
-  preset: Pick<PresetProfile, 'factor' | 'k'>;
+  preset: Pick<PresetProfile, 'factor' | 'k' | 'lowRatio'>;
 }): Prediction {
   const { gpuFps4kHigh, cpuCeiling, resolution, game, preset } = input;
 
@@ -162,6 +186,10 @@ export function predict(input: {
     cpuFps,
     cap,
     fps,
+    // 1% Low は平均fpsに比を掛けるだけ。比はプリセットごとの実測から来ている
+    fps1Low: preset.lowRatio
+      ? { min: fps * preset.lowRatio.min, max: fps * preset.lowRatio.max }
+      : null,
     bottleneck,
     gpuHeadroom: gpuFps / fps - 1,
     cpuHeadroom: cpuFps / fps - 1,

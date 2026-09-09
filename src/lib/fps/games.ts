@@ -8,6 +8,9 @@ import { type GameProfile, VALORANT_RESOLUTION_K } from './model';
  *
  * CLAUDE.md 絶対ルール1: 他社のfps数値表はDB化しない。
  * 保存してよいのは割り算の結果（係数）だけ。
+ *
+ * lowRatio（1% Low ÷ 平均fps）は小数で持つ。割り算の式で書くと第三者の
+ * fps数値そのものがコードに残るため。元の数値と算出過程は CONTEXT.md にある。
  */
 
 /** Valorant 実測: 全て高 → 全て低（4K）= x1.74 */
@@ -38,6 +41,8 @@ export const GAMES: GameProfile[] = [
         k: VALORANT_RESOLUTION_K,
         // 実測: 4K全て高で 8.19GB
         vram4kMb: 8190,
+        // 実測2点: 4K(GPU99%)=0.833 / 1440p(GPU97%)=0.752
+        lowRatio: { min: 0.752, max: 0.833 },
       },
       {
         id: 'low',
@@ -46,6 +51,8 @@ export const GAMES: GameProfile[] = [
         k: VALORANT_RESOLUTION_K,
         // 実測: 4K全て低で 8.41GB。画質を下げてもVRAMは減らなかった
         vram4kMb: 8410,
+        // 実測2点: 1080p(GPU57%・CPU律速)=0.697 / 4K(GPU99%)=0.758
+        lowRatio: { min: 0.697, max: 0.758 },
         note: '実測では画質を下げてもVRAM使用量は減りませんでした（8.19GB→8.41GB）。',
       },
     ],
@@ -88,6 +95,9 @@ export const GAMES: GameProfile[] = [
         // クリーンな2点が取れないため Low の指数を流用している
         k: 0.464,
         vram4kMb: 2779,
+        // 3解像度で 0.261 / 0.261 / 0.276。ばらつき0.015で全プリセット中もっとも安定。
+        // 平均が高くても実際は3分の1近くまで落ちる、というこのサイト固有の発見
+        lowRatio: { min: 0.261, max: 0.276 },
         note: '1080p / 1440p では CPU側が上限になります。解像度を下げてもfpsはあまり伸びません。解像度指数は Low から流用した近似値です。',
       },
       {
@@ -96,6 +106,8 @@ export const GAMES: GameProfile[] = [
         factor: 315 / 40,
         k: 0.464,
         vram4kMb: 4256,
+        // 3解像度で 0.528 / 0.481 / 0.613
+        lowRatio: { min: 0.481, max: 0.613 },
       },
       {
         id: 'medium',
@@ -103,6 +115,8 @@ export const GAMES: GameProfile[] = [
         factor: 208 / 40,
         k: 0.471,
         vram4kMb: 5124,
+        // 3解像度で 0.427 / 0.542 / 0.601
+        lowRatio: { min: 0.427, max: 0.601 },
       },
       {
         id: 'epic',
@@ -110,6 +124,8 @@ export const GAMES: GameProfile[] = [
         factor: 1,
         k: 0.639,
         vram4kMb: 9981,
+        // 3解像度で 0.594 / 0.671 / 0.750
+        lowRatio: { min: 0.594, max: 0.750 },
         note: 'Lumen が有効なため非常に重く、VRAMも 4K で約10GB使います。',
       },
     ],

@@ -103,7 +103,8 @@ body {
   .spec-table,
   .spec-table tbody,
   .spec-table tr,
-  .spec-table td {
+  .spec-table td,
+  .spec-table th[scope='row'] {
     display: block;
     width: auto;
   }
@@ -125,7 +126,8 @@ body {
     margin: -10px 0 10px;
   }
 
-  .spec-table td {
+  .spec-table td,
+  .spec-table th[scope='row'] {
     padding: 3px 0;
     text-align: left;
     border: 0;
@@ -143,5 +145,11 @@ body {
   /* モデル名セルは見出しを出さず、カードの表題として扱う */
   .spec-table td.spec-name-cell::before {
     content: none;
+  }
+
+  /* th を行見出しに使っている表では、そのセルがカードの表題になる */
+  .spec-table th[scope='row'] {
+    margin-bottom: 4px;
+    font-weight: 600;
   }
 }
