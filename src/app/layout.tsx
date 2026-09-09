@@ -102,7 +102,10 @@ export const metadata: Metadata = {
   },
 };
 
+// ロゴは崩れた書体で小さく出ているためリンクだと気づきにくい。
+// 読めるラベルとして「ホーム」を先頭に置く。
 const nav = [
+  { href: '/', label: 'ホーム' },
   { href: '/tools/fps', label: 'ゲーム別fps予想' },
   { href: '/gpu', label: 'GPU' },
   { href: '/cpu', label: 'CPU' },
@@ -152,27 +155,40 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
 
-        <header className="border-b border-rule">
-          <div className="mx-auto flex max-w-[1240px] flex-wrap items-center gap-x-6 gap-y-2 px-5 py-3">
+        {/*
+          スクロールしても上に残す。一覧ページは行数が多く、下まで行くと
+          ナビが画面外に出て戻る手段が無くなるため。
+          背景を敷かないと下の内容が透ける。比較トレイと同じ手法。
+          重なり順は 比較トレイ(z-10) < ヘッダー(z-20) < 比較モーダル(z-50)。
+        */}
+        <header className="sticky top-0 z-20 border-b border-rule bg-paper/95 backdrop-blur">
+          <div className="mx-auto flex h-(--header-h) max-w-[1240px] items-center gap-x-4 px-5 sm:gap-x-6">
             {/* ロゴはヒーローと同じ書体・同じ英語表記で揃える */}
             <Link
               href="/"
-              className="font-display text-xl leading-none tracking-[var(--display-tracking)] uppercase"
+              className="shrink-0 font-display text-2xl leading-none tracking-[var(--display-tracking)] uppercase hover:text-accent"
             >
               {SITE.nameEn}
             </Link>
-            <nav className="flex flex-wrap gap-1" aria-label="メイン">
+            {/*
+              狭い画面では折り返さず横スクロールさせる。
+              折り返すとヘッダーが2〜3段になり、固定したときに画面を食いすぎるため。
+            */}
+            <nav
+              className="-mx-1 flex min-w-0 flex-1 gap-1 overflow-x-auto px-1 md:flex-wrap md:overflow-visible"
+              aria-label="メイン"
+            >
               {nav.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="px-3 py-1.5 font-cond text-sm font-semibold text-dim hover:text-ink"
+                  className="shrink-0 px-2.5 py-1.5 font-cond text-sm font-semibold whitespace-nowrap text-dim hover:text-ink sm:px-3"
                 >
                   {item.label}
                 </Link>
               ))}
             </nav>
-            <div className="ml-auto">
+            <div className="shrink-0">
               <ThemePicker />
             </div>
           </div>

@@ -16,7 +16,8 @@ export function AdSlot({ variant }: Props) {
   const shape =
     variant === 'inline'
       ? 'min-h-[90px] w-full'
-      : 'sticky top-6 hidden min-h-[600px] w-[300px] shrink-0 lg:block';
+      : // ヘッダーが sticky なので、その高さぶん下げないと潜ってしまう
+        'sticky top-[calc(var(--header-h)+1.5rem)] hidden min-h-[600px] w-[300px] shrink-0 lg:block';
 
   return (
     <aside
