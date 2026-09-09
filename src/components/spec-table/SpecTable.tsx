@@ -15,6 +15,8 @@ type Props<T> = {
   getVendor: (row: T) => string;
   getArch: (row: T) => string;
   getVerified: (row: T) => string;
+  /** 性能指数。比較モーダルで「何倍か」を出すのに使う */
+  getIndex: (row: T) => number;
   /** 名前の横に出す小さな印（3D V-Cache など）。不要なら null を返す */
   badge?: (row: T) => string | null;
   /** 個別ページへのURL。あればモデル名をリンクにする */
@@ -29,6 +31,7 @@ export function SpecTable<T>({
   getVendor,
   getArch,
   getVerified,
+  getIndex,
   badge,
   getHref,
 }: Props<T>) {
@@ -122,15 +125,6 @@ export function SpecTable<T>({
           {visible.length} / {rows.length} 件
         </p>
       </div>
-
-      {/*
-        比較機能の入口。選ぶまで下の比較トレイが出ないので、
-        ここに書いておかないと機能があること自体に気づけない。
-      */}
-      <p className="-mt-1 pb-3 text-xs text-dim">
-        行の左のチェックを入れると、最大 {MAX_COMPARE} 件まで並べて比較できます。
-        モデル名を押すと詳細が開きます。
-      </p>
 
       <div className="md:overflow-x-auto">
         <table className="spec-table w-full border-collapse text-sm">
@@ -311,9 +305,21 @@ export function SpecTable<T>({
         )}
       </div>
 
-      {/* 比較トレイ */}
-      {picked.length > 0 && (
-        <div className="sticky bottom-0 z-10 mt-4 border-t border-ink bg-panel/95 py-3 backdrop-blur">
+      {/*
+        比較トレイ。**0件のときも出す。**
+        選ぶまで隠していると、機能があること自体に気づけないため。
+      */}
+      <div className="sticky bottom-0 z-10 mt-4 border-t border-ink bg-panel/95 py-3 backdrop-blur">
+        {picked.length === 0 ? (
+          <p className="text-xs text-dim">
+            <span aria-hidden className="mr-1.5 text-accent">
+              ☑
+            </span>
+            行の左にチェックを入れると、
+            <strong className="font-medium text-ink">性能が何倍違うか</strong>
+            を比べられます（最大 {MAX_COMPARE} 件）。
+          </p>
+        ) : (
           <div className="flex flex-wrap items-center gap-2">
             {picked.map((name) => (
               <span
@@ -351,14 +357,16 @@ export function SpecTable<T>({
               比較する
             </button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {compareOpen && (
         <CompareDialog
           rows={pickedRows}
           detail={detail}
           getName={getName}
+          getArch={getArch}
+          getIndex={getIndex}
           onClose={() => setCompareOpen(false)}
         />
       )}

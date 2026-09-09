@@ -18,6 +18,7 @@ export function GpuTable() {
       getName={(r) => r.name}
       getVendor={(r) => r.vendor}
       getArch={(r) => r.arch}
+      getIndex={(r) => r.perfIndex}
       getVerified={(r) => r.verified}
       getHref={(r) => `/gpu/${r.slug}`}
     />

@@ -13,6 +13,7 @@ export function CpuTable() {
       getName={(r) => r.name}
       getVendor={(r) => r.vendor}
       getArch={(r) => r.arch}
+      getIndex={(r) => r.perfIndex}
       getVerified={(r) => r.verified}
       getHref={(r) => `/cpu/${r.slug}`}
       badge={(r) => (r.has3dVCache ? '3D V-Cache' : null)}
