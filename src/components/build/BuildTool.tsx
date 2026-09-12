@@ -384,7 +384,7 @@ function Band<
               <span className="ml-auto font-mono text-xs tabular-nums text-dim">
                 {c.fps.toFixed(0)} fps
               </span>
-              <AffiliateLink query={c.model.name} kind={kind} />
+              <AffiliateLink query={c.model.name} kind={kind} model={c.model} />
               {stockNote(c.model) && (
                 <span className="w-full text-[11px] text-dim">{stockNote(c.model)}</span>
               )}

@@ -75,7 +75,7 @@ export default async function GpuDetailPage({ params }: PageProps<'/gpu/[slug]'>
 
         {/* 販売ページへの導線。タグ未設定なら何も描画されない */}
         <div className="mt-6">
-          <AffiliateLink query={gpu.name} kind="gpu" variant="block" />
+          <AffiliateLink query={gpu.name} kind="gpu" variant="block" model={gpu} />
         </div>
 
         <FpsTables tables={tables} cpuName={cpu.name} />

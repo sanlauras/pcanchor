@@ -49,6 +49,17 @@ const CATEGORY_WORD = { gpu: 'グラフィックボード', cpu: 'CPU' } as cons
 
 export type PartKind = keyof typeof CATEGORY_WORD;
 
+/**
+ * Amazonの並べ替え「価格の安い順」。
+ *
+ * 画面に「最安で探す」と書く以上、おすすめ順のままでは不正確なので付ける。
+ *
+ * **注意**: 安い順にすると、GPU本体よりはるかに安いアクセサリ
+ * （グラボステー等）が上位に来る可能性がある。Amazonは自動取得を拒否する（503）
+ * ため当サイトからは検証できない。目視で確認し、駄目なら外して文言も直すこと。
+ */
+const SORT_PRICE_ASC = 'price-asc-rank';
+
 /** モデル名でAmazonを検索するURL。タグ未設定なら null */
 export function amazonSearchUrl(query: string, kind: PartKind): string | null {
   if (TAG === '') return null;
@@ -56,6 +67,7 @@ export function amazonSearchUrl(query: string, kind: PartKind): string | null {
   url.searchParams.set('k', `${query} ${CATEGORY_WORD[kind]}`);
   // パソコン・周辺機器に限定して、別カテゴリの混入を減らす
   url.searchParams.set('i', 'computers');
+  url.searchParams.set('s', SORT_PRICE_ASC);
   url.searchParams.set('tag', TAG);
   return url.toString();
 }

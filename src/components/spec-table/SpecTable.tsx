@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import type { ColumnDef, DetailRow } from './columns';
 import { VerifiedTag } from './VerifiedTag';
@@ -216,22 +217,29 @@ export function SpecTable<T>({
                               <span className="border border-rule px-1 font-mono text-[10px] text-dim">
                                 {getVendor(r)}
                               </span>
+                              {/*
+                                主の動線はモデル名＝個別ページ。
+                                その場でスペックを見たいときだけ隣の ▾ を使う。
+                              */}
+                              {getHref ? (
+                                <Link
+                                  href={getHref(r)}
+                                  className="text-left font-medium hover:text-accent hover:underline"
+                                >
+                                  {c.display(r)}
+                                </Link>
+                              ) : (
+                                <span className="font-medium">{c.display(r)}</span>
+                              )}
                               <button
                                 type="button"
                                 onClick={() => setOpenName(isOpen ? null : name)}
                                 aria-expanded={isOpen}
-                                className="cursor-pointer text-left font-medium hover:text-accent"
+                                aria-label={`${name} のスペックをこの場で開く`}
+                                className="cursor-pointer border border-rule px-1.5 font-mono text-[10px] leading-tight text-dim hover:border-ink hover:text-ink"
                               >
-                                {c.display(r)}
+                                {isOpen ? '▴' : '▾'}
                               </button>
-                              {getHref && (
-                                <a
-                                  href={getHref(r)}
-                                  className="font-mono text-[10px] text-dim underline hover:text-accent"
-                                >
-                                  詳細
-                                </a>
-                              )}
                               {mark && (
                                 <span className="border border-accent/40 px-1 font-mono text-[10px] text-accent">
                                   {mark}
