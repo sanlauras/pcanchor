@@ -18,6 +18,12 @@ const entries = [
     note: 'GPUとCPUを選ぶだけ。どちらが足を引っ張っているかまで分かります',
   },
   {
+    href: '/tools/build',
+    label: '目標fpsから選ぶPC構成',
+    count: 'ツール',
+    note: '出したいfpsを入れると、必要なGPUとCPUが分かります',
+  },
+  {
     href: '/games',
     label: 'ゲーム別の推奨GPU',
     count: 'VALORANT / Fortnite',

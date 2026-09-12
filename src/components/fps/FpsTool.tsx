@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { cpus, gpus } from '@/lib/data';
 import { diagnose } from '@/lib/fps/diagnose';
@@ -383,6 +384,14 @@ export function FpsTool() {
             </p>
           </div>
         </details>
+
+        <p className="border-t border-rule-soft pt-3 text-xs text-dim">
+          逆に「この目標fpsを出すには何が必要か」を調べるなら
+          <Link href="/tools/build" className="text-accent underline">
+            目標fpsから選ぶPC構成
+          </Link>
+          が使えます。
+        </p>
       </div>
     </div>
   );

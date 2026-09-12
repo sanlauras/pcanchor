@@ -16,6 +16,12 @@ const tools = [
     note: 'GPUとCPUを選ぶと推定fpsと、どちらが足を引っ張っているかが出ます',
     status: '公開中',
   },
+  {
+    href: '/tools/build',
+    label: '目標fpsから選ぶPC構成',
+    note: 'ゲーム・設定・出したいfpsを入れると、それを満たす最小のGPUとCPUが出ます',
+    status: '公開中',
+  },
 ];
 
 const planned = [

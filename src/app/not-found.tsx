@@ -23,6 +23,11 @@ const links = [
     label: 'ゲーム別fps予想・ボトルネック診断',
     note: 'GPUとCPUを選ぶと推定fpsとカクつきの底が出ます',
   },
+  {
+    href: '/tools/build',
+    label: '目標fpsから選ぶPC構成',
+    note: '出したいfpsから必要なGPUとCPUを逆引きします',
+  },
   { href: '/games', label: 'ゲーム別の推奨GPU', note: 'VALORANT / Fortnite' },
   { href: '/gpu', label: 'GPUスペック一覧', note: `${tally.gpuCount}モデル` },
   { href: '/cpu', label: 'CPUスペック一覧', note: `${tally.cpuCount}モデル` },

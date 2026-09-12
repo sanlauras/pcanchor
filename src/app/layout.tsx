@@ -107,6 +107,7 @@ export const metadata: Metadata = {
 const nav = [
   { href: '/', label: 'ホーム' },
   { href: '/tools/fps', label: 'ゲーム別fps予想' },
+  { href: '/tools/build', label: '構成を選ぶ' },
   { href: '/gpu', label: 'GPU' },
   { href: '/cpu', label: 'CPU' },
   { href: '/games', label: 'ゲーム別' },

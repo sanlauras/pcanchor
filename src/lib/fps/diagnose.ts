@@ -61,7 +61,7 @@ function fmt(v: number): string {
  * 実測では画質を下げてもVRAMがほとんど減らなかったため、
  * 解像度側だけを効かせ、下限は4K実測の6割としている。
  */
-function vramNeedMb(preset: PresetProfile, resolution: ResolutionId): number | null {
+export function vramNeedMb(preset: PresetProfile, resolution: ResolutionId): number | null {
   if (preset.vram4kMb === null) return null;
   if (resolution === '4k') return preset.vram4kMb;
   // 解像度が下がるとフレームバッファ分は減るが、テクスチャ等は残る
