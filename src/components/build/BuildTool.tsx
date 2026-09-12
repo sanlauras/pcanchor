@@ -2,7 +2,9 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { AffiliateLink } from '@/components/AffiliateLink';
 import { cpus, gpus } from '@/lib/data';
+import { hasAmazonTag } from '@/lib/affiliate';
 import { type Side, type Tier, TIERS, alternatives, solveBuild } from '@/lib/fps/build';
 import { GAMES, findGame } from '@/lib/fps/games';
 import { REFRESH_RATES, RESOLUTIONS, type ResolutionId } from '@/lib/fps/model';
@@ -217,6 +219,15 @@ export function BuildTool() {
                     在庫や価格で選んで構いません。
                   </p>
                 )}
+
+                {hasAmazonTag() && (
+                  <p className="mt-2 text-xs text-dim">
+                    Amazonへのリンクは広告です。
+                    <strong className="font-medium text-ink">
+                      候補は性能指数だけで選んでおり、広告の有無は順番に一切影響していません。
+                    </strong>
+                  </p>
+                )}
               </section>
             )}
 
@@ -333,7 +344,7 @@ function Band<T extends { name: string; slug: string; perfIndex: number }>({
       ) : (
         <ol className="space-y-1.5">
           {side.candidates.map((c, i) => (
-            <li key={c.model.name} className="flex items-baseline justify-between gap-3">
+            <li key={c.model.name} className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
               <Link
                 href={`${hrefBase}/${c.model.slug}`}
                 className={`text-sm hover:text-accent ${
@@ -342,9 +353,10 @@ function Band<T extends { name: string; slug: string; perfIndex: number }>({
               >
                 {c.model.name}
               </Link>
-              <span className="font-mono text-xs tabular-nums text-dim">
+              <span className="ml-auto font-mono text-xs tabular-nums text-dim">
                 {c.fps.toFixed(0)} fps
               </span>
+              <AffiliateLink query={c.model.name} />
             </li>
           ))}
         </ol>

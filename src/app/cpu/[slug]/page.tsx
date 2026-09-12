@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { AdSlot } from '@/components/AdSlot';
+import { AffiliateLink } from '@/components/AffiliateLink';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { FpsTables } from '@/components/model/FpsTables';
 import { SpecList } from '@/components/model/SpecList';
@@ -78,6 +79,11 @@ export default async function CpuDetailPage({ params }: PageProps<'/cpu/[slug]'>
             以下のfpsは、GPUに {gpu.name} を組み合わせた場合の推定値です。
           </p>
         </header>
+
+        {/* 販売ページへの導線。タグ未設定なら何も描画されない */}
+        <div className="mt-6">
+          <AffiliateLink query={cpu.name} variant="block" />
+        </div>
 
         <FpsTables tables={tables} cpuName={cpu.name} />
 

@@ -7,6 +7,7 @@ import {
 } from 'next/font/google';
 import Link from 'next/link';
 import { Analytics } from '@/components/Analytics';
+import { AMAZON_DISCLOSURE, hasAmazonTag } from '@/lib/affiliate';
 import { ThemePicker } from '@/components/ThemePicker';
 import { SITE } from '@/lib/site';
 import './globals.css';
@@ -215,6 +216,16 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
             ゲーム別の係数は、自前の実測と、許諾を得た第三者の測定から算出した値を
             使っています。他社のfps数値表の転載はしていません。
             <br />
+            {/*
+              アソシエイト運営規約で表示が義務づけられている文言。
+              文言を勝手に変えないこと。タグ未設定のときは出さない
+              （リンクが無いのに「収入を得ています」と書くと事実に反するため）。
+            */}
+            {hasAmazonTag() && (
+              <>
+                <span className="mt-2 block text-ink">{AMAZON_DISCLOSURE}</span>
+              </>
+            )}
             <span className="mt-2 inline-block">© {SITE.name}</span>
           </div>
         </footer>

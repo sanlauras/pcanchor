@@ -32,6 +32,7 @@ npm run lint
 | 変数 | 既定値 | 用途 |
 |---|---|---|
 | `NEXT_PUBLIC_SITE_URL` | `https://pcanchor.jp` | canonical / sitemap / OGP の絶対URL |
+| `NEXT_PUBLIC_AMAZON_TAG` | `xxxxx-22` | AmazonアソシエイトのトラッキングID。**未設定ならアフィリエイトリンクも開示文も一切出ない**（リンクが無いのに「収入を得ています」と書くと事実に反するため）。URLに載って公開される情報なので秘密ではない。Creators API の認証情報とは別物で、そちらは絶対にリポジトリに入れないこと |
 
 ステージング等で変えたいときだけ設定する。
 
