@@ -82,7 +82,7 @@ export default async function CpuDetailPage({ params }: PageProps<'/cpu/[slug]'>
 
         {/* 販売ページへの導線。タグ未設定なら何も描画されない */}
         <div className="mt-6">
-          <AffiliateLink query={cpu.name} kind="cpu" variant="block" model={cpu} />
+          <AffiliateLink query={cpu.name} variant="block" model={cpu} />
         </div>
 
         <FpsTables tables={tables} cpuName={cpu.name} />

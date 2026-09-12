@@ -228,8 +228,8 @@ export function BuildTool() {
                 </p>
 
                 <div className="mt-4 grid gap-5 sm:grid-cols-2">
-                  <Band title="GPU" side={current.gpu} hrefBase="/gpu" kind="gpu" />
-                  <Band title="CPU" side={current.cpu} hrefBase="/cpu" kind="cpu" />
+                  <Band title="GPU" side={current.gpu} hrefBase="/gpu" />
+                  <Band title="CPU" side={current.cpu} hrefBase="/cpu" />
                 </div>
 
                 {(current.gpu.kind === 'ok' || current.cpu.kind === 'ok') && (
@@ -357,12 +357,10 @@ function Band<
   title,
   side,
   hrefBase,
-  kind,
 }: {
   title: string;
   side: Side<T>;
   hrefBase: string;
-  kind: 'gpu' | 'cpu';
 }) {
   return (
     <div>
@@ -384,7 +382,7 @@ function Band<
               <span className="ml-auto font-mono text-xs tabular-nums text-dim">
                 {c.fps.toFixed(0)} fps
               </span>
-              <AffiliateLink query={c.model.name} kind={kind} model={c.model} />
+              <AffiliateLink query={c.model.name} model={c.model} />
               {stockNote(c.model) && (
                 <span className="w-full text-[11px] text-dim">{stockNote(c.model)}</span>
               )}

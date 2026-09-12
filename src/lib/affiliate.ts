@@ -36,38 +36,33 @@ export const AMAZON_DISCLOSURE =
   'Amazonのアソシエイトとして、PCアンカーは適格販売により収入を得ています。';
 
 /**
- * 検索語に足すカテゴリ名。
+ * 検索語はモデル名だけにする。
  *
- * モデル名だけで検索すると、上位が別モデルとスポンサー広告で埋まる。
- * 実例: 「GeForce RTX 3050 8GB」で RTX 5060 / RX 9060 XT / 3050の6GB版 が上位を占め、
- * 8GB版が1件も出なかった。カテゴリ名を足して関連度を上げる。
+ * 一度カテゴリ名（「グラフィックボード」等）を足し、価格の安い順に並べたが、
+ * **両方とも逆効果だった**（実機で確認済み）:
  *
- * **スポンサー広告そのものは消せない**（Amazonの仕様）。
- * 型番を確認してもらう注記を画面側にも出している。
+ *   「RTX 5060 グラフィックボード」＋安い順
+ *     → upHere グラボステー ¥1,480（アクセサリ。商品名に
+ *        「汎用グラフィックボード」が入るので語で拾ってしまう）
+ *     → RTX 2060 SUPER 整備済み品 ¥19,800（別モデル・中古）
+ *     → RTX 5060 Ti（別グレード）
+ *
+ *   「GeForce RTX 5060」だけ・おすすめ順
+ *     → MSI GeForce RTX 5060 8G ¥65,455（正解）
+ *
+ * モデル名は十分に特徴的なので、余計な語を足さない方がよい。
+ * 並べ替えも指定しない（安い順にすると整備済み品や下位モデルが上に来る）。
+ * カテゴリの限定（i=computers）だけは別カテゴリの混入を防ぐので残す。
  */
-const CATEGORY_WORD = { gpu: 'グラフィックボード', cpu: 'CPU' } as const;
 
-export type PartKind = keyof typeof CATEGORY_WORD;
+export type PartKind = 'gpu' | 'cpu';
 
-/**
- * Amazonの並べ替え「価格の安い順」。
- *
- * 画面に「最安で探す」と書く以上、おすすめ順のままでは不正確なので付ける。
- *
- * **注意**: 安い順にすると、GPU本体よりはるかに安いアクセサリ
- * （グラボステー等）が上位に来る可能性がある。Amazonは自動取得を拒否する（503）
- * ため当サイトからは検証できない。目視で確認し、駄目なら外して文言も直すこと。
- */
-const SORT_PRICE_ASC = 'price-asc-rank';
-
-/** モデル名でAmazonを検索するURL。タグ未設定なら null */
-export function amazonSearchUrl(query: string, kind: PartKind): string | null {
+export function amazonSearchUrl(query: string): string | null {
   if (TAG === '') return null;
   const url = new URL('https://www.amazon.co.jp/s');
-  url.searchParams.set('k', `${query} ${CATEGORY_WORD[kind]}`);
+  url.searchParams.set('k', query);
   // パソコン・周辺機器に限定して、別カテゴリの混入を減らす
   url.searchParams.set('i', 'computers');
-  url.searchParams.set('s', SORT_PRICE_ASC);
   url.searchParams.set('tag', TAG);
   return url.toString();
 }

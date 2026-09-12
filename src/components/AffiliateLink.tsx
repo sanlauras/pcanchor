@@ -1,4 +1,4 @@
-import { type PartKind, amazonSearchUrl } from '@/lib/affiliate';
+import { amazonSearchUrl } from '@/lib/affiliate';
 import { stockNote } from '@/lib/generation';
 
 /**
@@ -12,27 +12,28 @@ import { stockNote } from '@/lib/generation';
  *
  * noreferrer は付けない（成果計測を妨げる可能性があるため）。
  *
+ * **文言に「最安」と書かないこと。** 価格の安い順に並べると整備済み品や
+ * アクセサリが上位に来るため、並べ替えを指定していない。
+ * 並べていないのに「最安」と書くと、果たせない約束になる。
+ *
  * アソシエイトタグが未設定のときは何も描画しない。
  */
 type Props = {
   /** 検索に使うモデル名 */
   query: string;
-  /** 検索語に足すカテゴリ。関連度を上げるために必要 */
-  kind: PartKind;
   /** 'block' = ページ内で目立つボタン / 'inline' = 一覧の行に添える小さいリンク */
   variant?: 'block' | 'inline';
   /** 発売世代の判定に使う。旧世代なら文言と注記を変える */
   model?: { arch: string; releaseYear: number };
 };
 
-export function AffiliateLink({ query, kind, variant = 'inline', model }: Props) {
-  const href = amazonSearchUrl(query, kind);
+export function AffiliateLink({ query, variant = 'inline', model }: Props) {
+  const href = amazonSearchUrl(query);
   if (href === null) return null;
 
   // 旧世代は新品で流通していない可能性が高いので、期待値を下げた文言にする
   const note = model ? stockNote(model) : null;
-  const isOld = note !== null;
-  const action = isOld ? '中古を含めて探す' : '最安で探す';
+  const action = note !== null ? 'を中古も含めて探す' : 'の価格を見る';
 
   if (variant === 'block') {
     return (
@@ -46,7 +47,7 @@ export function AffiliateLink({ query, kind, variant = 'inline', model }: Props)
                      hover:brightness-110"
         >
           <span>
-            Amazonで {query} を{action}
+            Amazonで {query} {action}
           </span>
           <span aria-hidden className="shrink-0 font-mono text-lg">
             →
@@ -54,9 +55,8 @@ export function AffiliateLink({ query, kind, variant = 'inline', model }: Props)
         </a>
 
         {/*
-          GPUの検索は精度が低い。「RTX 3050 8GB」で 8GB版が1件も出ず、
-          グラボステー(¥1,480)や RTX 5060 が並ぶケースを確認している。
-          間違ったものを買わせないために、確認を促す。
+          検索結果の上位はスポンサー広告（グラボステー等のアクセサリ）に
+          取られることがある。間違ったものを買わせないために確認を促す。
         */}
         <p className="mt-2 text-xs text-dim">
           {note && <span className="mr-1 text-ink">{note}</span>}
