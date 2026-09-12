@@ -35,11 +35,27 @@ export function hasAmazonTag(): boolean {
 export const AMAZON_DISCLOSURE =
   'Amazonのアソシエイトとして、PCアンカーは適格販売により収入を得ています。';
 
+/**
+ * 検索語に足すカテゴリ名。
+ *
+ * モデル名だけで検索すると、上位が別モデルとスポンサー広告で埋まる。
+ * 実例: 「GeForce RTX 3050 8GB」で RTX 5060 / RX 9060 XT / 3050の6GB版 が上位を占め、
+ * 8GB版が1件も出なかった。カテゴリ名を足して関連度を上げる。
+ *
+ * **スポンサー広告そのものは消せない**（Amazonの仕様）。
+ * 型番を確認してもらう注記を画面側にも出している。
+ */
+const CATEGORY_WORD = { gpu: 'グラフィックボード', cpu: 'CPU' } as const;
+
+export type PartKind = keyof typeof CATEGORY_WORD;
+
 /** モデル名でAmazonを検索するURL。タグ未設定なら null */
-export function amazonSearchUrl(query: string): string | null {
+export function amazonSearchUrl(query: string, kind: PartKind): string | null {
   if (TAG === '') return null;
   const url = new URL('https://www.amazon.co.jp/s');
-  url.searchParams.set('k', query);
+  url.searchParams.set('k', `${query} ${CATEGORY_WORD[kind]}`);
+  // パソコン・周辺機器に限定して、別カテゴリの混入を減らす
+  url.searchParams.set('i', 'computers');
   url.searchParams.set('tag', TAG);
   return url.toString();
 }

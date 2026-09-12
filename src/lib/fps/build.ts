@@ -1,4 +1,5 @@
 import type { Cpu, Gpu } from '@/lib/data';
+import { isCurrentCpu, isCurrentGenGpu } from '@/lib/generation';
 import { vramNeedMb } from './diagnose';
 import { findGame } from './games';
 import { type GameProfile, type PresetProfile, type ResolutionId, predict } from './model';
@@ -46,7 +47,8 @@ export type Unavailable =
   | { reason: 'cap'; cap: number }
   | { reason: 'noRatio' }
   | { reason: 'none' }
-  | { reason: 'vendor' };
+  | { reason: 'vendor' }
+  | { reason: 'generation' };
 
 export type Side<T> = { kind: 'ok'; candidates: Candidate<T>[] } | ({ kind: 'ng' } & Unavailable);
 
@@ -68,6 +70,13 @@ export type BuildRequest = {
   /** null = 指定なし */
   gpuVendor: Gpu['vendor'] | null;
   cpuVendor: Cpu['vendor'] | null;
+  /**
+   * 新品で流通している可能性が高い世代だけに絞るか。
+   *
+   * 「目標を満たす最小」を出すと必然的に古いカードが選ばれる
+   * （GTX 1070 など、新品では買えないもの）。買い物の助けとして使うなら絞る。
+   */
+  currentGenOnly: boolean;
 };
 
 /** 候補として並べる件数。1つに断定しないための帯 */
@@ -129,12 +138,16 @@ function solveTier(args: {
     vendor: string | null,
     fpsOf: (x: T) => number,
     vramOk: (x: T) => boolean,
+    isCurrent: (x: T) => boolean,
   ): Side<T> {
     const clears = pool.filter((x) => fpsOf(x) >= need! && vramOk(x));
     if (clears.length === 0) return { kind: 'ng', reason: 'none' };
 
-    const byVendor = vendor === null ? clears : clears.filter((x) => x.vendor === vendor);
-    // 条件は満たすのにメーカー指定で消えた場合は、別の理由として伝える
+    // 絞り込みは段階的に外して、どこで消えたかを理由として返せるようにする
+    const byGen = req.currentGenOnly ? clears.filter(isCurrent) : clears;
+    if (byGen.length === 0) return { kind: 'ng', reason: 'generation' };
+
+    const byVendor = vendor === null ? byGen : byGen.filter((x) => x.vendor === vendor);
     if (byVendor.length === 0) return { kind: 'ng', reason: 'vendor' };
 
     return {
@@ -151,8 +164,14 @@ function solveTier(args: {
     requiredAvg: need,
     // VRAMが足りないGPUは、fpsが足りていても候補に入れない。
     // 平均fpsには出にくいが、カクつきの主因になるため（diagnose.ts と同じ考え方）
-    gpu: narrow(gpus, req.gpuVendor, gpuFpsOf, (g) => vram === null || g.vramGb * 1024 >= vram),
-    cpu: narrow(cpus, req.cpuVendor, cpuFpsOf, () => true),
+    gpu: narrow(
+      gpus,
+      req.gpuVendor,
+      gpuFpsOf,
+      (g) => vram === null || g.vramGb * 1024 >= vram,
+      isCurrentGenGpu,
+    ),
+    cpu: narrow(cpus, req.cpuVendor, cpuFpsOf, () => true, isCurrentCpu),
     vramNeedMb: vram,
   };
 }
@@ -255,7 +274,7 @@ export function assertBuildInverts(gpus: readonly Gpu[], cpus: readonly Cpu[]): 
     }
 
     const tiers = solveBuild({
-      req: { ...c, gpuVendor: null, cpuVendor: null },
+      req: { ...c, gpuVendor: null, cpuVendor: null, currentGenOnly: false },
       gpus,
       cpus,
     });

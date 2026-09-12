@@ -1,4 +1,4 @@
-import { amazonSearchUrl } from '@/lib/affiliate';
+import { type PartKind, amazonSearchUrl } from '@/lib/affiliate';
 
 /**
  * Amazonへのアフィリエイトリンク。
@@ -12,16 +12,19 @@ import { amazonSearchUrl } from '@/lib/affiliate';
 type Props = {
   /** 検索に使うモデル名 */
   query: string;
+  /** 検索語に足すカテゴリ。関連度を上げるために必要 */
+  kind: PartKind;
   /** 'block' = 大きめのボタン / 'inline' = 一覧の行に添える小さいリンク */
   variant?: 'block' | 'inline';
 };
 
-export function AffiliateLink({ query, variant = 'inline' }: Props) {
-  const href = amazonSearchUrl(query);
+export function AffiliateLink({ query, kind, variant = 'inline' }: Props) {
+  const href = amazonSearchUrl(query, kind);
   if (href === null) return null;
 
   if (variant === 'block') {
     return (
+      <div>
       <a
         href={href}
         target="_blank"
@@ -36,6 +39,17 @@ export function AffiliateLink({ query, variant = 'inline' }: Props) {
           広告
         </span>
       </a>
+      {/*
+        検索結果の上位は別モデルとスポンサー広告に埋まることがある。
+        実例として「RTX 3050 8GB」で 8GB版が1件も出ないケースを確認している。
+        広告は消せないので、確認を促す。
+      */}
+      <p className="mt-1.5 text-xs text-dim">
+        検索結果には別のモデルや広告も表示されます。
+        <strong className="font-medium text-ink">型番とVRAM容量を確認</strong>
+        してから購入してください。
+      </p>
+      </div>
     );
   }
 

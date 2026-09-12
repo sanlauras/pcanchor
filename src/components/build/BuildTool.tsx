@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { AffiliateLink } from '@/components/AffiliateLink';
 import { cpus, gpus } from '@/lib/data';
 import { hasAmazonTag } from '@/lib/affiliate';
+import { stockNote } from '@/lib/generation';
 import { type Side, type Tier, TIERS, alternatives, solveBuild } from '@/lib/fps/build';
 import { GAMES, findGame } from '@/lib/fps/games';
 import { REFRESH_RATES, RESOLUTIONS, type ResolutionId } from '@/lib/fps/model';
@@ -25,6 +26,8 @@ export function BuildTool() {
   const [gpuVendor, setGpuVendor] = useState('');
   const [cpuVendor, setCpuVendor] = useState('');
   const [tier, setTier] = useState<Tier>('value');
+  // 既定でON。放っておくと新品で買えない古いカードばかり出るため
+  const [currentGenOnly, setCurrentGenOnly] = useState(true);
 
   const game = findGame(gameId);
   const [presetId, setPresetId] = useState(game.presets[0]?.id ?? '');
@@ -53,6 +56,7 @@ export function BuildTool() {
       targetFps,
       gpuVendor: (gpuVendor || null) as 'NVIDIA' | 'AMD' | null,
       cpuVendor: (cpuVendor || null) as 'Intel' | 'AMD' | null,
+      currentGenOnly,
     };
     return {
       tiers: solveBuild({ req, gpus, cpus }),
@@ -123,6 +127,24 @@ export function BuildTool() {
             ))}
           </span>
         </Field>
+
+        <fieldset className="border-t border-rule-soft pt-4">
+          <legend className="sr-only">候補の絞り込み</legend>
+          <label className="flex cursor-pointer items-start gap-2.5">
+            <input
+              type="checkbox"
+              checked={currentGenOnly}
+              onChange={(e) => setCurrentGenOnly(e.target.checked)}
+              className="mt-0.5 cursor-pointer accent-accent"
+            />
+            <span className="text-sm">
+              新品で買える世代に絞る
+              <span className="mt-0.5 block text-xs text-dim">
+                外すと GTX 1070 のような古いモデルも候補に入ります。中古で探すなら有効です。
+              </span>
+            </span>
+          </label>
+        </fieldset>
 
         <fieldset className="border-t border-rule-soft pt-4">
           <legend className="sr-only">メーカーの指定</legend>
@@ -206,8 +228,8 @@ export function BuildTool() {
                 </p>
 
                 <div className="mt-4 grid gap-5 sm:grid-cols-2">
-                  <Band title="GPU" side={current.gpu} hrefBase="/gpu" />
-                  <Band title="CPU" side={current.cpu} hrefBase="/cpu" />
+                  <Band title="GPU" side={current.gpu} hrefBase="/gpu" kind="gpu" />
+                  <Band title="CPU" side={current.cpu} hrefBase="/cpu" kind="cpu" />
                 </div>
 
                 {(current.gpu.kind === 'ok' || current.cpu.kind === 'ok') && (
@@ -322,19 +344,25 @@ function ngText(side: Side<unknown>): string {
       return 'この画質では 1% Low の実測が無いため出せません';
     case 'vendor':
       return '条件を満たすモデルはありますが、指定したメーカーには該当がありません';
+    case 'generation':
+      return '条件を満たすモデルはありますが、新品で買える世代にはありません。絞り込みを外すと出ます';
     case 'none':
       return '掲載しているモデルでは届きません';
   }
 }
 
-function Band<T extends { name: string; slug: string; perfIndex: number }>({
+function Band<
+  T extends { name: string; slug: string; perfIndex: number; arch: string; releaseYear: number },
+>({
   title,
   side,
   hrefBase,
+  kind,
 }: {
   title: string;
   side: Side<T>;
   hrefBase: string;
+  kind: 'gpu' | 'cpu';
 }) {
   return (
     <div>
@@ -356,7 +384,10 @@ function Band<T extends { name: string; slug: string; perfIndex: number }>({
               <span className="ml-auto font-mono text-xs tabular-nums text-dim">
                 {c.fps.toFixed(0)} fps
               </span>
-              <AffiliateLink query={c.model.name} />
+              <AffiliateLink query={c.model.name} kind={kind} />
+              {stockNote(c.model) && (
+                <span className="w-full text-[11px] text-dim">{stockNote(c.model)}</span>
+              )}
             </li>
           ))}
         </ol>
