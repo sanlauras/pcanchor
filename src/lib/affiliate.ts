@@ -55,8 +55,6 @@ export const AMAZON_DISCLOSURE =
  * カテゴリの限定（i=computers）だけは別カテゴリの混入を防ぐので残す。
  */
 
-export type PartKind = 'gpu' | 'cpu';
-
 export function amazonSearchUrl(query: string): string | null {
   if (TAG === '') return null;
   const url = new URL('https://www.amazon.co.jp/s');
