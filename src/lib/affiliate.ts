@@ -21,13 +21,14 @@
  * URLに載って公開される情報なので秘密ではない。
  * Creators API の認証情報とは別物で、そちらは絶対にリポジトリに入れない。
  *
- * 未設定のときは null を返し、リンクも開示文も出さない。
- * リンクが無いのに「収入を得ています」と書くと事実に反するため。
+ * site.ts の SITE.url と同じ流儀で、既定値をコードに置いて環境変数で上書きできる。
+ * 空文字を渡すとリンクも開示文も出なくなる（リンクが無いのに
+ * 「収入を得ています」と書くと事実に反するため、その状態も作れるようにしてある）。
  */
-const TAG = process.env.NEXT_PUBLIC_AMAZON_TAG || null;
+const TAG = process.env.NEXT_PUBLIC_AMAZON_TAG ?? 'sososi27-22';
 
 export function hasAmazonTag(): boolean {
-  return TAG !== null;
+  return TAG !== '';
 }
 
 /** 規約で指定された開示文。文言を勝手に変えないこと */
@@ -36,7 +37,7 @@ export const AMAZON_DISCLOSURE =
 
 /** モデル名でAmazonを検索するURL。タグ未設定なら null */
 export function amazonSearchUrl(query: string): string | null {
-  if (TAG === null) return null;
+  if (TAG === '') return null;
   const url = new URL('https://www.amazon.co.jp/s');
   url.searchParams.set('k', query);
   url.searchParams.set('tag', TAG);
