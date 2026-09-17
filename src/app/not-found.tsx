@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { tally } from '@/lib/data/summary';
+import { supportedGameNames } from '@/lib/fps/games';
 
 /**
  * 404ページ。
@@ -28,7 +29,7 @@ const links = [
     label: '目標fpsから選ぶPC構成',
     note: '出したいfpsから必要なGPUとCPUを逆引きします',
   },
-  { href: '/games', label: 'ゲーム別の推奨GPU', note: 'VALORANT / Fortnite' },
+  { href: '/games', label: 'ゲーム別の推奨GPU', note: supportedGameNames(' / ') },
   { href: '/gpu', label: 'GPUスペック一覧', note: `${tally.gpuCount}モデル` },
   { href: '/cpu', label: 'CPUスペック一覧', note: `${tally.cpuCount}モデル` },
 ];

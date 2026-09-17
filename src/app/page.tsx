@@ -1,12 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { tally } from '@/lib/data/summary';
+import { supportedGameNames } from '@/lib/fps/games';
 import { SITE } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: `${SITE.name}｜ゲーム別fps予想とゲーミングPCスペック比較`,
   description:
-    'GPUとCPUを選ぶと、VALORANT・Fortnite で何fps出るかとボトルネックが分かります。GPU 78モデル・CPU 42モデルのスペックと性能指数も掲載。実測を基準にした推定値です。',
+    `GPUとCPUを選ぶと、${supportedGameNames('・')} で何fps出るかとボトルネックが分かります。GPU 78モデル・CPU 42モデルのスペックと性能指数も掲載。実測を基準にした推定値です。`,
   alternates: { canonical: '/' },
 };
 
@@ -26,7 +27,7 @@ const entries = [
   {
     href: '/games',
     label: 'ゲーム別の推奨GPU',
-    count: 'VALORANT / Fortnite',
+    count: supportedGameNames(' / '),
     note: 'GPU別に何fps出るかを一覧で',
   },
   {

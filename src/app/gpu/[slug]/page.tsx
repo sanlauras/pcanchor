@@ -8,6 +8,7 @@ import { FpsTables } from '@/components/model/FpsTables';
 import { SpecList } from '@/components/model/SpecList';
 import { VerifiedTag } from '@/components/spec-table/VerifiedTag';
 import { gpus } from '@/lib/data';
+import { supportedGameNames } from '@/lib/fps/games';
 import { buildFpsTables, nearbyByIndex, referenceCpu } from '@/lib/fps/table';
 
 export function generateStaticParams() {
@@ -28,7 +29,7 @@ export async function generateMetadata({
   return {
     title: `${gpu.name} は何fps出る？スペックと性能指数`,
     description:
-      `${gpu.name} が VALORANT・Fortnite で何fps出るかを解像度・画質別に掲載。` +
+      `${gpu.name} が ${supportedGameNames('・')} で何fps出るかを解像度・画質別に掲載。` +
       `性能指数は ${gpu.perfIndex.toFixed(1)}、VRAM ${gpu.vramGb}GB。` +
       `メーカー公式スペックと自前の実測から計算した推定値です（誤差±15〜20%）。`,
     alternates: { canonical: `/gpu/${gpu.slug}` },

@@ -2,12 +2,12 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { gpus } from '@/lib/data';
-import { GAMES } from '@/lib/fps/games';
+import { GAMES, supportedGameNames } from '@/lib/fps/games';
 
 export const metadata: Metadata = {
   title: 'ゲーム別の推奨GPU一覧',
   description:
-    'VALORANT・Fortnite の推奨GPUを、GPU別に何fps出るかの一覧で掲載。推奨スペックの目安になります。解像度・画質別の推定値をメーカー公式スペックと実測から計算しています。',
+    `${supportedGameNames('・')} の推奨GPUを、GPU別に何fps出るかの一覧で掲載。推奨スペックの目安になります。解像度・画質別の推定値をメーカー公式スペックと実測から計算しています。`,
   alternates: { canonical: '/games' },
 };
 

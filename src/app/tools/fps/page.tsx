@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { AdSlot } from '@/components/AdSlot';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { FpsTool } from '@/components/fps/FpsTool';
+import { supportedGameNames } from '@/lib/fps/games';
 import { assertModelReproducesMeasurements } from '@/lib/fps/selftest';
 
 // 計算式が実測4条件を再現するか、ビルド時に確認する。
@@ -11,7 +12,7 @@ assertModelReproducesMeasurements();
 export const metadata: Metadata = {
   title: 'ゲーム別fps予想とボトルネック診断｜GPUとCPUを選ぶだけ',
   description:
-    'GPUとCPUを選ぶと、VALORANT・Fortnite の推定fpsが出ます。GPU律速かCPU律速か、どこを変えればfpsが伸びるかまで診断。メーカー公式スペックと実測から計算した推定値です（誤差±15〜20%）。',
+    `GPUとCPUを選ぶと、${supportedGameNames('・')} の推定fpsが出ます。GPU律速かCPU律速か、どこを変えればfpsが伸びるかまで診断。メーカー公式スペックと実測から計算した推定値です（誤差±15〜20%）。`,
   alternates: { canonical: '/tools/fps' },
 };
 

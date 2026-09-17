@@ -144,12 +144,47 @@ export const GAMES: GameProfile[] = [
     featuredPresetId: '',
     source: null,
     notes: [
-      'エンジン仕様で300fpsが上限です。+fps_max 0 でも解除できないため、上限より上を測定できず係数が取れていません。',
+      'エンジン仕様で300fpsが上限です。起動オプション +fps_max unlimited で既定の144fps上限は外せますが、300fpsは超えられません。上限に張り付いた測定からは係数が取れないため、対応を準備中です。',
     ],
     highlight: null,
     presets: [],
   },
 ];
+
+/*
+ * 対応ゲームのデータが揃っているかを、読み込んだ時点で確かめる。
+ *
+ * supported を true にしたのに presets が空だと、ゲーム別ページが
+ * 「Reduce of empty array with no initial value」という原因の分からない
+ * エラーでビルドごと落ちる（Apex の追加準備中に実際に踏んだ）。
+ * ページ側で握りつぶすとデータの誤りが隠れるので、入口で分かる言葉で止める。
+ */
+for (const g of GAMES) {
+  if (!g.supported) continue;
+  if (g.presets.length === 0) {
+    throw new Error(
+      `${g.name}: supported が true なのに presets が空です。係数が揃ってから有効化してください。`,
+    );
+  }
+  if (!g.presets.some((p) => p.id === g.featuredPresetId)) {
+    throw new Error(
+      `${g.name}: featuredPresetId「${g.featuredPresetId}」が presets の中にありません。`,
+    );
+  }
+}
+
+/**
+ * 対応ゲームの名前を区切り文字でつなぐ。
+ *
+ * 「VALORANT・Fortnite」のようなゲーム名をページに直書きすると、
+ * ゲームを増やしたときに直し忘れて表記が食い違う。ここに集めておけば
+ * supported を true にするだけで全ページが追随する。
+ */
+export function supportedGameNames(separator: string): string {
+  return GAMES.filter((g) => g.supported)
+    .map((g) => g.name)
+    .join(separator);
+}
 
 export function findGame(id: string): GameProfile {
   return GAMES.find((g) => g.id === id) ?? GAMES[0]!;
