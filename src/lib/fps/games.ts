@@ -25,6 +25,8 @@ export const GAMES: GameProfile[] = [
     confidence: 'measured',
     confidenceLabel: '自前の実測（CapFrameX・4条件）',
     gpuWeight: 1,
+    // 基準そのものなので定義上1
+    gpuScaling: 1,
     cpuWeight: 1,
     // 競技勢は低設定が多いが、Valorant は高設定でも十分fpsが出るため高を基準にする
     featuredPresetId: 'high',
@@ -67,6 +69,8 @@ export const GAMES: GameProfile[] = [
     confidenceLabel: 'Boss Benchmarks さんの実測から算出した係数',
     // 4K Epic 40fps ÷ RTX 5070 Ti の Valorant 4K高 467.5
     gpuWeight: 40 / 467.5,
+    // 測定GPUが RTX 5070 Ti の1枚だけなので、効き方は確かめようがない。比例とみなす
+    gpuScaling: 1,
     // 観測された最大 651fps ÷ Valorant CPU天井 970.3（同じ Ryzen 7 9800X3D）
     cpuWeight: 651 / 970.3,
     // Fortnite の競技勢はほぼ Performance モードを使うため、これを基準にする
@@ -81,10 +85,12 @@ export const GAMES: GameProfile[] = [
     highlight: {
       title: 'この数値は公開マッチでの値です',
       body: 'クリエイティブなど負荷の軽い場所では、これを大きく上回ります。同じPCでも遊ぶ場所でfpsが変わるので、公開マッチの数値として見てください。',
-      measuredLabel: '公開マッチ',
-      lighterLabel: 'クリエイティブなど',
-      // ユーザー提供の知見。実測ではないため「目安」として表示する
-      lighterMultiplier: 1.33,
+      comparison: {
+        measuredLabel: '公開マッチ',
+        lighterLabel: 'クリエイティブなど',
+        // ユーザー提供の知見。実測ではないため「目安」として表示する
+        lighterMultiplier: 1.33,
+      },
     },
     presets: [
       // 4K の実測 40 / 208 / 315 / 525 fps から、Epic を 1.0 とした倍率
@@ -135,19 +141,69 @@ export const GAMES: GameProfile[] = [
     id: 'apex',
     name: 'Apex Legends',
     cap: 300,
-    supported: false,
+    supported: true,
     confidence: 'derived',
-    confidenceLabel: '係数なし',
-    gpuWeight: 0,
-    cpuWeight: 0,
-    // 係数が無く presets が空なので、ページも生成されない
-    featuredPresetId: '',
-    source: null,
+    confidenceLabel: 'ちもろぐ さんの測定から算出した係数',
+    // 以下の係数はすべて CONTEXT.md「Apex の係数の算出過程」で算出している。
+    // GPU 30枚（Core i9 13900K・射撃訓練場）の 1080p/1440p/4K 最高・66点を、
+    // 対数で最小二乗フィットして gpuWeight・gpuScaling・k を同時に求めた
+    gpuWeight: 0.267,
+    // 性能指数が2倍でfpsは約1.6倍。比例（1）のまま中位GPUに合わせると、RTX 4070〜4080 が平均+25%高く出た
+    gpuScaling: 0.665,
+    // CPU 15個（RTX 4090・キングスキャニオン・1080p最高）の fps ÷ Valorant CPU天井 の平均。CV 10%
+    cpuWeight: 0.351,
+    // 高fpsを狙う人向けに、軽い設定を基準にする（Fortnite の Performance と同じ考え方）
+    featuredPresetId: 'low',
+    // 許諾取得済み。出典の表記は任意とのことだが、算出方法を公開する方針に沿って明記する
+    source: { label: 'ちもろぐ「Apex Legendsの推奨スペック」', url: 'https://chimolog.co/bto-apex-legends-specs/' },
     notes: [
-      'エンジン仕様で300fpsが上限です。起動オプション +fps_max unlimited で既定の144fps上限は外せますが、300fpsは超えられません。上限に張り付いた測定からは係数が取れないため、対応を準備中です。',
+      '係数は許諾を得たうえで、ちもろぐ さんの測定から算出しています（fps数値表の転載はしていません）。',
+      'エンジン仕様で300fpsが上限です。起動オプション +fps_max unlimited で既定の144fps上限は外せますが、300fpsは超えられません。',
+      '性能指数15未満のGPU（GTX 1650 など）では、予想が実際より高めに出る傾向があります。',
+      'CPU側の係数は実戦マップ（キングスキャニオン）での測定から算出しています。CPUが上限を決めている構成では、1% Low は表示より高く出ることがあります。',
     ],
-    highlight: null,
-    presets: [],
+    highlight: {
+      title: 'この数値は激しい戦闘シーンでの値です',
+      body: 'スモークやテルミット、スコープ越しの射撃を重ねた重い場面の測定から算出しています（測定者によると、実際のプレイの中でも重い側の1割に入る負荷）。移動中など軽い場面では、これより高く出ます。',
+      // 軽い場面での倍率を出せるデータは RTX 4090 の1点しか無いため、数字は出さない
+      comparison: null,
+    },
+    // Apex にプリセットは無い。低/中/最高は測定者の定義（CONTEXT.md に中身を記録）。
+    // 設定係数は 1080p で GPU律速の10枚（指数15〜45）の平均
+    presets: [
+      {
+        id: 'low',
+        label: '低',
+        factor: 1.28,
+        // 低・中は 1080p しか測定が無いので、最高の解像度指数を流用している
+        k: 0.587,
+        // 記事の VRAM 使用量は「5GB前後」の概数なので不明扱い
+        vram4kMb: null,
+        // GPU律速の15点の、上下1割を除いた範囲
+        lowRatio: { min: 0.535, max: 0.619 },
+        note: 'WQHD / 4K は、最高設定で測った解像度の効き方を流用した近似値です。',
+      },
+      {
+        id: 'medium',
+        label: '中',
+        factor: 1.21,
+        k: 0.587,
+        vram4kMb: null,
+        // GPU律速の16点の、上下1割を除いた範囲
+        lowRatio: { min: 0.543, max: 0.615 },
+        note: 'WQHD / 4K は、最高設定で測った解像度の効き方を流用した近似値です。',
+      },
+      {
+        id: 'max',
+        label: '最高',
+        factor: 1,
+        k: 0.587,
+        vram4kMb: null,
+        // GPU律速の66点（3解像度）の、上下1割を除いた範囲
+        lowRatio: { min: 0.496, max: 0.636 },
+        note: 'テクスチャストリーミング割り当てを「極（8GB）」にした設定です。',
+      },
+    ],
   },
 ];
 

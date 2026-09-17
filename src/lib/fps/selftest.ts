@@ -1,3 +1,4 @@
+import { cpus, gpus } from '@/lib/data';
 import { findGame } from './games';
 import { ANCHOR, type ResolutionId, predict } from './model';
 
@@ -10,6 +11,7 @@ import { ANCHOR, type ResolutionId, predict } from './model';
  * 出典:
  *   Valorant … CONTEXT.md「Valorant 実測4点」（自前の実測）
  *   Fortnite … CONTEXT.md「評価済みソース」Boss Benchmarks から読み取った15条件
+ *   Apex     … CONTEXT.md「Apex の係数の算出過程」ちもろぐ の測定から選んだ9条件
  */
 
 type Case = {
@@ -40,6 +42,33 @@ const OWN = { gpuFps4kHigh: ANCHOR.gpuFps4kHigh, cpuCeiling: ANCHOR.cpuCeiling }
 
 /** Boss Benchmarks の測定機（RTX 5070 Ti + Ryzen 7 9800X3D） */
 const BOSS = { gpuFps4kHigh: 467.5, cpuCeiling: ANCHOR.cpuCeiling };
+
+/**
+ * ちもろぐ の測定機。GPUの測定は Core i9 13900K、CPUの測定は RTX 4090 で行われている。
+ *
+ * 値はDBからモデル名で引く。Apex は30枚のGPUから係数を求めたので、
+ * 指数を計算し直したら再現できるかを確かめ直す必要がある（直書きすると気づけない）。
+ */
+function gpuFpsOf(name: string): number {
+  const g = gpus.find((x) => x.name === name);
+  if (!g) throw new Error(`selftest: GPU「${name}」がDBに無い`);
+  return g.fpsValorant4kHigh;
+}
+function cpuCeilingOf(name: string): number {
+  const c = cpus.find((x) => x.name === name);
+  if (!c) throw new Error(`selftest: CPU「${name}」がDBに無い`);
+  return c.fpsValorantCeiling;
+}
+/** GPUの測定: そのGPU + Core i9 13900K */
+const chimoGpu = (name: string) => ({
+  gpuFps4kHigh: gpuFpsOf(name),
+  cpuCeiling: cpuCeilingOf('Core i9-13900K'),
+});
+/** CPUの測定: RTX 4090 + そのCPU */
+const chimoCpu = (name: string) => ({
+  gpuFps4kHigh: gpuFpsOf('GeForce RTX 4090'),
+  cpuCeiling: cpuCeilingOf(name),
+});
 
 const CASES: Case[] = [
   // ---------------------------------------------- Valorant（自前の実測4条件）
@@ -147,6 +176,69 @@ const CASES: Case[] = [
     // CONTEXT.md「この指数の限界」にある既知の制約。誤差の上限を固定するために置いている
     expected: 504, tolerance: 0.2,
     expectedLowRatio: 0.528,
+  },
+
+  // ---------------------------- Apex（ちもろぐ・GPUの測定。射撃訓練場の重い場面）
+  // 係数は66点のフィットなので、ぴったり合う基準点は無い。ズレ＋2〜3%を許容にしている
+  {
+    label: 'Apex 4K/最高 RTX 4080',
+    gameId: 'apex', presetId: 'max', resolution: '4k', ...chimoGpu('GeForce RTX 4080'),
+    expected: 127.4, tolerance: 0.03, expectBottleneck: 'gpu',
+    expectedLowRatio: 0.522,
+  },
+  {
+    label: 'Apex 1440p/最高 RTX 4070',
+    gameId: 'apex', presetId: 'max', resolution: '1440p', ...chimoGpu('GeForce RTX 4070'),
+    expected: 154.1, tolerance: 0.06, expectBottleneck: 'gpu',
+    expectedLowRatio: 0.573,
+  },
+  {
+    // 効き方(gpuScaling)は基準GPU（指数100）を軸にしている。1 に戻すと
+    // 指数の低いGPUほど低く出て、この条件（指数33）が約-35%ずれて落ちる
+    label: 'Apex 1080p/最高 RTX 4060',
+    gameId: 'apex', presetId: 'max', resolution: '1080p', ...chimoGpu('GeForce RTX 4060'),
+    expected: 142.0, tolerance: 0.08, expectBottleneck: 'gpu',
+    expectedLowRatio: 0.548,
+  },
+  {
+    label: 'Apex 1080p/最高 RTX 4070 SUPER',
+    gameId: 'apex', presetId: 'max', resolution: '1080p', ...chimoGpu('GeForce RTX 4070 SUPER'),
+    expected: 219.3, tolerance: 0.08, expectBottleneck: 'gpu',
+    expectedLowRatio: 0.627,
+  },
+  {
+    label: 'Apex 1080p/低 RTX 3060 12GB',
+    gameId: 'apex', presetId: 'low', resolution: '1080p', ...chimoGpu('GeForce RTX 3060 12GB'),
+    expected: 151.8, tolerance: 0.05, expectBottleneck: 'gpu',
+    expectedLowRatio: 0.545,
+  },
+  {
+    // 中の設定係数は10枚の平均。RX 7600 はその中で最も中が伸びた1枚なので -11% ずれる
+    label: 'Apex 1080p/中 RX 7600',
+    gameId: 'apex', presetId: 'medium', resolution: '1080p', ...chimoGpu('Radeon RX 7600'),
+    expected: 185.5, tolerance: 0.13, expectBottleneck: 'gpu',
+    expectedLowRatio: 0.551,
+  },
+  {
+    // 性能指数15未満は高めに出る（画面の注記にも書いている既知の制約）。
+    // VRAM 4GB のカード。誤差の上限を固定するために置いている
+    label: 'Apex 1080p/最高 GTX 1650 GDDR6（指数15未満・既知の過大評価）',
+    gameId: 'apex', presetId: 'max', resolution: '1080p', ...chimoGpu('GeForce GTX 1650 (GDDR6)'),
+    expected: 50.6, tolerance: 0.35,
+  },
+
+  // ------------------------------ Apex（ちもろぐ・CPUの測定。キングスキャニオン）
+  // CPU律速の条件の 1% Low 比は 0.74〜0.83 で、GPU律速から取った宣言レンジより高い。
+  // 1% Low は低めに（安全側に）出る。GPU律速のレンジを広げると他が甘くなるので検証しない
+  {
+    label: 'Apex 1080p/最高 RTX 4090 + Ryzen 5 7500F（CPU律速）',
+    gameId: 'apex', presetId: 'max', resolution: '1080p', ...chimoCpu('Ryzen 5 7500F'),
+    expected: 216.9, tolerance: 0.02, expectBottleneck: 'cpu',
+  },
+  {
+    label: 'Apex 1080p/最高 RTX 4090 + Ryzen 7 9800X3D（300fps上限）',
+    gameId: 'apex', presetId: 'max', resolution: '1080p', ...chimoCpu('Ryzen 7 9800X3D'),
+    expected: 298.4, tolerance: 0.02, expectBottleneck: 'cap',
   },
 ];
 

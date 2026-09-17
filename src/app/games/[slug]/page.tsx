@@ -106,10 +106,16 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
             </p>
             <p className="mt-1 max-w-[70ch] text-xs text-dim">
               {game.highlight.body}
-              このページの数値も「{game.highlight.measuredLabel}」の値なので、
-              「{game.highlight.lighterLabel}」では約{' '}
-              {game.highlight.lighterMultiplier.toFixed(2)} 倍（+
-              {Math.round((game.highlight.lighterMultiplier - 1) * 100)}%）を目安にしてください。
+              {game.highlight.comparison ? (
+                <>
+                  このページの数値も「{game.highlight.comparison.measuredLabel}」の値なので、
+                  「{game.highlight.comparison.lighterLabel}」では約{' '}
+                  {game.highlight.comparison.lighterMultiplier.toFixed(2)} 倍（+
+                  {Math.round((game.highlight.comparison.lighterMultiplier - 1) * 100)}%）を目安にしてください。
+                </>
+              ) : (
+                'このページの数値も同じ条件での値です。'
+              )}
             </p>
           </div>
         )}

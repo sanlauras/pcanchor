@@ -199,23 +199,26 @@ export function FpsTool() {
                   {game.highlight.title}
                 </p>
                 <p className="mt-1 text-xs text-dim">{game.highlight.body}</p>
-                <dl className="mt-3 space-y-1.5">
-                  <div className="flex items-baseline justify-between gap-3 border-b border-accent/25 pb-1.5">
-                    <dt className="text-xs text-dim">{game.highlight.measuredLabel}</dt>
-                    <dd className="font-mono text-lg font-semibold tabular-nums text-ink">
-                      {result.prediction.fps.toFixed(0)} fps
-                    </dd>
-                  </div>
-                  <div className="flex items-baseline justify-between gap-3">
-                    <dt className="text-xs text-dim">{game.highlight.lighterLabel}</dt>
-                    <dd className="font-mono text-lg font-semibold tabular-nums text-accent">
-                      約 {(result.prediction.fps * game.highlight.lighterMultiplier).toFixed(0)} fps
-                      <span className="ml-2 text-[10px] font-normal text-dim">
-                        +{Math.round((game.highlight.lighterMultiplier - 1) * 100)}% の目安
-                      </span>
-                    </dd>
-                  </div>
-                </dl>
+                {/* 倍率の根拠が無いゲーム（Apex）は文章だけにする */}
+                {game.highlight.comparison && (
+                  <dl className="mt-3 space-y-1.5">
+                    <div className="flex items-baseline justify-between gap-3 border-b border-accent/25 pb-1.5">
+                      <dt className="text-xs text-dim">{game.highlight.comparison.measuredLabel}</dt>
+                      <dd className="font-mono text-lg font-semibold tabular-nums text-ink">
+                        {result.prediction.fps.toFixed(0)} fps
+                      </dd>
+                    </div>
+                    <div className="flex items-baseline justify-between gap-3">
+                      <dt className="text-xs text-dim">{game.highlight.comparison.lighterLabel}</dt>
+                      <dd className="font-mono text-lg font-semibold tabular-nums text-accent">
+                        約 {(result.prediction.fps * game.highlight.comparison.lighterMultiplier).toFixed(0)} fps
+                        <span className="ml-2 text-[10px] font-normal text-dim">
+                          +{Math.round((game.highlight.comparison.lighterMultiplier - 1) * 100)}% の目安
+                        </span>
+                      </dd>
+                    </div>
+                  </dl>
+                )}
               </div>
             )}
 

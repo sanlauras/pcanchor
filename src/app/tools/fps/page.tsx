@@ -51,8 +51,10 @@ export default function FpsToolPage() {
           <pre className="mb-3 overflow-x-auto border border-rule bg-panel p-3 font-mono text-[11px]">
 {`予想fps = min(GPU由来fps, CPU由来fps, ゲーム固有の上限)
 
-GPU由来fps = そのGPUの「Valorant 4K全て高」推定fps
-           × ゲームの重さ × 設定係数 × 解像度係数
+GPU由来fps = 基準GPU（RX 9070 XT）の「Valorant 4K全て高」fps
+           × ゲームの重さ
+           × (そのGPU ÷ 基準GPU)^GPU性能の効き方
+           × 設定係数 × 解像度係数
 CPU由来fps = そのCPUの「Valorant 天井」推定fps × ゲームの重さ`}
           </pre>
           <div className="max-w-[80ch] space-y-2">
@@ -75,6 +77,15 @@ CPU由来fps = そのCPUの「Valorant 天井」推定fps × ゲームの重さ`
               CPUが自前の実測機と同一のため、ゲーム間の重さを直接比較できています。
               解像度係数はプリセットごとに異なり（重い設定ほど画素数に比例して重くなる）、
               GPU使用率が97%以上でGPU律速と確認できた条件だけを使っています。
+            </p>
+            <p>
+              <strong className="font-medium text-ink">Apex Legends</strong> —
+              許諾を得たうえで、ちもろぐ さんの測定から算出。GPU側は Core i9 13900K で
+              GPU 30枚を測った結果（射撃訓練場の重い場面）、CPU側は RTX 4090 で CPU 15個を
+              測った結果（キングスキャニオン）を使っています。
+              Apex では上位のGPUほどfpsの伸びが鈍り、性能指数が2倍になってもfpsは約1.6倍です。
+              これを「GPU性能の効き方」として式に入れています（VALORANT と Fortnite は1で、指数に比例）。
+              低・中の設定はフルHDの測定しかないため、WQHD / 4K は最高設定の解像度係数を流用した近似です。
             </p>
           </div>
         </section>

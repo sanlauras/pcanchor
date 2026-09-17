@@ -3,10 +3,13 @@
  *
  *   予想fps = min(GPU由来fps, CPU由来fps, ゲーム固有の上限)
  *
- *   GPU由来fps = そのGPUの Valorant 4K高 推定fps
+ *   GPU由来fps = 基準GPUの Valorant 4K高 fps(464.6)
  *              × ゲームの重さ(gpuWeight)
+ *              × (そのGPU ÷ 基準GPU)^GPU性能の効き方(gpuScaling)
  *              × プリセット係数(factor)
  *              × 解像度係数(画素比^k)
+ *
+ *   gpuScaling が 1 なら「そのGPUの Valorant 4K高 × gpuWeight」と完全に同じ。
  *   CPU由来fps = そのCPUの Valorant 天井 推定fps × ゲームの重さ(cpuWeight)
  *
  * 係数の根拠はすべて CONTEXT.md にある。ここに新しい数値を足さないこと。
@@ -81,10 +84,15 @@ export type PresetProfile = {
 export type GameHighlight = {
   title: string;
   body: string;
-  /** 負荷の軽い環境での目安倍率 */
-  lighterMultiplier: number;
-  lighterLabel: string;
-  measuredLabel: string;
+  /**
+   * 負荷の軽い環境での目安倍率。根拠となる数字が無ければ null にして、
+   * 文章だけの強調枠にする（倍率をでっち上げない）。
+   */
+  comparison: {
+    lighterMultiplier: number;
+    lighterLabel: string;
+    measuredLabel: string;
+  } | null;
 };
 
 export type GameProfile = {
@@ -97,8 +105,19 @@ export type GameProfile = {
   /** 係数の根拠の強さ */
   confidence: 'measured' | 'derived';
   confidenceLabel: string;
-  /** Valorant の 4K最高設定 を 1.0 とした GPU側の重さ */
+  /**
+   * Valorant の 4K最高設定 を 1.0 とした GPU側の重さ。
+   * gpuScaling が 1 でないときは「基準GPU（RX 9070 XT＝指数100）での」重さになる。
+   */
   gpuWeight: number;
+  /**
+   * GPU性能の効き方。GPUの性能指数が2倍になったとき、fpsが 2^gpuScaling 倍になる。
+   *
+   * 1 = 指数に比例（Valorant は定義上1。Fortnite は測定GPUが1枚なので確かめようがなく1）。
+   * 1未満 = 上位GPUほど伸びが鈍る。Apex は30枚の測定から 0.665（2倍で約1.6倍）。
+   * 算出過程は CONTEXT.md「Apex の係数の算出過程」。
+   */
+  gpuScaling: number;
   /** Valorant の CPU天井 を 1.0 とした CPU側の重さ */
   cpuWeight: number;
   presets: PresetProfile[];
@@ -186,14 +205,18 @@ export function predict(input: {
   /** CPUの Valorant 天井の推定fps（cpu_index.csv 由来） */
   cpuCeiling: number;
   resolution: ResolutionId;
-  game: Pick<GameProfile, 'cap' | 'gpuWeight' | 'cpuWeight'>;
+  game: Pick<GameProfile, 'cap' | 'gpuWeight' | 'gpuScaling' | 'cpuWeight'>;
   preset: Pick<PresetProfile, 'factor' | 'k' | 'lowRatio'>;
 }): Prediction {
   const { gpuFps4kHigh, cpuCeiling, resolution, game, preset } = input;
 
+  // 基準GPUを軸に、性能比を gpuScaling 乗する。
+  // gpuScaling が 1 なら 基準 × 重さ × (GPU ÷ 基準) = GPU × 重さ で、従来の式と一致する
+  const base = ANCHOR.gpuFps4kHigh;
   const gpuFps =
-    gpuFps4kHigh *
+    base *
     game.gpuWeight *
+    Math.pow(gpuFps4kHigh / base, game.gpuScaling) *
     preset.factor *
     resolutionFactor(resolution, preset.k);
 

@@ -253,6 +253,12 @@ const INVERSE_CASES: InverseCase[] = [
   { gameId: 'fortnite', presetId: 'low', resolution: '1080p', targetFps: 144 },
   { gameId: 'fortnite', presetId: 'epic', resolution: '1440p', targetFps: 60 },
   { gameId: 'fortnite', presetId: 'medium', resolution: '1440p', targetFps: 144 },
+  // Apex は GPU性能の効き方が1ではない（上位ほど伸びが鈍る）ので、逆引きでも確かめる
+  { gameId: 'apex', presetId: 'low', resolution: '1080p', targetFps: 240 },
+  { gameId: 'apex', presetId: 'medium', resolution: '1080p', targetFps: 144 },
+  { gameId: 'apex', presetId: 'max', resolution: '1440p', targetFps: 144 },
+  // 300fps上限を超える目標。どの段階も「出せない」になり、落ちないこと
+  { gameId: 'apex', presetId: 'low', resolution: '1080p', targetFps: 360 },
 ];
 
 /**
