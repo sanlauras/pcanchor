@@ -71,7 +71,9 @@ export function FpsTables({
                             {c.fps.toFixed(0)}
                           </span>
                           <span className="ml-1 font-mono text-[10px] text-dim">
-                            ({BOTTLENECK_LABEL[c.bottleneck]})
+                            ({BOTTLENECK_LABEL[c.bottleneck]}
+                            {/* 上限で止まるときは、上限が無い場合の計算上の値も添える */}
+                            {c.fps < c.uncapped && `・理論 ${c.uncapped.toFixed(0)}`})
                           </span>
                         </td>
                       ))}

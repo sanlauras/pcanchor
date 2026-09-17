@@ -98,6 +98,7 @@ export const GAMES: GameProfile[] = [
         lighterLabel: 'クリエイティブなど',
         // ユーザー提供の知見。実測ではないため「目安」として表示する
         lighterMultiplier: 1.33,
+        appliesTo: 'all',
       },
     },
     // 測定GPUが1枚だけで、GPUの帯ごとのズレは確かめられていない
@@ -174,9 +175,18 @@ export const GAMES: GameProfile[] = [
     ],
     highlight: {
       title: 'この数値は激しい戦闘シーンでの値です',
-      body: 'スモークやテルミット、スコープ越しの射撃を重ねた重い場面の測定から算出しています（測定者によると、実際のプレイの中でも重い側の1割に入る負荷）。移動中など軽い場面では、これより高く出ます。',
-      // 軽い場面での倍率を出せるデータは RTX 4090 の1点しか無いため、数字は出さない
-      comparison: null,
+      body: 'スモークやテルミット、スコープ越しの射撃を重ねた重い場面の測定から算出しています（測定者によると、実際のプレイの中でも重い側の1割に入る負荷）。実戦マップでのプレイでは、これより高く出ます。',
+      comparison: {
+        measuredLabel: '激しい戦闘シーン',
+        lighterLabel: '実戦マップでのプレイ',
+        // 同じ構成（13900K + RTX 4090・4K最高）で場所だけを変えた2つの測定の比。
+        // RTX 4090 の1枚だけが根拠なので「上振れ側の目安」。CONTEXT.md「Apex の係数の算出過程」
+        lighterMultiplier: 1.35,
+        // CPU側の係数は元々実戦マップの測定から作っているので、GPU側だけに掛ける
+        appliesTo: 'gpu',
+        basis:
+          '同じ構成（Core i9 13900K + RTX 4090・4K最高）で、射撃訓練場の重いテストと実戦マップ（キングスキャニオン）を比べた1組の測定から算出。GPU側だけに掛けています。根拠がGPU1枚のため、上振れ側の目安として見てください。',
+      },
     },
     overpredictsBelowIndex: APEX_OVERPREDICTS_BELOW,
     // Apex にプリセットは無い。低/中/最高は測定者の定義（CONTEXT.md に中身を記録）。

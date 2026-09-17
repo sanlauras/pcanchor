@@ -19,6 +19,8 @@ export function referenceCpu(): Cpu {
 export type FpsCell = {
   resolution: ResolutionId;
   fps: number;
+  /** ゲーム側のfps上限が無い場合の計算上の値 */
+  uncapped: number;
   bottleneck: 'gpu' | 'cpu' | 'cap' | 'balanced';
 };
 
@@ -62,7 +64,12 @@ export function buildFpsTables(gpu: Gpu, cpu: Cpu): GameFpsTable[] {
           game,
           preset,
         });
-        return { resolution: res.id, fps: p.fps, bottleneck: p.bottleneck };
+        return {
+          resolution: res.id,
+          fps: p.fps,
+          uncapped: p.uncapped,
+          bottleneck: p.bottleneck,
+        };
       }),
     })),
   }));
@@ -91,7 +98,7 @@ export function rankGpusForGame(args: {
         game,
         preset,
       });
-      return { gpu, fps: p.fps, bottleneck: p.bottleneck };
+      return { gpu, fps: p.fps, uncapped: p.uncapped, bottleneck: p.bottleneck };
     })
     .sort((a, b) => b.fps - a.fps);
 }

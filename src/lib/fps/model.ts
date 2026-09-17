@@ -88,12 +88,39 @@ export type GameHighlight = {
    * 負荷の軽い環境での目安倍率。根拠となる数字が無ければ null にして、
    * 文章だけの強調枠にする（倍率をでっち上げない）。
    */
-  comparison: {
-    lighterMultiplier: number;
-    lighterLabel: string;
-    measuredLabel: string;
-  } | null;
+  comparison: LighterComparison | null;
 };
+
+export type LighterComparison = {
+  lighterMultiplier: number;
+  lighterLabel: string;
+  measuredLabel: string;
+  /**
+   * 倍率をどこに掛けるか。
+   *
+   * all … 予想fps全体（Fortnite。軽い場所はCPUもGPUも軽くなる前提の目安）
+   * gpu … GPU側だけ（Apex。CPU側の係数が元々軽い場面の測定から作られているため、
+   *       CPU側にまで掛けると二重に軽くなる）
+   */
+  appliesTo: 'all' | 'gpu';
+  /** 倍率の根拠。あれば画面に出す */
+  basis?: string;
+};
+
+/**
+ * 負荷の軽い場面での目安fps。上限（ゲーム側のfps上限）で頭打ちにする。
+ * uncapped は上限が無い場合の計算上の値。
+ */
+export function lighterScene(
+  p: Prediction,
+  c: Pick<LighterComparison, 'lighterMultiplier' | 'appliesTo'>,
+): { fps: number; uncapped: number } {
+  const uncapped =
+    c.appliesTo === 'gpu'
+      ? Math.min(p.gpuFps * c.lighterMultiplier, p.cpuFps)
+      : p.uncapped * c.lighterMultiplier;
+  return { fps: Math.min(uncapped, p.cap ?? Number.POSITIVE_INFINITY), uncapped };
+}
 
 export type GameProfile = {
   id: string;
@@ -149,6 +176,11 @@ export type Prediction = {
   cap: number | null;
   /** 実際の予想fps。上の3つの最小値 */
   fps: number;
+  /**
+   * ゲーム側のfps上限が無い場合の計算上の値（GPU側とCPU側の小さい方）。
+   * 上限を超える領域は測定で確かめようがないので、画面では「理論値」と明記する。
+   */
+  uncapped: number;
   /** 1% Low（カクつきの目安）の推定レンジ。係数が無ければ null */
   fps1Low: { min: number; max: number } | null;
   bottleneck: Bottleneck;
@@ -169,9 +201,15 @@ const BALANCED_BAND = 0.05;
  */
 export const FPS_ERROR = 0.2;
 
-/** 「およそ N〜M fps」を出すための範囲。誤差の説明を数値で見せる用 */
-export function errorRange(fps: number): { min: number; max: number } {
-  return { min: fps * (1 - FPS_ERROR), max: fps * (1 + FPS_ERROR) };
+/**
+ * 「およそ N〜M fps」を出すための範囲。誤差の説明を数値で見せる用。
+ * 上側はゲーム側のfps上限で止める（300fps上限のゲームで「〜360」と出さないため）。
+ */
+export function errorRange(fps: number, cap: number | null): { min: number; max: number } {
+  return {
+    min: fps * (1 - FPS_ERROR),
+    max: Math.min(fps * (1 + FPS_ERROR), cap ?? Number.POSITIVE_INFINITY),
+  };
 }
 
 /** よくあるゲーミングモニターのリフレッシュレート */
@@ -244,6 +282,7 @@ export function predict(input: {
     cpuFps,
     cap,
     fps,
+    uncapped: Math.min(gpuFps, cpuFps),
     // 1% Low は平均fpsに比を掛けるだけ。比はプリセットごとの実測から来ている
     fps1Low: preset.lowRatio
       ? { min: fps * preset.lowRatio.min, max: fps * preset.lowRatio.max }

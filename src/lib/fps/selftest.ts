@@ -1,6 +1,6 @@
 import { cpus, gpus } from '@/lib/data';
 import { findGame } from './games';
-import { ANCHOR, type ResolutionId, predict } from './model';
+import { ANCHOR, type ResolutionId, lighterScene, predict } from './model';
 
 /**
  * 計算式が実測・読み取り値を再現するかを確認する。
@@ -35,6 +35,13 @@ type Case = {
    * コードに残さないため（CLAUDE.md 絶対ルール1）。
    */
   expectedLowRatio?: number;
+  /**
+   * 'lighter' のとき、強調枠の「軽い場面」の値（lighterScene）で比べる。
+   * 省略時は通常の予想fps。
+   */
+  scene?: 'lighter';
+  /** 上限で止まる条件で、理論値（上限が無い場合の値）が上限を超えていることも確かめる */
+  expectUncappedAboveCap?: boolean;
 };
 
 /** 自前の実測機（RX 9070 XT + Ryzen 7 9800X3D） */
@@ -239,6 +246,23 @@ const CASES: Case[] = [
     label: 'Apex 1080p/最高 RTX 4090 + Ryzen 7 9800X3D（300fps上限）',
     gameId: 'apex', presetId: 'max', resolution: '1080p', ...chimoCpu('Ryzen 7 9800X3D'),
     expected: 298.4, tolerance: 0.02, expectBottleneck: 'cap',
+    expectUncappedAboveCap: true,
+  },
+
+  // ------------------- Apex（ちもろぐ・CPUの測定を「実戦マップでのプレイ」の再現に使う）
+  // 場面の倍率 1.35 は、この1組目（13900K + 4090・4K最高）の射撃訓練場と実戦マップの比
+  {
+    label: 'Apex 実戦マップ 4K/最高 RTX 4090 + Core i9 13900K（GPU律速・倍率の出どころ）',
+    gameId: 'apex', presetId: 'max', resolution: '4k', ...chimoCpu('Core i9-13900K'),
+    scene: 'lighter',
+    // 重い場面の予想が既に測定より +6% 高いので、倍率を掛けても +5.5% ずれる
+    expected: 228.9, tolerance: 0.08,
+  },
+  {
+    label: 'Apex 実戦マップ 1080p/最高 RTX 4090 + Ryzen 5 7500F（CPUが上限で伸びない）',
+    gameId: 'apex', presetId: 'max', resolution: '1080p', ...chimoCpu('Ryzen 5 7500F'),
+    scene: 'lighter',
+    expected: 216.9, tolerance: 0.02,
   },
 ];
 
@@ -261,11 +285,26 @@ export function assertModelReproducesMeasurements(): void {
       preset,
     });
 
-    const diff = Math.abs(got.fps - c.expected) / c.expected;
+    let fps = got.fps;
+    if (c.scene === 'lighter') {
+      const cmp = game.highlight?.comparison;
+      if (!cmp) {
+        problems.push(`${c.label}: 軽い場面の倍率（highlight.comparison）が無い`);
+        continue;
+      }
+      fps = lighterScene(got, cmp).fps;
+    }
+
+    const diff = Math.abs(fps - c.expected) / c.expected;
     if (diff > c.tolerance) {
       problems.push(
-        `${c.label}: 元データ ${c.expected} に対し計算値 ${got.fps.toFixed(1)}` +
+        `${c.label}: 元データ ${c.expected} に対し計算値 ${fps.toFixed(1)}` +
           `（ズレ ${(diff * 100).toFixed(1)}%、許容 ${(c.tolerance * 100).toFixed(1)}%）`,
+      );
+    }
+    if (c.expectUncappedAboveCap && !(got.cap !== null && got.uncapped > got.cap)) {
+      problems.push(
+        `${c.label}: 上限で止まる条件なのに、理論値 ${got.uncapped.toFixed(1)} が上限を超えていない`,
       );
     }
     if (c.expectBottleneck && got.bottleneck !== c.expectBottleneck) {

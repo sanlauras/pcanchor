@@ -66,7 +66,7 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
     presetId: other.id,
     resolution: BASE_RESOLUTION,
   });
-  const otherByName = new Map(rankedOther.map((r) => [r.gpu.name, r.fps]));
+  const otherByName = new Map(rankedOther.map((r) => [r.gpu.name, r]));
 
   // 予想が高めに出ると分かっているGPUは、最小GPU欄の主役にしない。
   // 表の行には残し、印を付けるだけにする（持っているGPUの目安は知りたいため）
@@ -111,17 +111,36 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
             </p>
             <p className="mt-1 max-w-[70ch] text-xs text-dim">
               {game.highlight.body}
-              {game.highlight.comparison ? (
+              {game.highlight.comparison?.appliesTo === 'all' ? (
                 <>
                   このページの数値も「{game.highlight.comparison.measuredLabel}」の値なので、
                   「{game.highlight.comparison.lighterLabel}」では約{' '}
                   {game.highlight.comparison.lighterMultiplier.toFixed(2)} 倍（+
                   {Math.round((game.highlight.comparison.lighterMultiplier - 1) * 100)}%）を目安にしてください。
                 </>
+              ) : game.highlight.comparison?.appliesTo === 'gpu' ? (
+                // 倍率はGPU側だけに掛かる。CPU側と上限で止まる構成では伸びないことまで書く
+                <>
+                  このページの数値も「{game.highlight.comparison.measuredLabel}」の値です。
+                  「{game.highlight.comparison.lighterLabel}」では、GPUが上限を決めている構成で約{' '}
+                  {game.highlight.comparison.lighterMultiplier.toFixed(2)} 倍（+
+                  {Math.round((game.highlight.comparison.lighterMultiplier - 1) * 100)}%）が目安です
+                  （CPU側の上限{game.cap !== null && `と ${game.cap}fps の上限`}で頭打ちになります）。
+                  構成ごとの値は
+                  <Link href="/tools/fps" className="text-accent underline">
+                    ゲーム別fps予想ツール
+                  </Link>
+                  で出せます。
+                </>
               ) : (
                 'このページの数値も同じ条件での値です。'
               )}
             </p>
+            {game.highlight.comparison?.basis && (
+              <p className="mt-2 max-w-[70ch] text-[11px] text-dim">
+                根拠: {game.highlight.comparison.basis}
+              </p>
+            )}
           </div>
         )}
 
@@ -211,13 +230,13 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
                       data-label={featured.label}
                       className="px-2 py-2 text-right font-mono tabular-nums whitespace-nowrap"
                     >
-                      {r.fps.toFixed(0)}
+                      <FpsWithTheory entry={r} />
                     </td>
                     <td
                       data-label={other.label}
                       className="px-2 py-2 text-right font-mono text-dim tabular-nums whitespace-nowrap"
                     >
-                      {(otherByName.get(r.gpu.name) ?? 0).toFixed(0)}
+                      <FpsWithTheory entry={otherByName.get(r.gpu.name) ?? { fps: 0, uncapped: 0 }} />
                     </td>
                     <td
                       data-label="VRAM"
@@ -241,6 +260,12 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
               <li key={n}>・{n}</li>
             ))}
             <li>・根拠: {game.confidenceLabel}</li>
+            {game.cap !== null && (
+              <li>
+                ・表の「理論」は、ゲーム側のfps上限（{game.cap}fps）が無い場合の計算上の値です。
+                実際の表示は {game.cap} で止まり、上限を超える部分は確かめることができません。
+              </li>
+            )}
             {featured.note && <li>・{featured.label}: {featured.note}</li>}
             {featured.lowRatio && (
               <li>
@@ -281,5 +306,20 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
 
       <AdSlot variant="rail" />
     </div>
+  );
+}
+
+/**
+ * 表の1セル分のfps。ゲーム側の上限で止まっているときだけ、
+ * 上限が無い場合の計算上の値を小さく添える（どの構成も同じ数字に見えるのを避けるため）。
+ */
+function FpsWithTheory({ entry }: { entry: { fps: number; uncapped: number } }) {
+  return (
+    <>
+      {entry.fps.toFixed(0)}
+      {entry.fps < entry.uncapped && (
+        <span className="ml-1.5 text-[10px] text-dim">理論 {entry.uncapped.toFixed(0)}</span>
+      )}
+    </>
   );
 }

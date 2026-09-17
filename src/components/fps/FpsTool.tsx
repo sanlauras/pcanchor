@@ -6,10 +6,12 @@ import { cpus, gpus } from '@/lib/data';
 import { diagnose } from '@/lib/fps/diagnose';
 import { GAMES, findGame } from '@/lib/fps/games';
 import {
+  type LighterComparison,
   type Prediction,
   RESOLUTIONS,
   type ResolutionId,
   errorRange,
+  lighterScene,
   predict,
   refreshVerdicts,
 } from '@/lib/fps/model';
@@ -145,10 +147,27 @@ export function FpsTool() {
               {result.prediction.fps.toFixed(0)}
             </p>
             <p className="mt-1 font-mono text-xs text-dim">
-              平均fps（推定）・およそ {errorRange(result.prediction.fps).min.toFixed(0)}〜
-              {errorRange(result.prediction.fps).max.toFixed(0)}
+              平均fps（推定）・およそ{' '}
+              {errorRange(result.prediction.fps, game.cap).min.toFixed(0)}〜
+              {errorRange(result.prediction.fps, game.cap).max.toFixed(0)}
             </p>
             <p className="mt-1 text-xs text-dim">推定値です。誤差 ±15〜20%。</p>
+
+            {/*
+              上限で止まっているときは、上限が無い場合の計算上の値も見せる。
+              どの構成でも同じ数字になると、構成の差（余力）が見えなくなるため。
+            */}
+            {game.cap !== null && result.prediction.uncapped > game.cap && (
+              <p className="mt-3 max-w-[62ch] border-l-2 border-accent pl-3 text-xs text-dim">
+                {game.name} はゲーム側のfps上限が{' '}
+                <strong className="font-medium text-ink">{game.cap} fps</strong>{' '}
+                のため、実際は {game.cap} で止まります。上限が無ければ理論上{' '}
+                <strong className="font-mono font-semibold text-ink tabular-nums">
+                  約 {result.prediction.uncapped.toFixed(0)} fps
+                </strong>
+                （計算上の値で、確かめることはできません）。
+              </p>
+            )}
 
             {/*
               1% Low は独立した枠で出す。
@@ -199,25 +218,12 @@ export function FpsTool() {
                   {game.highlight.title}
                 </p>
                 <p className="mt-1 text-xs text-dim">{game.highlight.body}</p>
-                {/* 倍率の根拠が無いゲーム（Apex）は文章だけにする */}
+                {/* 倍率の根拠が無いゲームは文章だけにする */}
                 {game.highlight.comparison && (
-                  <dl className="mt-3 space-y-1.5">
-                    <div className="flex items-baseline justify-between gap-3 border-b border-accent/25 pb-1.5">
-                      <dt className="text-xs text-dim">{game.highlight.comparison.measuredLabel}</dt>
-                      <dd className="font-mono text-lg font-semibold tabular-nums text-ink">
-                        {result.prediction.fps.toFixed(0)} fps
-                      </dd>
-                    </div>
-                    <div className="flex items-baseline justify-between gap-3">
-                      <dt className="text-xs text-dim">{game.highlight.comparison.lighterLabel}</dt>
-                      <dd className="font-mono text-lg font-semibold tabular-nums text-accent">
-                        約 {(result.prediction.fps * game.highlight.comparison.lighterMultiplier).toFixed(0)} fps
-                        <span className="ml-2 text-[10px] font-normal text-dim">
-                          +{Math.round((game.highlight.comparison.lighterMultiplier - 1) * 100)}% の目安
-                        </span>
-                      </dd>
-                    </div>
-                  </dl>
+                  <SceneComparison
+                    prediction={result.prediction}
+                    comparison={game.highlight.comparison}
+                  />
                 )}
               </div>
             )}
@@ -441,6 +447,64 @@ function MonitorVerdicts({ prediction }: { prediction: Prediction }) {
         ○ 平均もカクつきの底も足りる ／ △ 平均は足りるが底が届かない ／ ✕ 平均が足りない
       </p>
     </div>
+  );
+}
+
+/**
+ * 重い場面と軽い場面の2行比較。
+ *
+ * 伸び率は倍率そのものではなく、実際に計算した比で出す。
+ * Apex は倍率をGPU側だけに掛けるので、CPU側や300fps上限で頭打ちになると伸びないため。
+ */
+function SceneComparison({
+  prediction: p,
+  comparison: c,
+}: {
+  prediction: Prediction;
+  comparison: LighterComparison;
+}) {
+  const lighter = lighterScene(p, c);
+  const gain = Math.round((lighter.fps / p.fps - 1) * 100);
+  const capped = (uncapped: number) => p.cap !== null && uncapped > p.cap;
+
+  // GPU側だけに掛けるゲームで伸びないとき、何で止まっているかを書く
+  let flatReason: string | null = null;
+  if (c.appliesTo === 'gpu' && gain === 0) {
+    flatReason = capped(lighter.uncapped)
+      ? `${p.cap}fps上限で頭打ちのため、場面が軽くなっても表示は伸びません。`
+      : 'CPU側が上限を決めているため、場面が軽くなっても伸びません。';
+  }
+
+  return (
+    <>
+      <dl className="mt-3 space-y-1.5">
+        <div className="flex items-baseline justify-between gap-3 border-b border-accent/25 pb-1.5">
+          <dt className="text-xs text-dim">{c.measuredLabel}</dt>
+          <dd className="font-mono text-lg font-semibold tabular-nums text-ink">
+            {p.fps.toFixed(0)} fps
+            {capped(p.uncapped) && (
+              <span className="ml-2 text-[10px] font-normal text-dim">
+                理論 {p.uncapped.toFixed(0)}
+              </span>
+            )}
+          </dd>
+        </div>
+        <div className="flex items-baseline justify-between gap-3">
+          <dt className="text-xs text-dim">{c.lighterLabel}</dt>
+          <dd className="font-mono text-lg font-semibold tabular-nums text-accent">
+            約 {lighter.fps.toFixed(0)} fps
+            {capped(lighter.uncapped) && (
+              <span className="ml-2 text-[10px] font-normal text-dim">
+                理論 {lighter.uncapped.toFixed(0)}
+              </span>
+            )}
+            <span className="ml-2 text-[10px] font-normal text-dim">+{gain}% の目安</span>
+          </dd>
+        </div>
+      </dl>
+      {flatReason && <p className="mt-2 text-xs text-dim">{flatReason}</p>}
+      {c.basis && <p className="mt-2 text-[11px] text-dim">根拠: {c.basis}</p>}
+    </>
   );
 }
 
