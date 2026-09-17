@@ -68,10 +68,15 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
   });
   const otherByName = new Map(rankedOther.map((r) => [r.gpu.name, r.fps]));
 
+  // 予想が高めに出ると分かっているGPUは、最小GPU欄の主役にしない。
+  // 表の行には残し、印を付けるだけにする（持っているGPUの目安は知りたいため）
+  const floor = game.overpredictsBelowIndex;
+  const overpredicts = (perfIndex: number) => floor !== null && perfIndex < floor;
+
   // 60 / 144 / 240 fps に届く最小構成を探す（安い順ではなく指数の低い順）
   const thresholds = [60, 144, 240];
   const minimums = thresholds.map((t) => {
-    const candidates = ranked.filter((r) => r.fps >= t);
+    const candidates = ranked.filter((r) => r.fps >= t && !overpredicts(r.gpu.perfIndex));
     const min = candidates.length > 0 ? candidates[candidates.length - 1]! : null;
     return { threshold: t, entry: min };
   });
@@ -127,6 +132,8 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
           <p className="mb-4 max-w-[70ch] text-xs text-dim">
             この条件で各fpsに届く、最も性能指数が低いGPUです。
             近接モデルの順位は誤差に埋もれるため、目安として見てください。
+            {floor !== null &&
+              `性能指数${floor}未満のGPUは予想が高めに出るため、ここには出していません。`}
           </p>
           <dl className="grid gap-3 sm:grid-cols-3">
             {minimums.map(({ threshold, entry }) => (
@@ -194,6 +201,11 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
                       <Link href={`/gpu/${r.gpu.slug}`} className="hover:text-accent">
                         {r.gpu.name}
                       </Link>
+                      {overpredicts(r.gpu.perfIndex) && (
+                        <span className="ml-2 text-[11px] whitespace-nowrap text-dim">
+                          ※高めに出る傾向
+                        </span>
+                      )}
                     </th>
                     <td
                       data-label={featured.label}

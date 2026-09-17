@@ -132,6 +132,11 @@ export type GameProfile = {
   notes: string[];
   /** 特に強調して出す注意書き。無ければ null */
   highlight: GameHighlight | null;
+  /**
+   * この性能指数未満のGPUは、測定との照合で予想が高めに出ると分かっている。
+   * 分かっていなければ null。ゲーム別ページの「届く最小のGPU」から外すのに使う。
+   */
+  overpredictsBelowIndex: number | null;
 };
 
 export type Bottleneck = 'gpu' | 'cpu' | 'cap' | 'balanced';

@@ -16,6 +16,12 @@ import { type GameProfile, VALORANT_RESOLUTION_K } from './model';
 /** Valorant 実測: 全て高 → 全て低（4K）= x1.74 */
 const VALORANT_LOW_FACTOR = 1.74;
 
+/**
+ * Apex でこの性能指数未満のGPUは、測定との照合で +15〜50% 高めに出た。
+ * 注記とゲーム別ページの両方で使うので、数字を1か所にまとめている。
+ */
+const APEX_OVERPREDICTS_BELOW = 15;
+
 export const GAMES: GameProfile[] = [
   {
     id: 'valorant',
@@ -35,6 +41,8 @@ export const GAMES: GameProfile[] = [
       '設定でfps上限を解除できるため、全条件を同一タイトルで実測できた唯一のゲームです。',
     ],
     highlight: null,
+    // 自前の実測は1台だけで、GPUの帯ごとのズレは確かめられていない
+    overpredictsBelowIndex: null,
     presets: [
       {
         id: 'high',
@@ -92,6 +100,8 @@ export const GAMES: GameProfile[] = [
         lighterMultiplier: 1.33,
       },
     },
+    // 測定GPUが1枚だけで、GPUの帯ごとのズレは確かめられていない
+    overpredictsBelowIndex: null,
     presets: [
       // 4K の実測 40 / 208 / 315 / 525 fps から、Epic を 1.0 とした倍率
       {
@@ -159,7 +169,7 @@ export const GAMES: GameProfile[] = [
     notes: [
       '係数は許諾を得たうえで、ちもろぐ さんの測定から算出しています（fps数値表の転載はしていません）。',
       'エンジン仕様で300fpsが上限です。起動オプション +fps_max unlimited で既定の144fps上限は外せますが、300fpsは超えられません。',
-      '性能指数15未満のGPU（GTX 1650 など）では、予想が実際より高めに出る傾向があります。',
+      `性能指数${APEX_OVERPREDICTS_BELOW}未満のGPU（GTX 1650 など）では、予想が実際より高めに出る傾向があります。`,
       'CPU側の係数は実戦マップ（キングスキャニオン）での測定から算出しています。CPUが上限を決めている構成では、1% Low は表示より高く出ることがあります。',
     ],
     highlight: {
@@ -168,6 +178,7 @@ export const GAMES: GameProfile[] = [
       // 軽い場面での倍率を出せるデータは RTX 4090 の1点しか無いため、数字は出さない
       comparison: null,
     },
+    overpredictsBelowIndex: APEX_OVERPREDICTS_BELOW,
     // Apex にプリセットは無い。低/中/最高は測定者の定義（CONTEXT.md に中身を記録）。
     // 設定係数は 1080p で GPU律速の10枚（指数15〜45）の平均
     presets: [
