@@ -85,7 +85,7 @@ CPU由来fps = そのCPUの「Valorant 天井」推定fps × ゲームの重さ`
             </p>
             <p>
               <strong className="font-medium text-ink">Apex Legends</strong> —
-              許諾を得たうえで、ちもろぐ さんの測定から算出。GPU側は Core i9 13900K で
+              許諾を得たうえで、第三者の測定から算出。GPU側は Core i9 13900K で
               GPU 30枚を測った結果（射撃訓練場の重い場面）、CPU側は RTX 4090 で CPU 15個を
               測った結果（キングスキャニオン）を使っています。
               Apex では上位のGPUほどfpsの伸びが鈍り、性能指数が2倍になってもfpsは約1.6倍です。

@@ -154,7 +154,7 @@ export const GAMES: GameProfile[] = [
     cap: 300,
     supported: true,
     confidence: 'derived',
-    confidenceLabel: 'ちもろぐ さんの測定から算出した係数',
+    confidenceLabel: '許諾を得た第三者の測定から算出した係数',
     // 以下の係数はすべて CONTEXT.md「Apex の係数の算出過程」で算出している。
     // GPU 30枚（Core i9 13900K・射撃訓練場）の 1080p/1440p/4K 最高・66点を、
     // 対数で最小二乗フィットして gpuWeight・gpuScaling・k を同時に求めた
@@ -165,10 +165,11 @@ export const GAMES: GameProfile[] = [
     cpuWeight: 0.351,
     // 高fpsを狙う人向けに、軽い設定を基準にする（Fortnite の Performance と同じ考え方）
     featuredPresetId: 'low',
-    // 許諾取得済み。出典の表記は任意とのことだが、算出方法を公開する方針に沿って明記する
-    source: { label: 'ちもろぐ「Apex Legendsの推奨スペック」', url: 'https://chimolog.co/bto-apex-legends-specs/' },
+    // 許諾取得済み（出典の表記は任意）。ユーザーの判断で、測定者の名前もリンクも画面には出さない（2026-09-17）。
+    // 出典と算出過程の記録は CONTEXT.md「Apex の係数の算出過程」にある
+    source: null,
     notes: [
-      '係数は許諾を得たうえで、ちもろぐ さんの測定から算出しています（fps数値表の転載はしていません）。',
+      '係数は許諾を得たうえで、第三者の測定から算出しています（fps数値表の転載はしていません）。',
       'エンジン仕様で300fpsが上限です。起動オプション +fps_max unlimited で既定の144fps上限は外せますが、300fpsは超えられません。',
       `性能指数${APEX_OVERPREDICTS_BELOW}未満のGPU（GTX 1650 など）では、予想が実際より高めに出る傾向があります。`,
       'CPU側の係数は実戦マップ（キングスキャニオン）での測定から算出しています。CPUが上限を決めている構成では、1% Low は表示より高く出ることがあります。',
