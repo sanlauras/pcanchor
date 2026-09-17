@@ -143,29 +143,24 @@ export function FpsTool() {
               平均だけ見て決めると、Fortnite の Performance のように
               「平均は高いのに実際はカクつく」設定を選んでしまうため。
             */}
+            {/*
+              主役は理論値（ゲーム側の上限を除いた値）。このサイトの目的はPCの性能を知ることで、
+              上限込みの値を主役にすると、上位構成がどれも同じ数字に揃って差が見えなくなるため。
+              上限で止まる話は、すぐ下のサブ注記で伝える。
+            */}
             <p className="mt-2 font-mono text-5xl font-semibold tabular-nums text-accent">
-              {result.prediction.fps.toFixed(0)}
+              {result.prediction.uncapped.toFixed(0)}
             </p>
             <p className="mt-1 font-mono text-xs text-dim">
-              平均fps（推定）・およそ{' '}
-              {errorRange(result.prediction.fps, game.cap).min.toFixed(0)}〜
-              {errorRange(result.prediction.fps, game.cap).max.toFixed(0)}
+              平均fps（推定）・およそ {errorRange(result.prediction.uncapped).min.toFixed(0)}〜
+              {errorRange(result.prediction.uncapped).max.toFixed(0)}
             </p>
             <p className="mt-1 text-xs text-dim">推定値です。誤差 ±15〜20%。</p>
 
-            {/*
-              上限で止まっているときは、上限が無い場合の計算上の値も見せる。
-              どの構成でも同じ数字になると、構成の差（余力）が見えなくなるため。
-            */}
-            {game.cap !== null && result.prediction.uncapped > game.cap && (
-              <p className="mt-3 max-w-[62ch] border-l-2 border-accent pl-3 text-xs text-dim">
-                {game.name} はゲーム側のfps上限が{' '}
-                <strong className="font-medium text-ink">{game.cap} fps</strong>{' '}
-                のため、実際は {game.cap} で止まります。上限が無ければ理論上{' '}
-                <strong className="font-mono font-semibold text-ink tabular-nums">
-                  約 {result.prediction.uncapped.toFixed(0)} fps
-                </strong>
-                （計算上の値で、確かめることはできません）。
+            {result.prediction.capped && game.cap !== null && (
+              <p className="mt-2 max-w-[62ch] text-xs text-dim">
+                ※ {game.name} はゲーム側のfps上限が {game.cap} のため、実際の画面では {game.cap} fps
+                で止まります。{game.cap} を超える部分は計算上の値（理論値）で、確かめることはできません。
               </p>
             )}
 
@@ -290,6 +285,10 @@ export function FpsTool() {
               <h2 className="font-cond text-lg font-bold">{result.diagnosis.headline}</h2>
               <p className="mt-1.5 text-sm text-dim">{result.diagnosis.detail}</p>
 
+              {result.diagnosis.capNote && (
+                <p className="mt-2 text-xs text-dim">※ {result.diagnosis.capNote}</p>
+              )}
+
               {result.diagnosis.freeActions.length > 0 && (
                 <>
                   <h3 className="mt-4 font-mono text-[10px] tracking-wider text-dim uppercase">
@@ -325,7 +324,7 @@ export function FpsTool() {
                           {u.name}
                         </span>
                         <span className="font-mono text-xs tabular-nums">
-                          {result.prediction.fps.toFixed(0)} → {u.toFps.toFixed(0)} fps
+                          {result.prediction.uncapped.toFixed(0)} → {u.toFps.toFixed(0)} fps
                           <span className="ml-2 text-accent">+{Math.round(u.gain * 100)}%</span>
                         </span>
                       </li>
@@ -464,16 +463,9 @@ function SceneComparison({
   comparison: LighterComparison;
 }) {
   const lighter = lighterScene(p, c);
-  const gain = Math.round((lighter.fps / p.fps - 1) * 100);
-  const capped = (uncapped: number) => p.cap !== null && uncapped > p.cap;
-
-  // GPU側だけに掛けるゲームで伸びないとき、何で止まっているかを書く
-  let flatReason: string | null = null;
-  if (c.appliesTo === 'gpu' && gain === 0) {
-    flatReason = capped(lighter.uncapped)
-      ? `${p.cap}fps上限で頭打ちのため、場面が軽くなっても表示は伸びません。`
-      : 'CPU側が上限を決めているため、場面が軽くなっても伸びません。';
-  }
+  // 性能の比較なので理論値どうしで比べる（上限で止めると伸びが見えなくなる）
+  const gain = Math.round((lighter.uncapped / p.uncapped - 1) * 100);
+  const overCap = (v: number) => p.cap !== null && v > p.cap;
 
   return (
     <>
@@ -481,28 +473,29 @@ function SceneComparison({
         <div className="flex items-baseline justify-between gap-3 border-b border-accent/25 pb-1.5">
           <dt className="text-xs text-dim">{c.measuredLabel}</dt>
           <dd className="font-mono text-lg font-semibold tabular-nums text-ink">
-            {p.fps.toFixed(0)} fps
-            {capped(p.uncapped) && (
-              <span className="ml-2 text-[10px] font-normal text-dim">
-                理論 {p.uncapped.toFixed(0)}
-              </span>
+            {p.uncapped.toFixed(0)} fps
+            {overCap(p.uncapped) && (
+              <span className="ml-2 text-[10px] font-normal text-dim">画面上は{p.cap}</span>
             )}
           </dd>
         </div>
         <div className="flex items-baseline justify-between gap-3">
           <dt className="text-xs text-dim">{c.lighterLabel}</dt>
           <dd className="font-mono text-lg font-semibold tabular-nums text-accent">
-            約 {lighter.fps.toFixed(0)} fps
-            {capped(lighter.uncapped) && (
-              <span className="ml-2 text-[10px] font-normal text-dim">
-                理論 {lighter.uncapped.toFixed(0)}
-              </span>
+            約 {lighter.uncapped.toFixed(0)} fps
+            {overCap(lighter.uncapped) && (
+              <span className="ml-2 text-[10px] font-normal text-dim">画面上は{p.cap}</span>
             )}
             <span className="ml-2 text-[10px] font-normal text-dim">+{gain}% の目安</span>
           </dd>
         </div>
       </dl>
-      {flatReason && <p className="mt-2 text-xs text-dim">{flatReason}</p>}
+      {/* GPU側だけに掛けるゲームで伸びないのは、CPU側が理論値を決めているとき */}
+      {c.appliesTo === 'gpu' && gain === 0 && (
+        <p className="mt-2 text-xs text-dim">
+          CPU側が上限を決めているため、場面が軽くなっても伸びません。
+        </p>
+      )}
       {c.basis && <p className="mt-2 text-[11px] text-dim">根拠: {c.basis}</p>}
     </>
   );

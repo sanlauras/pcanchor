@@ -166,7 +166,12 @@ export type GameProfile = {
   overpredictsBelowIndex: number | null;
 };
 
-export type Bottleneck = 'gpu' | 'cpu' | 'cap' | 'balanced';
+/**
+ * 理論値（上限を除いた値）を決めている側。
+ * ゲーム側の上限で止まるかどうかは Prediction.capped で別に持つ
+ * （上限で止まる構成でも、PCの性能としてどちらが足を引っ張るかは知りたいため）。
+ */
+export type Bottleneck = 'gpu' | 'cpu' | 'balanced';
 
 export type Prediction = {
   /** GPU側の理論値。上限やCPUで頭打ちになる前の値 */
@@ -174,17 +179,27 @@ export type Prediction = {
   /** CPU側の天井 */
   cpuFps: number;
   cap: number | null;
-  /** 実際の予想fps。上の3つの最小値 */
-  fps: number;
   /**
-   * ゲーム側のfps上限が無い場合の計算上の値（GPU側とCPU側の小さい方）。
-   * 上限を超える領域は測定で確かめようがないので、画面では「理論値」と明記する。
+   * **予想fps（理論値）。画面の主役。** GPU側とCPU側の小さい方で、ゲーム側の上限は含めない。
+   * このサイトの目的はPCの性能を知ることなので、上限で止まる構成でも性能の差が見えるようにする
+   * （2026-09-17 ユーザー決定）。上限を超える部分は測定で確かめようがないので「理論値」と明記する。
    */
   uncapped: number;
-  /** 1% Low（カクつきの目安）の推定レンジ。係数が無ければ null */
+  /**
+   * 実際の画面で出る値。理論値をゲーム側の上限で止めたもの。
+   * 上限込みの測定との照合と、モニターのHz判定に使う。
+   */
+  fps: number;
+  /** 理論値がゲーム側の上限を超えていて、実際の画面では上限で止まるか */
+  capped: boolean;
+  /**
+   * 1% Low（カクつきの目安）の推定レンジ。係数が無ければ null。
+   * 理論値に比を掛ける。比は上限に当たっていない測定から取っており、上限は速いフレームを
+   * 削るだけで遅い側1%には効かないと考えられるため（未検証）。上限は超えない。
+   */
   fps1Low: { min: number; max: number } | null;
   bottleneck: Bottleneck;
-  /** 予想fpsに対する余力。0.38 なら「38%の余力」 */
+  /** 理論値に対する余力。0.38 なら「38%の余力」 */
   gpuHeadroom: number;
   cpuHeadroom: number;
 };
@@ -203,13 +218,10 @@ export const FPS_ERROR = 0.2;
 
 /**
  * 「およそ N〜M fps」を出すための範囲。誤差の説明を数値で見せる用。
- * 上側はゲーム側のfps上限で止める（300fps上限のゲームで「〜360」と出さないため）。
+ * 主役の理論値に対して使うので、ゲーム側の上限では止めない。
  */
-export function errorRange(fps: number, cap: number | null): { min: number; max: number } {
-  return {
-    min: fps * (1 - FPS_ERROR),
-    max: Math.min(fps * (1 + FPS_ERROR), cap ?? Number.POSITIVE_INFINITY),
-  };
+export function errorRange(fps: number): { min: number; max: number } {
+  return { min: fps * (1 - FPS_ERROR), max: fps * (1 + FPS_ERROR) };
 }
 
 /** よくあるゲーミングモニターのリフレッシュレート */
@@ -266,12 +278,12 @@ export function predict(input: {
   const cpuFps = cpuCeiling * game.cpuWeight;
   const cap = game.cap;
 
-  const fps = Math.min(gpuFps, cpuFps, cap ?? Number.POSITIVE_INFINITY);
+  const uncapped = Math.min(gpuFps, cpuFps);
+  const capLimit = cap ?? Number.POSITIVE_INFINITY;
+  const fps = Math.min(uncapped, capLimit);
 
   let bottleneck: Bottleneck;
-  if (cap !== null && cap <= gpuFps && cap <= cpuFps) {
-    bottleneck = 'cap';
-  } else if (Math.abs(gpuFps - cpuFps) / Math.max(gpuFps, cpuFps) <= BALANCED_BAND) {
+  if (Math.abs(gpuFps - cpuFps) / Math.max(gpuFps, cpuFps) <= BALANCED_BAND) {
     bottleneck = 'balanced';
   } else {
     bottleneck = gpuFps < cpuFps ? 'gpu' : 'cpu';
@@ -281,14 +293,18 @@ export function predict(input: {
     gpuFps,
     cpuFps,
     cap,
+    uncapped,
     fps,
-    uncapped: Math.min(gpuFps, cpuFps),
-    // 1% Low は平均fpsに比を掛けるだけ。比はプリセットごとの実測から来ている
+    capped: uncapped > capLimit,
+    // 1% Low は理論値に比を掛けるだけ。比はプリセットごとの実測から来ている
     fps1Low: preset.lowRatio
-      ? { min: fps * preset.lowRatio.min, max: fps * preset.lowRatio.max }
+      ? {
+          min: Math.min(uncapped * preset.lowRatio.min, capLimit),
+          max: Math.min(uncapped * preset.lowRatio.max, capLimit),
+        }
       : null,
     bottleneck,
-    gpuHeadroom: gpuFps / fps - 1,
-    cpuHeadroom: cpuFps / fps - 1,
+    gpuHeadroom: gpuFps / uncapped - 1,
+    cpuHeadroom: cpuFps / uncapped - 1,
   };
 }

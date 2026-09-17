@@ -48,6 +48,9 @@ CPU天井     1080p全て低で 970.3 fps（Ryzen 7 9800X3D = 指数100）
 予想fps = min(GPU由来のfps, CPU由来のfps, ゲーム固有の上限)
 ```
 
+**画面の主役は上限を除いた理論値** `min(GPU由来, CPU由来)`（2026-09-17 ユーザー決定。PCの性能を知るのがサイトの目的のため）。
+ゲーム固有の上限で止まる話は補足として添える。
+
 GPU由来のfpsには「GPU性能の効き方」（`gpuScaling`）が掛かる。Valorant / Fortnite は1（指数に比例）、
 Apex は 0.665（上位GPUほど伸びが鈍る）。詳細は CONTEXT.md「予想fpsの式」。
 

@@ -42,6 +42,11 @@ export type Diagnosis = {
   pointless: string | null;
   /** 平均fpsだけ見ていると読み違える、カクつき側の話。1% Low が無ければ null */
   stutterNote: string | null;
+  /**
+   * ゲーム側の上限で画面上のfpsが止まる場合の補足。止まらなければ null。
+   * 診断の主役は理論値（PCの性能）で、上限はこの補足だけで伝える。
+   */
+  capNote: string | null;
   vramWarning: string | null;
   memoryNote: string | null;
   psuNote: string | null;
@@ -84,8 +89,10 @@ export function diagnose(args: {
   const { gpu, cpu, resolution, game, preset, prediction, memoryGb, psuWatts } = args;
   const p = prediction;
 
+  // 交換候補や伸びしろは理論値で比べる。上限込みの値で比べると、
+  // 上限で止まる構成ではどれに替えても伸びない計算になり、性能の差が見えなくなるため
   const recalc = (gpuFps4kHigh: number, cpuCeiling: number) =>
-    predict({ gpuFps4kHigh, cpuCeiling, resolution, game, preset }).fps;
+    predict({ gpuFps4kHigh, cpuCeiling, resolution, game, preset }).uncapped;
 
   // ---- 交換先の候補。同じ式で再計算し、意味のある差があるものだけ ----
   const upgrades: Upgrade[] = [];
@@ -104,7 +111,7 @@ export function diagnose(args: {
             ? recalc(fpsOf(x), cpu.fpsValorantCeiling)
             : recalc(gpu.fpsValorant4kHigh, fpsOf(x)),
       }))
-      .map((x) => ({ ...x, gain: x.toFps / p.fps - 1 }))
+      .map((x) => ({ ...x, gain: x.toFps / p.uncapped - 1 }))
       .filter((x) => x.gain >= MEANINGFUL_GAIN)
       .sort((a, b) => a.gain - b.gain);
 
@@ -149,9 +156,9 @@ export function diagnose(args: {
           resolution,
           game,
           preset: lighter,
-        }).fps;
+        }).uncapped;
         freeActions.push(
-          `画質を「${lighter.label}」にすると ${fmt(p.fps)} → ${fmt(to)} fps まで伸びます。`,
+          `画質を「${lighter.label}」にすると ${fmt(p.uncapped)} → ${fmt(to)} fps まで伸びます。`,
         );
       }
       if (resolution !== '1080p') {
@@ -167,17 +174,6 @@ export function diagnose(args: {
       break;
     }
 
-    case 'cap':
-      headline = 'ゲーム側の上限に張り付きます';
-      detail =
-        `この構成はGPU ${fmt(p.gpuFps)} fps / CPU ${fmt(p.cpuFps)} fps の計算で、` +
-        `どちらもゲームの上限 ${game.cap} fps を超えています。つまりこのゲームにはオーバースペックです。`;
-      freeActions.push(
-        '設定を上げても上限に張り付いたままなので、画質を上げる方が得です。',
-      );
-      pointless = 'GPUもCPUも交換する意味がありません。上限はゲーム側で決まっています。';
-      break;
-
     default:
       headline = 'GPUとCPUが拮抗しています';
       detail =
@@ -187,6 +183,13 @@ export function diagnose(args: {
       collect('cpu', args.cpus, (c) => c.name, (c) => c.fpsValorantCeiling);
       break;
   }
+
+  // ---- ゲーム側の上限。性能の話とは分けて、画面上の見え方だけを補足する ----
+  const capNote =
+    p.capped && game.cap !== null
+      ? `${game.name} はゲーム側の上限が ${game.cap} fps のため、実際の画面では ${game.cap} fps で止まります。` +
+        `この構成の理論値 ${fmt(p.uncapped)} fps は、上限に対して ${pct(p.uncapped / game.cap - 1)} の余力です。`
+      : null;
 
   // ---- VRAM。平均fpsではなく 1% Low（カクつき）に効く独立の軸 ----
   const needMb = vramNeedMb(preset, resolution);
@@ -226,13 +229,14 @@ export function diagnose(args: {
    */
   let stutterNote: string | null = null;
   if (p.fps1Low) {
+    // 平均が届くHzは画面に出る値（上限込み）で見る。モニターに届くのはそちらなので
     const avgHz = highestRefresh(p.fps);
     const lowHz = highestRefresh(p.fps1Low.min);
-    const ratio = p.fps1Low.min / p.fps;
+    const ratio = p.fps1Low.min / p.uncapped;
 
     if (avgHz === null) {
       stutterNote =
-        `平均が ${fmt(p.fps)} fps で、60Hzにも届いていません。` +
+        `平均が ${fmt(p.uncapped)} fps で、60Hzにも届いていません。` +
         `カクつきの底は ${fmt(p.fps1Low.min)} fps です。`;
     } else if (lowHz === null) {
       stutterNote =
@@ -257,6 +261,7 @@ export function diagnose(args: {
     upgrades,
     pointless,
     stutterNote,
+    capNote,
     vramWarning,
     memoryNote,
     psuNote,

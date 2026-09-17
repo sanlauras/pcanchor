@@ -4,7 +4,6 @@ import { RESOLUTIONS } from '@/lib/fps/model';
 const BOTTLENECK_LABEL: Record<string, string> = {
   gpu: 'GPU律速',
   cpu: 'CPU律速',
-  cap: 'ゲーム上限',
   balanced: '拮抗',
 };
 
@@ -68,12 +67,12 @@ export function FpsTables({
                           className="px-2 py-2 text-right whitespace-nowrap"
                         >
                           <span className="font-mono font-semibold tabular-nums">
-                            {c.fps.toFixed(0)}
+                            {c.uncapped.toFixed(0)}
                           </span>
                           <span className="ml-1 font-mono text-[10px] text-dim">
                             ({BOTTLENECK_LABEL[c.bottleneck]}
-                            {/* 上限で止まるときは、上限が無い場合の計算上の値も添える */}
-                            {c.fps < c.uncapped && `・理論 ${c.uncapped.toFixed(0)}`})
+                            {/* 数値は理論値。ゲーム側の上限で止まるときだけ上限を添える */}
+                            {c.capped && t.cap !== null && `・上限${t.cap}`})
                           </span>
                         </td>
                       ))}

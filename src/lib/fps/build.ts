@@ -107,8 +107,10 @@ function solveTier(args: {
     return { tier, requiredAvg: 0, gpu: { kind: 'ng', reason: 'noRatio' }, cpu: { kind: 'ng', reason: 'noRatio' }, vramNeedMb: vram };
   }
 
-  // ゲーム側の上限を超えていたら、どんな構成でも届かない
-  if (game.cap !== null && need > game.cap) {
+  // 目標fpsそのものがゲーム側の上限を超えていたら、画面上はどんな構成でも届かない。
+  // 余裕構成・安定構成で必要な値が上限を超えるのは構わない（PCの性能＝理論値で探す）。
+  // 例: Apex で目標280fpsの余裕構成は理論値336が要り、上限300を超えるが、性能としては意味がある
+  if (game.cap !== null && req.targetFps > game.cap) {
     const ng = { kind: 'ng', reason: 'cap', cap: game.cap } as const;
     return { tier, requiredAvg: need, gpu: ng, cpu: ng, vramNeedMb: vram };
   }
@@ -259,6 +261,8 @@ const INVERSE_CASES: InverseCase[] = [
   { gameId: 'apex', presetId: 'max', resolution: '1440p', targetFps: 144 },
   // 300fps上限を超える目標。どの段階も「出せない」になり、落ちないこと
   { gameId: 'apex', presetId: 'low', resolution: '1080p', targetFps: 360 },
+  // 目標は上限未満だが、余裕構成（×1.2 = 336）は上限を超える。理論値で探せること
+  { gameId: 'apex', presetId: 'low', resolution: '1080p', targetFps: 280 },
 ];
 
 /**
@@ -303,8 +307,8 @@ export function assertBuildInverts(gpus: readonly Gpu[], cpus: readonly Cpu[]): 
         preset,
       });
 
-      // 安定だけは 1% Low で判定する。他は平均fps
-      const got = t.tier === 'stable' ? (p.fps1Low?.min ?? 0) : p.fps;
+      // 安定だけは 1% Low で判定する。他は平均fps（理論値。探すときと同じ基準）
+      const got = t.tier === 'stable' ? (p.fps1Low?.min ?? 0) : p.uncapped;
       const want = t.tier === 'stable' ? c.targetFps : t.requiredAvg;
       if (got < want - 0.01) {
         problems.push(

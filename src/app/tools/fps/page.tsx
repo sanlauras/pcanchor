@@ -49,7 +49,8 @@ export default function FpsToolPage() {
         <section className="mt-8 border-t border-rule-soft pt-5 text-xs text-dim">
           <h2 className="mb-2 font-cond text-base font-bold text-ink">計算方法</h2>
           <pre className="mb-3 overflow-x-auto border border-rule bg-panel p-3 font-mono text-[11px]">
-{`予想fps = min(GPU由来fps, CPU由来fps, ゲーム固有の上限)
+{`予想fps（理論値） = min(GPU由来fps, CPU由来fps)
+実際の画面のfps   = min(予想fps, ゲーム固有の上限)
 
 GPU由来fps = 基準GPU（RX 9070 XT）の「Valorant 4K全て高」fps
            × ゲームの重さ
@@ -58,6 +59,10 @@ GPU由来fps = 基準GPU（RX 9070 XT）の「Valorant 4K全て高」fps
 CPU由来fps = そのCPUの「Valorant 天井」推定fps × ゲームの重さ`}
           </pre>
           <div className="max-w-[80ch] space-y-2">
+            <p>
+              大きく表示している予想fpsは、ゲーム側のfps上限を含めない理論値です（PCの性能を見るため）。
+              Apex Legends のように上限があるゲームでは、上限を超える構成に「実際の画面では上限で止まる」旨を添えています。
+            </p>
             <p>
               モデル別の性能（指数）はメーカー公式スペックから自前で計算しています。
               そこに「そのゲームがどれくらい重いか」「設定と解像度でどれくらい変わるか」を

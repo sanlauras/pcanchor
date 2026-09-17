@@ -76,7 +76,7 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
   // 60 / 144 / 240 fps に届く最小構成を探す（安い順ではなく指数の低い順）
   const thresholds = [60, 144, 240];
   const minimums = thresholds.map((t) => {
-    const candidates = ranked.filter((r) => r.fps >= t && !overpredicts(r.gpu.perfIndex));
+    const candidates = ranked.filter((r) => r.uncapped >= t && !overpredicts(r.gpu.perfIndex));
     const min = candidates.length > 0 ? candidates[candidates.length - 1]! : null;
     return { threshold: t, entry: min };
   });
@@ -168,7 +168,7 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
                         {entry.gpu.name}
                       </Link>
                       <span className="ml-2 font-mono text-xs tabular-nums text-dim">
-                        {entry.fps.toFixed(0)} fps
+                        {entry.uncapped.toFixed(0)} fps
                       </span>
                     </>
                   ) : (
@@ -230,13 +230,16 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
                       data-label={featured.label}
                       className="px-2 py-2 text-right font-mono tabular-nums whitespace-nowrap"
                     >
-                      <FpsWithTheory entry={r} />
+                      <FpsCell entry={r} cap={game.cap} />
                     </td>
                     <td
                       data-label={other.label}
                       className="px-2 py-2 text-right font-mono text-dim tabular-nums whitespace-nowrap"
                     >
-                      <FpsWithTheory entry={otherByName.get(r.gpu.name) ?? { fps: 0, uncapped: 0 }} />
+                      <FpsCell
+                        entry={otherByName.get(r.gpu.name) ?? { uncapped: 0, capped: false }}
+                        cap={game.cap}
+                      />
                     </td>
                     <td
                       data-label="VRAM"
@@ -262,8 +265,8 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
             <li>・根拠: {game.confidenceLabel}</li>
             {game.cap !== null && (
               <li>
-                ・表の「理論」は、ゲーム側のfps上限（{game.cap}fps）が無い場合の計算上の値です。
-                実際の表示は {game.cap} で止まり、上限を超える部分は確かめることができません。
+                ・表の数値は、ゲーム側のfps上限が無い場合の理論値です。「上限{game.cap}」と付いたものは、
+                実際の画面では {game.cap} fps で止まります。上限を超える部分は確かめることができません。
               </li>
             )}
             {featured.note && <li>・{featured.label}: {featured.note}</li>}
@@ -310,15 +313,21 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
 }
 
 /**
- * 表の1セル分のfps。ゲーム側の上限で止まっているときだけ、
- * 上限が無い場合の計算上の値を小さく添える（どの構成も同じ数字に見えるのを避けるため）。
+ * 表の1セル分のfps。数値は理論値（ゲーム側の上限を除いた値）で、
+ * 上限で止まるときだけ上限を小さく添える（性能の差を主役にし、上限は補足にするため）。
  */
-function FpsWithTheory({ entry }: { entry: { fps: number; uncapped: number } }) {
+function FpsCell({
+  entry,
+  cap,
+}: {
+  entry: { uncapped: number; capped: boolean };
+  cap: number | null;
+}) {
   return (
     <>
-      {entry.fps.toFixed(0)}
-      {entry.fps < entry.uncapped && (
-        <span className="ml-1.5 text-[10px] text-dim">理論 {entry.uncapped.toFixed(0)}</span>
+      {entry.uncapped.toFixed(0)}
+      {entry.capped && cap !== null && (
+        <span className="ml-1.5 text-[10px] text-dim">上限{cap}</span>
       )}
     </>
   );

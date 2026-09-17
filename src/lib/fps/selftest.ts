@@ -26,7 +26,8 @@ type Case = {
   expected: number;
   /** 許容する相対誤差 */
   tolerance: number;
-  expectBottleneck?: 'gpu' | 'cpu' | 'cap' | 'balanced';
+  /** 理論値を決めている側。上限で止まるかは expectUncappedAboveCap で別に見る */
+  expectBottleneck?: 'gpu' | 'cpu' | 'balanced';
   /**
    * この条件で実測された 1% Low ÷ 平均fps。
    * プリセットに宣言した lowRatio がこの値を含むかを検証する。
@@ -40,7 +41,10 @@ type Case = {
    * 省略時は通常の予想fps。
    */
   scene?: 'lighter';
-  /** 上限で止まる条件で、理論値（上限が無い場合の値）が上限を超えていることも確かめる */
+  /**
+   * 上限で止まる条件で、理論値（上限が無い場合の値）が上限を超え、capped になっていることを確かめる。
+   * 測定値（expected）は上限込みなので、fps（上限込み）と比べている。
+   */
   expectUncappedAboveCap?: boolean;
 };
 
@@ -245,7 +249,8 @@ const CASES: Case[] = [
   {
     label: 'Apex 1080p/最高 RTX 4090 + Ryzen 7 9800X3D（300fps上限）',
     gameId: 'apex', presetId: 'max', resolution: '1080p', ...chimoCpu('Ryzen 7 9800X3D'),
-    expected: 298.4, tolerance: 0.02, expectBottleneck: 'cap',
+    // 画面上は300で止まるが、理論値はCPU側（9800X3D）で決まる
+    expected: 298.4, tolerance: 0.02, expectBottleneck: 'cpu',
     expectUncappedAboveCap: true,
   },
 
@@ -302,7 +307,7 @@ export function assertModelReproducesMeasurements(): void {
           `（ズレ ${(diff * 100).toFixed(1)}%、許容 ${(c.tolerance * 100).toFixed(1)}%）`,
       );
     }
-    if (c.expectUncappedAboveCap && !(got.cap !== null && got.uncapped > got.cap)) {
+    if (c.expectUncappedAboveCap && !(got.capped && got.cap !== null && got.uncapped > got.cap)) {
       problems.push(
         `${c.label}: 上限で止まる条件なのに、理論値 ${got.uncapped.toFixed(1)} が上限を超えていない`,
       );

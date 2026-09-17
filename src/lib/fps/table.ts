@@ -1,7 +1,7 @@
 import type { Cpu, Gpu } from '@/lib/data';
 import { cpus } from '@/lib/data';
 import { GAMES } from './games';
-import { RESOLUTIONS, type ResolutionId, predict } from './model';
+import { type Bottleneck, RESOLUTIONS, type ResolutionId, predict } from './model';
 
 /**
  * 個別モデルページとゲーム別ページで使う、ゲーム別fps表の組み立て。
@@ -18,10 +18,11 @@ export function referenceCpu(): Cpu {
 
 export type FpsCell = {
   resolution: ResolutionId;
-  fps: number;
-  /** ゲーム側のfps上限が無い場合の計算上の値 */
+  /** 予想fps（理論値）。表の主役 */
   uncapped: number;
-  bottleneck: 'gpu' | 'cpu' | 'cap' | 'balanced';
+  /** 理論値がゲーム側の上限を超え、実際の画面では上限で止まるか */
+  capped: boolean;
+  bottleneck: Bottleneck;
 };
 
 export type FpsRow = {
@@ -33,6 +34,8 @@ export type FpsRow = {
 export type GameFpsTable = {
   gameId: string;
   gameName: string;
+  /** ゲーム側のfps上限。無ければ null */
+  cap: number | null;
   confidenceLabel: string;
   notes: string[];
   rows: FpsRow[];
@@ -51,6 +54,7 @@ export function buildFpsTables(gpu: Gpu, cpu: Cpu): GameFpsTable[] {
   return supportedGames().map((game) => ({
     gameId: game.id,
     gameName: game.name,
+    cap: game.cap,
     confidenceLabel: game.confidenceLabel,
     notes: game.notes,
     rows: game.presets.map((preset) => ({
@@ -66,8 +70,8 @@ export function buildFpsTables(gpu: Gpu, cpu: Cpu): GameFpsTable[] {
         });
         return {
           resolution: res.id,
-          fps: p.fps,
           uncapped: p.uncapped,
+          capped: p.capped,
           bottleneck: p.bottleneck,
         };
       }),
@@ -76,7 +80,8 @@ export function buildFpsTables(gpu: Gpu, cpu: Cpu): GameFpsTable[] {
 }
 
 /**
- * ゲーム別ページ用。全GPUについて、ある解像度・プリセットでの推定fpsを高い順に返す。
+ * ゲーム別ページ用。全GPUについて、ある解像度・プリセットでの推定fps（理論値）を高い順に返す。
+ * 理論値で並べるのは、ゲーム側の上限で止まる構成どうしでも性能の差が見えるようにするため。
  */
 export function rankGpusForGame(args: {
   gpus: readonly Gpu[];
@@ -98,9 +103,9 @@ export function rankGpusForGame(args: {
         game,
         preset,
       });
-      return { gpu, fps: p.fps, uncapped: p.uncapped, bottleneck: p.bottleneck };
+      return { gpu, uncapped: p.uncapped, capped: p.capped, bottleneck: p.bottleneck };
     })
-    .sort((a, b) => b.fps - a.fps);
+    .sort((a, b) => b.uncapped - a.uncapped);
 }
 
 /** 指数が近いモデル。順位は断定できないので「近い帯」として見せる */

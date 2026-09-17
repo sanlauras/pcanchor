@@ -225,6 +225,12 @@ export function BuildTool() {
                   {current.requiredAvg > 0 && (
                     <>（平均 {current.requiredAvg.toFixed(0)} fps 以上が必要）</>
                   )}
+                  {/* 余裕・安定の必要値はゲーム側の上限を超えることがある。性能（理論値）で探している旨を書く */}
+                  {game.cap !== null && current.requiredAvg > game.cap && (
+                    <>
+                      。{game.cap} fps を超える部分は理論値で、実際の画面では {game.cap} fps で止まります。
+                    </>
+                  )}
                 </p>
 
                 <div className="mt-4 grid gap-5 sm:grid-cols-2">
