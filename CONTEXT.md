@@ -676,6 +676,61 @@ CPU側を「未測定」として扱う方針を別途決める必要がある�
 
 ---
 
+## 感度換算の係数（2026-09-22）
+
+`/tools/sensitivity` で使う yaw 定数（マウス1カウントあたりの回転角）の記録。
+**fpsの係数とは別のデータ**。ゲーム仕様の定数なので、CLAUDE.md 絶対ルール5 で別枠にした。
+
+### 出どころ（いずれもユーザーが許諾を取得済み）
+
+| サイト | 公開している内容 |
+|---|---|
+| valorantnews.jp/sens/ | 「VALORANT 0.07 ／ CS2・Apex・Deadlock 0.022 ／ Overwatch 2・Marvel Rivals・The Finals・CoD 0.0066」 |
+| meta-mark.com/tools/sensitivity | 「Apex と CS2 は同じ Source系の yaw係数 0.022」「Overwatch 2 は 0.0066」「Fortnite（X感度%）は 0.005555」 |
+| zyougi.com/sensitivity/ | 「CS:GO感度 = VALORANT感度 × 3.18」「Apex は CS:GO と同一スケール」 |
+
+### 採用した係数
+
+| 係数 | タイトル | 確かめ方 |
+|---|---|---|
+| 0.07 | VALORANT | valorantnews.jp。zyougi の「×3.18」と整合（0.07 ÷ 0.022 = 3.182） |
+| 0.022 | CS2 / CS:GO・Apex・Deadlock・KovaaK's | **2サイトで一致** |
+| 0.0066 | Overwatch 2・Marvel Rivals・THE FINALS・Call of Duty | **2サイトで一致** |
+| 0.005555 | Fortnite（X感度%） | meta-mark。同サイトの「CS2 1.0 → 約3.96%」と整合（0.022 ÷ 0.005555 = 3.960） |
+
+### 自己テストで固定していること（`src/lib/sens/selftest.ts`）
+
+参考サイトが**係数とは別の形で**本文に書いている関係を、当サイトの計算が再現するか。
+写し間違いを検出するのが目的で、ずれたらビルドが落ちる。
+
+- CS2 1.0 → Overwatch 2 約3.33（meta-mark）
+- CS2 1.0 → Fortnite 約3.96%（meta-mark）
+- VALORANT 1.0 → CS:GO 3.18倍（zyougi）
+- Apex 1.0 → CS2 1.0（同一スケール・zyougi と meta-mark）
+- 往復変換（A→B→A で戻る）／振り向き距離からの逆算／DPIを2倍にすると感度は半分／eDPI = DPI × 感度
+
+### 外したもの・扱わないもの
+
+- **Rainbow Six Siege**: 感度スケールが特殊（1〜100・FOV依存）。参考サイトも値を公開していないため、
+  根拠が取れない（絶対ルール2）。対応しない
+- **ADS・スコープ感度**: ゲームごとに別の倍率が掛かる。腰だめの感度だけを扱うと画面に明記
+- **Fortnite の eDPI**: ％スケールなので他ゲームと比べる意味がない。画面では「—」
+
+### 残件
+
+- **ユーザーの実測による抜き取り確認。** 係数グループごとに1タイトル
+  （VALORANT / Apex か CS2 / Overwatch 2 / Fortnite）で、ゲーム内で1周する距離を測り、
+  ツールの cm/360 と合うか見る。合わなければ係数か式を見直す
+- 対応タイトルの追加（出どころを2つ以上そろえてから）
+
+### 競合調査（2026-09-22）
+
+日本語の換算ツールが複数ある（valorantnews.jp / zyougi.com / meta-mark.com / fps-loadout.com）。
+英語には80タイトル以上に対応したものもある（sens-converter.online）。
+**太い検索語は取れない前提**で、既存読者の回遊とマウス周辺の導線として置く。
+
+---
+
 ## 性能指数の算出方法
 
 `make_index.py` に実装済み。入力は公開スペックとメーカー公表IPCのみ。

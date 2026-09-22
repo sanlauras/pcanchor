@@ -19,6 +19,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: '/tools', priority: 0.6, changeFrequency: 'monthly' },
     { path: '/tools/fps', priority: 0.9, changeFrequency: 'weekly' },
     { path: '/tools/build', priority: 0.9, changeFrequency: 'weekly' },
+    { path: '/tools/sensitivity', priority: 0.9, changeFrequency: 'monthly' },
     { path: '/gpu', priority: 0.9, changeFrequency: 'weekly' },
     { path: '/cpu', priority: 0.9, changeFrequency: 'weekly' },
     { path: '/games', priority: 0.7, changeFrequency: 'monthly' },

@@ -5,7 +5,7 @@ import { Breadcrumbs } from '@/components/Breadcrumbs';
 export const metadata: Metadata = {
   title: 'ゲーミングPC向けツール一覧',
   description:
-    'ゲーミングPC向けのツール。ゲーム別のfps予想とボトルネック診断、GPU/CPUスペックデータベース。',
+    'ゲーミングPC向けのツール。ゲーム別のfps予想とボトルネック診断、目標fpsからのPC構成、FPS感度の換算、GPU/CPUスペックデータベース。',
   alternates: { canonical: '/tools' },
 };
 
@@ -20,6 +20,12 @@ const tools = [
     href: '/tools/build',
     label: '目標fpsから選ぶPC構成',
     note: 'ゲーム・設定・出したいfpsを入れると、それを満たす最小のGPUとCPUが出ます',
+    status: '公開中',
+  },
+  {
+    href: '/tools/sensitivity',
+    label: 'FPS感度の換算・振り向き距離の計算',
+    note: 'ゲームを移っても同じ振り向き距離になる感度を出します。eDPI・cm/360 からも計算できます',
     status: '公開中',
   },
 ];

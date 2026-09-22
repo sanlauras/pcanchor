@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { AdSlot } from '@/components/AdSlot';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { FpsTool } from '@/components/fps/FpsTool';
@@ -91,6 +92,13 @@ CPU由来fps = そのCPUの「Valorant 天井」推定fps × ゲームの重さ`
               Apex では上位のGPUほどfpsの伸びが鈍り、性能指数が2倍になってもfpsは約1.6倍です。
               これを「GPU性能の効き方」として式に入れています（VALORANT と Fortnite は1で、指数に比例）。
               低・中の設定はフルHDの測定しかないため、WQHD / 4K は最高設定の解像度係数を流用した近似です。
+            </p>
+            <p>
+              ゲームを移るときにマウス感度をそろえるなら
+              <Link href="/tools/sensitivity" className="text-accent underline">
+                FPS感度の換算・振り向き距離の計算
+              </Link>
+              が使えます。
             </p>
           </div>
         </section>

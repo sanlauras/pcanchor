@@ -25,9 +25,15 @@ type Props = {
   variant?: 'block' | 'inline';
   /** 発売世代の判定に使う。旧世代なら文言と注記を変える */
   model?: { arch: string; releaseYear: number };
+  /**
+   * 検索結果を見るときの注意書きを差し替える。
+   * 既定はGPU/CPU向けの「型番とVRAM容量を確認」。
+   * マウスパッドのように別の確認点があるものに使う。
+   */
+  advice?: React.ReactNode;
 };
 
-export function AffiliateLink({ query, variant = 'inline', model }: Props) {
+export function AffiliateLink({ query, variant = 'inline', model, advice }: Props) {
   const href = amazonSearchUrl(query);
   if (href === null) return null;
 
@@ -60,9 +66,13 @@ export function AffiliateLink({ query, variant = 'inline', model }: Props) {
         */}
         <p className="mt-2 text-xs text-dim">
           {note && <span className="mr-1 text-ink">{note}</span>}
-          検索結果には別のモデルやアクセサリも表示されます。
-          <strong className="font-medium text-ink">型番とVRAM容量を確認</strong>
-          してから購入してください。
+          {advice ?? (
+            <>
+              検索結果には別のモデルやアクセサリも表示されます。
+              <strong className="font-medium text-ink">型番とVRAM容量を確認</strong>
+              してから購入してください。
+            </>
+          )}
         </p>
       </div>
     );
