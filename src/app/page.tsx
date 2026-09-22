@@ -25,6 +25,12 @@ const entries = [
     note: '出したいfpsを入れると、必要なGPUとCPUが分かります',
   },
   {
+    href: '/tools/sensitivity',
+    label: 'FPS感度の換算・振り向き距離の計算',
+    count: 'ツール',
+    note: 'ゲームを移っても同じ振り向き距離になる感度が分かります',
+  },
+  {
     href: '/games',
     label: 'ゲーム別の推奨GPU',
     count: supportedGameNames(' / '),
