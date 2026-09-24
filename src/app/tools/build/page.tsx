@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { AdSlot } from '@/components/AdSlot';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
+import { PageHeader } from '@/components/PageHeader';
+import { TOOLS } from '@/lib/nav';
 import { BuildTool } from '@/components/build/BuildTool';
 import { cpus, gpus } from '@/lib/data';
 import { assertBuildInverts } from '@/lib/fps/build';
@@ -26,21 +28,18 @@ export default function BuildToolPage() {
             { href: '/tools/build', label: '目標fpsから選ぶPC構成' },
           ]}
         />
-        <header className="border-b border-ink pt-12 pb-7">
-          <p className="mb-3 font-mono text-[11px] tracking-[0.18em] text-signal uppercase">
-            TOOL / BUILD PICKER
-          </p>
-          <h1 className="mb-4 font-cond text-[clamp(2rem,6vw,3.4rem)] leading-none font-bold tracking-tight">
-            目標fpsから選ぶPC構成
-          </h1>
-          <p className="max-w-[60ch] text-dim">
-            ゲーム・解像度・画質・出したいfpsを入れると、
-            <b className="font-semibold text-ink">それを満たす最小のGPUとCPU</b>
-            が出ます。fps予想ツールの逆向きです。
-            コスパ／余裕／安定の3段階で見比べられます。
-            計算はすべてブラウザ内で完結します。
-          </p>
-        </header>
+        <PageHeader
+          eyebrow={TOOLS.build.eyebrow}
+          title={TOOLS.build.short}
+          subtitle={TOOLS.build.long}
+          lead={
+            <>
+              ゲーム・解像度・画質・出したいfpsを入れると、
+              <b className="font-semibold text-ink">それを満たす最小のGPUとCPU</b>
+              が出ます。fps予想ツールの逆向きです。コスパ／余裕／安定の3段階で見比べられます。計算はすべてブラウザ内で完結します。
+            </>
+          }
+        />
 
         <div className="py-6">
           <BuildTool />

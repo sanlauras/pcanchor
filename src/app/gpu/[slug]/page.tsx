@@ -69,8 +69,7 @@ export default async function GpuDetailPage({ params }: PageProps<'/gpu/[slug]'>
             <strong className="font-mono font-semibold text-ink">
               {gpu.perfIndex.toFixed(1)}
             </strong>
-            （Radeon RX 9070 XT = 100）。VRAM {gpu.vramGb}GB {gpu.memType}、
-            TDP {gpu.tdpW}W。以下のfpsは、CPUに {cpu.name} を組み合わせた場合の推定値です。
+            （Radeon RX 9070 XT = 100）。VRAM {gpu.vramGb}GB {gpu.memType}、TDP {gpu.tdpW}W。以下のfpsは、CPUに {cpu.name} を組み合わせた場合の推定値です。
           </p>
         </header>
 
@@ -103,8 +102,7 @@ export default async function GpuDetailPage({ params }: PageProps<'/gpu/[slug]'>
             ]}
           />
           <p className="mt-3 text-xs text-dim">
-            クロックはリファレンス仕様値です。Founders Edition や工場OCモデルは
-            これより高い場合があります。
+            クロックはリファレンス仕様値です。Founders Edition や工場OCモデルはこれより高い場合があります。
           </p>
         </section>
 
@@ -115,11 +113,8 @@ export default async function GpuDetailPage({ params }: PageProps<'/gpu/[slug]'>
                 シェーダーユニット数の読み方
               </h2>
               <p className="max-w-[70ch]">
-                NVIDIA は Ampere 以降、CUDAコア数を FP32 換算で倍にカウントして表記しています。
-                AMD の RDNA は全世代で「CU × 64」の一貫した表記なので、
-                この {gpu.shaderUnits.toLocaleString('ja-JP')} という数字を
-                Radeon のシェーダー数とそのまま比べることはできません。
-                当サイトの性能指数はアーキテクチャごとに係数を変えて、この差を補正しています。
+                NVIDIA は Ampere 以降、CUDAコア数を FP32 換算で倍にカウントして表記しています。AMD の RDNA は全世代で「CU × 64」の一貫した表記なので、この {gpu.shaderUnits.toLocaleString('ja-JP')} という数字を
+                Radeon のシェーダー数とそのまま比べることはできません。当サイトの性能指数はアーキテクチャごとに係数を変えて、この差を補正しています。
               </p>
             </section>
           )}

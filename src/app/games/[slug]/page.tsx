@@ -99,8 +99,7 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
             {game.name} の推奨スペック
           </h1>
           <p className="max-w-[62ch] text-dim">
-            GPU {gpus.length}モデルそれぞれで {game.name} が何fps出るかの推定値です。
-            CPUは {cpu.name} を組み合わせた場合。推定値・誤差 ±15〜20%。
+            GPU {gpus.length}モデルそれぞれで {game.name} が何fps出るかの推定値です。CPUは {cpu.name} を組み合わせた場合。推定値・誤差 ±15〜20%。
           </p>
         </header>
 
@@ -113,20 +112,16 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
               {game.highlight.body}
               {game.highlight.comparison?.appliesTo === 'all' ? (
                 <>
-                  このページの数値も「{game.highlight.comparison.measuredLabel}」の値なので、
-                  「{game.highlight.comparison.lighterLabel}」では約{' '}
+                  このページの数値も「{game.highlight.comparison.measuredLabel}」の値なので、「{game.highlight.comparison.lighterLabel}」では約{' '}
                   {game.highlight.comparison.lighterMultiplier.toFixed(2)} 倍（+
                   {Math.round((game.highlight.comparison.lighterMultiplier - 1) * 100)}%）を目安にしてください。
                 </>
               ) : game.highlight.comparison?.appliesTo === 'gpu' ? (
                 // 倍率はGPU側だけに掛かる。CPU側と上限で止まる構成では伸びないことまで書く
                 <>
-                  このページの数値も「{game.highlight.comparison.measuredLabel}」の値です。
-                  「{game.highlight.comparison.lighterLabel}」では、GPUが上限を決めている構成で約{' '}
+                  このページの数値も「{game.highlight.comparison.measuredLabel}」の値です。「{game.highlight.comparison.lighterLabel}」では、GPUが上限を決めている構成で約{' '}
                   {game.highlight.comparison.lighterMultiplier.toFixed(2)} 倍（+
-                  {Math.round((game.highlight.comparison.lighterMultiplier - 1) * 100)}%）が目安です
-                  （CPU側の上限{game.cap !== null && `と ${game.cap}fps の上限`}で頭打ちになります）。
-                  構成ごとの値は
+                  {Math.round((game.highlight.comparison.lighterMultiplier - 1) * 100)}%）が目安です（CPU側の上限{game.cap !== null && `と ${game.cap}fps の上限`}で頭打ちになります）。構成ごとの値は
                   <Link href="/tools/fps" className="text-accent underline">
                     ゲーム別fps予想ツール
                   </Link>
@@ -149,8 +144,7 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
             目標fpsに届く最小のGPU（{BASE_RESOLUTION} / {featured.label}）
           </h2>
           <p className="mb-4 max-w-[70ch] text-xs text-dim">
-            この条件で各fpsに届く、最も性能指数が低いGPUです。
-            近接モデルの順位は誤差に埋もれるため、目安として見てください。
+            この条件で各fpsに届く、最も性能指数が低いGPUです。近接モデルの順位は誤差に埋もれるため、目安として見てください。
             {floor !== null &&
               `性能指数${floor}未満のGPUは予想が高めに出るため、ここには出していません。`}
           </p>
@@ -185,8 +179,7 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
         <section className="mt-4">
           <h2 className="mb-1 font-cond text-xl font-bold">GPU別の推定fps</h2>
           <p className="mb-3 max-w-[70ch] text-xs text-dim">
-            {BASE_RESOLUTION} / {featured.label} を基準にした推定値です。
-            他の解像度や画質、CPUを変えた場合は
+            {BASE_RESOLUTION} / {featured.label}を基準にした推定値です。他の解像度や画質、CPUを変えた場合は
             <Link href="/tools/fps" className="text-accent underline">
               ゲーム別fps予想ツール
             </Link>
@@ -265,17 +258,14 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
             <li>・根拠: {game.confidenceLabel}</li>
             {game.cap !== null && (
               <li>
-                ・表の数値は、ゲーム側のfps上限が無い場合の理論値です。「上限{game.cap}」と付いたものは、
-                実際の画面では {game.cap} fps で止まります。上限を超える部分は確かめることができません。
+                ・表の数値は、ゲーム側のfps上限が無い場合の理論値です。「上限{game.cap}」と付いたものは、実際の画面では {game.cap} fps で止まります。上限を超える部分は確かめることができません。
               </li>
             )}
             {featured.note && <li>・{featured.label}: {featured.note}</li>}
             {featured.lowRatio && (
               <li>
-                ・この表は平均fpsです。{featured.label} の 1% Low（カクつき）は
-                平均の {Math.round(featured.lowRatio.min * 100)}〜
-                {Math.round(featured.lowRatio.max * 100)}% でした。
-                構成ごとの値は
+                ・この表は平均fpsです。{featured.label}の 1% Low（カクつき）は平均の {Math.round(featured.lowRatio.min * 100)}〜
+                {Math.round(featured.lowRatio.max * 100)}% でした。構成ごとの値は
                 <Link href="/tools/fps" className="text-accent underline">
                   ゲーム別fps予想ツール
                 </Link>
@@ -284,8 +274,7 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
             )}
             <li>
               ・解像度の下げ方や設定の効き方はゲームごとに違います。
-              {game.name} では、画質を「{heaviest.label}」から「{lightest.label}」に
-              下げると約 {(lightest.factor / heaviest.factor).toFixed(1)} 倍になります。
+              {game.name} では、画質を「{heaviest.label}」から「{lightest.label}」に下げると約 {(lightest.factor / heaviest.factor).toFixed(1)} 倍になります。
             </li>
           </ul>
         </section>

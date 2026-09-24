@@ -1,26 +1,17 @@
 import type { Metadata } from 'next';
 import {
+  BIZ_UDPGothic,
   IBM_Plex_Mono,
   IBM_Plex_Sans_Condensed,
   Rubik_Distressed,
-  Zen_Kaku_Gothic_New,
 } from 'next/font/google';
 import Link from 'next/link';
 import { Analytics } from '@/components/Analytics';
+import { MobileMenu } from '@/components/MobileMenu';
 import { AMAZON_DISCLOSURE, hasAmazonTag } from '@/lib/affiliate';
-import { ThemePicker } from '@/components/ThemePicker';
+import { HEADER_NAV } from '@/lib/nav';
 import { SITE } from '@/lib/site';
 import './globals.css';
-
-// 描画前に data-theme を決めてちらつきを防ぐ。
-// クエリ ?theme= → localStorage → 既定(cyan) の順。
-const THEME_BOOTSTRAP = `(function(){try{
-var q=new URLSearchParams(location.search).get('theme');
-var v=q||localStorage.getItem('theme')||'cyan';
-if(['cyan','amber','lime'].indexOf(v)<0)v='cyan';
-document.documentElement.dataset.theme=v;
-if(q)localStorage.setItem('theme',v);
-}catch(e){document.documentElement.dataset.theme='cyan';}})();`;
 
 // 日本語本文は端末のシステムフォントを使う（日本語ウェブフォントは重いため）。
 // 数値と欧文の見出しはプロトタイプと同じ IBM Plex。
@@ -41,18 +32,20 @@ const plexCond = IBM_Plex_Sans_Condensed({
  *
  * IBM Plex Sans Condensed には日本語のグリフが1文字も無いため、
  * これが無いと日本語の見出しは端末の既定フォントで出てしまう。
- * サイト全体で71か所の見出しに効くので、読みやすさを優先して
- * 素直なゴシックを1書体だけ入れる（飾りはロゴの欧文書体だけで出す）。
+ *
+ * 2026-09-22 のデザインの作り直しで Zen Kaku Gothic New から BIZ UDPGothic に替えた。
+ * 読みやすさを目的に作られた書体（ユニバーサルデザイン）で、技術資料風の見た目にも合う。
+ * 「見出しが見にくい」という指摘が作り直しのきっかけだったため。
  *
  * subsets は「preload するファイル」を選ぶ指定で、日本語のグリフ自体は
  * unicode-range 付きで全部入る。latin だけを preload させ、日本語は
- * 実際に使う文字のぶんだけ遅延取得させている（1チャンク約11KB）。
+ * 実際に使う文字のぶんだけ遅延取得させている。
  * display:'swap' なのでフォント待ちで表示は止まらない。
  */
-const jpHeading = Zen_Kaku_Gothic_New({
+const jpHeading = BIZ_UDPGothic({
   variable: '--font-jp',
   subsets: ['latin'],
-  weight: ['700', '900'],
+  weight: ['700'],
   display: 'swap',
 });
 
@@ -103,18 +96,6 @@ export const metadata: Metadata = {
   },
 };
 
-// ロゴは崩れた書体で小さく出ているためリンクだと気づきにくい。
-// 読めるラベルとして「ホーム」を先頭に置く。
-const nav = [
-  { href: '/', label: 'ホーム' },
-  { href: '/tools/fps', label: 'ゲーム別fps予想' },
-  { href: '/tools/build', label: '構成を選ぶ' },
-  { href: '/tools/sensitivity', label: '感度換算' },
-  { href: '/gpu', label: 'GPU' },
-  { href: '/cpu', label: 'CPU' },
-  { href: '/games', label: 'ゲーム別' },
-];
-
 const footerNav = [
   { href: '/about', label: 'このサイトについて' },
   { href: '/privacy', label: 'プライバシーポリシー' },
@@ -145,13 +126,8 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
   };
 
   return (
-    <html
-      lang="ja"
-      suppressHydrationWarning
-      className={`${fontVars} h-full antialiased`}
-    >
+    <html lang="ja" className={`${fontVars} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
-        <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
         <Analytics />
         <script
           type="application/ld+json"
@@ -161,11 +137,11 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         {/*
           スクロールしても上に残す。一覧ページは行数が多く、下まで行くと
           ナビが画面外に出て戻る手段が無くなるため。
-          背景を敷かないと下の内容が透ける。比較トレイと同じ手法。
           重なり順は 比較トレイ(z-10) < ヘッダー(z-20) < 比較モーダル(z-50)。
+          技術資料の表題のように、下に墨色の太い罫線を引く。
         */}
-        <header className="sticky top-0 z-20 border-b border-rule bg-paper/95 backdrop-blur">
-          <div className="mx-auto flex h-(--header-h) max-w-[1240px] items-center gap-x-4 px-5 sm:gap-x-6">
+        <header className="sticky top-0 z-20 border-b-2 border-ink bg-paper">
+          <div className="mx-auto flex h-(--header-h) max-w-[1240px] items-center gap-x-6 px-5">
             {/* ロゴはヒーローと同じ書体・同じ英語表記で揃える */}
             <Link
               href="/"
@@ -173,33 +149,25 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
             >
               {SITE.nameEn}
             </Link>
-            {/*
-              狭い画面では折り返さず横スクロールさせる。
-              折り返すとヘッダーが2〜3段になり、固定したときに画面を食いすぎるため。
-            */}
-            <nav
-              className="-mx-1 flex min-w-0 flex-1 gap-1 overflow-x-auto px-1 md:flex-wrap md:overflow-visible"
-              aria-label="メイン"
-            >
-              {nav.map((item) => (
+            {/* PC幅は横に並べる。スマホは MENU の中に縦に並べる（横スクロールで隠れないように） */}
+            <nav className="hidden min-w-0 flex-1 md:flex md:flex-wrap md:gap-x-1" aria-label="メイン">
+              {HEADER_NAV.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="shrink-0 px-2.5 py-1.5 font-cond text-sm font-semibold whitespace-nowrap text-dim hover:text-ink sm:px-3"
+                  className="shrink-0 px-2.5 py-1.5 font-cond text-sm font-bold whitespace-nowrap text-dim hover:text-accent"
                 >
                   {item.label}
                 </Link>
               ))}
             </nav>
-            <div className="shrink-0">
-              <ThemePicker />
-            </div>
+            <MobileMenu />
           </div>
         </header>
 
         <div className="flex-1">{children}</div>
 
-        <footer className="mt-12 border-t border-rule">
+        <footer className="mt-12 border-t-2 border-ink">
           <div className="mx-auto max-w-[1240px] px-5 py-8 text-xs text-dim">
             <nav className="mb-5 flex flex-wrap gap-x-5 gap-y-2" aria-label="フッター">
               {footerNav.map((item) => (
@@ -212,10 +180,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
             <br />
             クロックはリファレンス仕様値です。OCモデルは個体により異なります。
             <br />
-            性能指数と推定fpsは推定値で、誤差は ±15〜20% です。
-            モデル別の性能はメーカー公式スペックから自前で計算しています。
-            ゲーム別の係数は、自前の実測と、許諾を得た第三者の測定から算出した値を
-            使っています。他社のfps数値表の転載はしていません。
+            性能指数と推定fpsは推定値で、誤差は ±15〜20% です。モデル別の性能はメーカー公式スペックから自前で計算しています。ゲーム別の係数は、自前の実測と、許諾を得た第三者の測定から算出した値を使っています。他社のfps数値表の転載はしていません。
             <br />
             {/*
               アソシエイト運営規約で表示が義務づけられている文言。

@@ -45,8 +45,7 @@ export default function NotFound() {
           ページが見つかりません
         </h1>
         <p className="max-w-[60ch] text-dim">
-          URLが間違っているか、ページが移動・削除された可能性があります。
-          お探しのものが下にあるかもしれません。
+          URLが間違っているか、ページが移動・削除された可能性があります。お探しのものが下にあるかもしれません。
         </p>
       </header>
 

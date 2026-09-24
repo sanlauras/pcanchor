@@ -73,10 +73,8 @@ export default async function CpuDetailPage({ params }: PageProps<'/cpu/[slug]'>
             <strong className="font-mono font-semibold text-ink">
               {cpu.perfIndex.toFixed(1)}
             </strong>
-            （Ryzen 7 9800X3D = 100）。{cpu.cores}コア{cpu.threads}スレッド、
-            L3キャッシュ {cpu.l3CacheMb}MB
-            {cpu.has3dVCache && '（3D V-Cache 搭載）'}。
-            以下のfpsは、GPUに {gpu.name} を組み合わせた場合の推定値です。
+            （Ryzen 7 9800X3D = 100）。{cpu.cores}コア{cpu.threads}スレッド、L3キャッシュ {cpu.l3CacheMb}MB
+            {cpu.has3dVCache && '（3D V-Cache 搭載）'}。以下のfpsは、GPUに {gpu.name} を組み合わせた場合の推定値です。
           </p>
         </header>
 
@@ -114,10 +112,7 @@ export default async function CpuDetailPage({ params }: PageProps<'/cpu/[slug]'>
               3D V-Cache がゲームに効く理由
             </h2>
             <p className="max-w-[70ch]">
-              ゲームはL3キャッシュの容量に敏感で、容量が増えるとメモリ待ちが減ります。
-              当サイトの性能指数もL3容量を対数で効かせており、
-              このモデルの {cpu.l3CacheMb}MB という容量が指数を押し上げています。
-              クロックが同世代の非X3Dより低くても、ゲームでは上回ることがあるのはこのためです。
+              ゲームはL3キャッシュの容量に敏感で、容量が増えるとメモリ待ちが減ります。当サイトの性能指数もL3容量を対数で効かせており、このモデルの {cpu.l3CacheMb}MB という容量が指数を押し上げています。クロックが同世代の非X3Dより低くても、ゲームでは上回ることがあるのはこのためです。
             </p>
           </section>
         )}
@@ -128,9 +123,7 @@ export default async function CpuDetailPage({ params }: PageProps<'/cpu/[slug]'>
               コアが2つのブロックに分かれている点について
             </h2>
             <p className="max-w-[70ch]">
-              {cpu.cores}コアのRyzenは、コアが2つのブロック（CCD）に分かれています。
-              ゲームは基本的に片方のブロックで動くため、
-              L3キャッシュも実質的にその片方ぶんしか使えません。
+              {cpu.cores}コアのRyzenは、コアが2つのブロック（CCD）に分かれています。ゲームは基本的に片方のブロックで動くため、L3キャッシュも実質的にその片方ぶんしか使えません。
               {cpu.has3dVCache
                 ? 'キャッシュを積んでいる側のブロックで動く前提で指数を計算しており、そちらのクロックが低いぶんも補正しています。'
                 : 'L3が分割されるぶんを差し引いて指数を計算しています。コア数が多いほどゲームが速くなるわけではありません。'}

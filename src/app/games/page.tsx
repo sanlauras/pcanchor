@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
+import { PageHeader } from '@/components/PageHeader';
+import { TOOLS } from '@/lib/nav';
 import { gpus } from '@/lib/data';
 import { GAMES, supportedGameNames } from '@/lib/fps/games';
 
@@ -19,18 +21,16 @@ export default function GamesPage() {
     <main className="mx-auto max-w-[1240px] px-5">
       <Breadcrumbs trail={[{ href: '/games', label: 'ゲーム別' }]} />
 
-      <header className="border-b border-ink pt-6 pb-7">
-        <p className="mb-3 font-mono text-[11px] tracking-[0.18em] text-signal uppercase">
-          GAMES
-        </p>
-        <h1 className="mb-4 font-cond text-[clamp(2rem,6vw,3.4rem)] leading-none font-bold tracking-tight">
-          ゲーム別の推奨GPU
-        </h1>
-        <p className="max-w-[60ch] text-dim">
-          GPU {gpus.length}モデルそれぞれで何fps出るかを、ゲームごとに一覧にしています。
-          係数が実測で裏付けられているタイトルだけを掲載しています。
-        </p>
-      </header>
+      <PageHeader
+        eyebrow={TOOLS.games.eyebrow}
+        title={TOOLS.games.short}
+        subtitle={TOOLS.games.long}
+        lead={
+          <>
+            GPU {gpus.length}モデルそれぞれで何fps出るかを、ゲームごとに一覧にしています。係数が実測で裏付けられているタイトルだけを掲載しています。
+          </>
+        }
+      />
 
       <div className="grid gap-3 py-8 sm:grid-cols-2">
         {supported.map((g) => (

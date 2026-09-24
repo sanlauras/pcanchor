@@ -22,8 +22,7 @@ export function FpsTables({
     <section className="mt-8">
       <h2 className="mb-1 font-cond text-xl font-bold">ゲーム別の推定fps</h2>
       <p className="mb-4 max-w-[70ch] text-xs text-dim">
-        CPUに {cpuName} を組み合わせた場合の平均fpsです。推定値・誤差 ±15〜20%。
-        括弧内は、そのときGPUとCPUのどちらが上限を決めているかを示します。
+        CPUに {cpuName} を組み合わせた場合の平均fpsです。推定値・誤差 ±15〜20%。括弧内は、そのときGPUとCPUのどちらが上限を決めているかを示します。
       </p>
 
       <div className="space-y-7">

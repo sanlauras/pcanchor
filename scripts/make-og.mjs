@@ -31,11 +31,15 @@ const FONT_CACHE = join(ROOT, 'node_modules/.cache/og-fonts');
 const OUT_W = 1200;
 const OUT_H = 630;
 
-/** globals.css のトークンと同じ値 */
-const INK = '#dbe2ec';
-const DIM = '#7f8b9c';
-const ACCENT = '#22d3ee';
-/** 背景画像の上下端の実測色。帯を足しても継ぎ目が出ない値 */
+/** globals.css のトークンと同じ値（2026-09-22 に明るい技術資料風へ作り直し） */
+const PAPER = '#f2f3f0';
+const INK = '#121416';
+const DIM = '#555b63';
+/** 文字に使う濃いオレンジ。紙の上で 5.38:1 */
+const ACCENT = '#b3390a';
+/** 帯・印の塗りだけに使う信号オレンジ。文字には使わない */
+const VIVID = '#ff5a1f';
+/** 背景画像の上下端の実測色。帯を足しても継ぎ目が出ない値（反転前の色） */
 const EDGE = '#020a0c';
 
 /**
@@ -60,10 +64,11 @@ const FONTS = [
     weight: 400,
   },
   {
-    file: 'zen-kaku-black.ttf',
-    url: 'https://raw.githubusercontent.com/google/fonts/main/ofl/zenkakugothicnew/ZenKakuGothicNew-Black.ttf',
-    name: 'ZenKaku',
-    weight: 900,
+    // サイトの見出しと同じ書体（2026-09-22 に Zen Kaku Gothic New から替えた）
+    file: 'biz-udpgothic-bold.ttf',
+    url: 'https://raw.githubusercontent.com/google/fonts/main/ofl/bizudpgothic/BIZUDPGothic-Bold.ttf',
+    name: 'BizUD',
+    weight: 700,
   },
   {
     file: 'plex-mono-medium.ttf',
@@ -101,6 +106,20 @@ function counts() {
   return { gpu: rows('gpu_index.csv'), cpu: rows('cpu_index.csv') };
 }
 
+/**
+ * 背景。元画像は暗い地に光る線の錨なので、明るさを反転して「紙に墨の線」の図面にする。
+ *
+ * 明るさ（0〜1）を、紙の色から墨の色への濃さに置き換える。
+ * 暗い地（ほぼ0）は紙の色に、光る線（明るい）は墨の線になる。
+ * LOW 未満は紙のまま（地のわずかなムラを消す）、HIGH 以上は墨で頭打ち。
+ */
+const LOW = 0.06;
+const HIGH = 0.7;
+
+function hex(c) {
+  return [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
+}
+
 async function background() {
   const width = 1584 - CROP_LEFT;
   const targetH = Math.round(width / (OUT_W / OUT_H));
@@ -110,7 +129,23 @@ async function background() {
   if (pad > 0) {
     img = img.extend({ top: pad, bottom: targetH - 672 - pad, background: EDGE });
   }
-  const buf = await img.resize(OUT_W, OUT_H, { fit: 'fill' }).png().toBuffer();
+  const { data, info } = await img
+    .resize(OUT_W, OUT_H, { fit: 'fill' })
+    .removeAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  const paper = hex(PAPER);
+  const ink = hex(INK);
+  const out = Buffer.alloc(data.length);
+  for (let i = 0; i < data.length; i += 3) {
+    const lum = (0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]) / 255;
+    const t = Math.min(1, Math.max(0, (lum - LOW) / (HIGH - LOW)));
+    for (let c = 0; c < 3; c++) out[i + c] = Math.round(paper[c] + (ink[c] - paper[c]) * t);
+  }
+  const buf = await sharp(out, { raw: { width: info.width, height: info.height, channels: 3 } })
+    .png()
+    .toBuffer();
   return `data:image/png;base64,${buf.toString('base64')}`;
 }
 
@@ -120,6 +155,8 @@ async function main() {
   const { gpu, cpu } = counts();
   const [fonts, bg] = await Promise.all([loadFonts(), background()]);
 
+  const text = (key, style, children) => h('div', { key, style: { display: 'flex', ...style } }, children);
+
   const el = h(
     'div',
     {
@@ -128,7 +165,7 @@ async function main() {
         position: 'relative',
         width: OUT_W,
         height: OUT_H,
-        backgroundColor: EDGE,
+        backgroundColor: PAPER,
       },
     },
     [
@@ -139,95 +176,81 @@ async function main() {
         height: OUT_H,
         style: { position: 'absolute', top: 0, left: 0 },
       }),
-      h(
-        'div',
+      // 文字の後ろだけ紙の色で覆い、錨の線と文字が重ならないようにする（右へ向かって透明に）
+      h('div', {
+        key: 'veil',
+        style: {
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: OUT_W,
+          height: OUT_H,
+          backgroundImage: `linear-gradient(90deg, ${PAPER} 0%, ${PAPER} 44%, rgba(242, 243, 240, 0) 64%)`,
+        },
+      }),
+      // 技術資料の上端の帯。サイトのホームと同じもの。事実だけを並べる
+      text(
+        'band',
         {
-          key: 'text',
-          style: {
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            position: 'relative',
-            height: OUT_H,
-            paddingLeft: 64,
-            paddingRight: 24,
-          },
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: OUT_W,
+          height: 46,
+          alignItems: 'center',
+          paddingLeft: 64,
+          backgroundColor: INK,
+          color: PAPER,
+          fontFamily: 'PlexMono',
+          fontSize: 15,
+          letterSpacing: '0.12em',
         },
         [
-          h(
-            'div',
-            {
-              key: 'kicker',
-              style: {
-                fontFamily: 'PlexMono',
-                fontSize: 15,
-                letterSpacing: '0.18em',
-                color: ACCENT,
-                marginBottom: 18,
-              },
-            },
-            'GAMING PC FPS PREDICTOR',
+          h('div', { key: 'mark', style: { width: 12, height: 12, backgroundColor: VIVID, marginRight: 22 } }),
+          h('div', { key: 'a', style: { marginRight: 36 } }, 'PC ANCHOR'),
+          h('div', { key: 'b', style: { marginRight: 36 } }, `GPU ${gpu} / CPU ${cpu}`),
+          h('div', { key: 'c', style: { fontFamily: 'BizUD' } }, '推定・誤差 ±15〜20%'),
+        ],
+      ),
+      text(
+        'body',
+        {
+          flexDirection: 'column',
+          justifyContent: 'center',
+          position: 'relative',
+          height: OUT_H,
+          paddingTop: 46,
+          paddingLeft: 64,
+          paddingRight: 24,
+        },
+        [
+          text(
+            'kicker',
+            { fontFamily: 'PlexMono', fontSize: 16, letterSpacing: '0.18em', color: ACCENT, marginBottom: 16 },
+            'GAMING PC & GEAR DATA',
           ),
-          h(
-            'div',
-            {
-              key: 'name',
-              style: {
-                fontFamily: 'RubikDistressed',
-                fontSize: 64,
-                letterSpacing: '0.01em',
-                color: INK,
-                lineHeight: 1.05,
-              },
-            },
+          text(
+            'name',
+            { fontFamily: 'RubikDistressed', fontSize: 76, letterSpacing: '0.01em', color: INK, lineHeight: 1.05 },
             'PC ANCHOR',
           ),
-          h(
-            'div',
-            {
-              key: 'ja',
-              style: {
-                display: 'flex',
-                alignItems: 'center',
-                marginTop: 16,
-                marginBottom: 22,
-              },
-            },
-            [
-              h('div', {
-                key: 'rule',
-                style: { width: 34, height: 2, backgroundColor: ACCENT, marginRight: 14 },
-              }),
-              h(
-                'div',
-                {
-                  key: 'label',
-                  style: {
-                    fontFamily: 'ZenKaku',
-                    fontSize: 20,
-                    letterSpacing: '0.2em',
-                    color: DIM,
-                  },
-                },
-                'PCアンカー',
-              ),
-            ],
-          ),
-          h(
-            'div',
-            {
-              key: 'tagline',
-              style: { fontFamily: 'ZenKaku', fontSize: 22, color: INK, lineHeight: 1.35 },
-            },
-            'ゲーム別fps予想とスペック比較',
-          ),
-          h(
-            'div',
-            {
-              key: 'stats',
-              style: { fontFamily: 'ZenKaku', fontSize: 16, color: DIM, marginTop: 24 },
-            },
-            `GPU ${gpu}モデル / CPU ${cpu}モデル`,
+          text('ja', { alignItems: 'center', marginTop: 14, marginBottom: 30 }, [
+            h('div', { key: 'rule', style: { width: 36, height: 3, backgroundColor: VIVID, marginRight: 14 } }),
+            h(
+              'div',
+              { key: 'label', style: { fontFamily: 'BizUD', fontSize: 20, letterSpacing: '0.2em', color: DIM } },
+              'PCアンカー',
+            ),
+          ]),
+          // 読点で2行に分ける（狭い幅で「デバ／イス」と途中で切れないように。サイトと同じ扱い）
+          text('tagline', { flexDirection: 'column', fontFamily: 'BizUD', fontSize: 38, color: INK, lineHeight: 1.3 }, [
+            h('div', { key: 'l1' }, 'ゲーミングPCとデバイスを、'),
+            h('div', { key: 'l2' }, '数字で選ぶ。'),
+          ]),
+          text(
+            'stats',
+            { fontFamily: 'BizUD', fontSize: 17, color: DIM, marginTop: 24 },
+            `GPU ${gpu}・CPU ${cpu}モデルのスペックと、fps予想などのツール`,
           ),
         ],
       ),
@@ -238,7 +261,7 @@ async function main() {
     await new ImageResponse(el, { width: OUT_W, height: OUT_H, fonts }).arrayBuffer(),
   );
 
-  // 写真的なグラデーションが多くPNGだと1MB近くなる。JPEGなら見た目そのままで1/7。
+  // 線画のグラデーションが多くPNGだと重くなる。JPEGなら見た目そのままで数分の1。
   // 文字の輪郭が滲まないよう色間引きは無効にする。
   const jpg = await sharp(png)
     .jpeg({ quality: 90, chromaSubsampling: '4:4:4' })

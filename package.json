@@ -11,7 +11,7 @@
     "prebuild": "npm run data:build",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint && node scripts/check-jsx-spaces.mjs"
   },
   "dependencies": {
     "next": "16.3.3",

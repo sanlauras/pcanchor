@@ -188,12 +188,17 @@ export function SpecTable<T>({
                   <tr
                     className="spec-row border-b border-rule-soft hover:bg-accent-soft"
                     data-open={isOpen ? 1 : 0}
-                    // 設計意図: ソート中の列の値を行の背景バーとして可視化する。
+                    // 設計意図: ソート中の列の値を、行の幅を目盛りにした棒で見せる。
                     // 行の幅いっぱいを使うので、指数の低いモデルでも差が見て取れる。
+                    // 明るい地では背景全体を塗ると表が読みにくくなるため、
+                    // 行の下端に細い棒として引く（2026-09-22 のデザインの作り直しで変更）。
                     style={
                       barCol
                         ? {
-                            backgroundImage: `linear-gradient(to right, var(--accent-bar) ${barWidth}%, transparent ${barWidth}%)`,
+                            backgroundImage: `linear-gradient(to right, var(--accent-vivid) ${barWidth}%, transparent ${barWidth}%)`,
+                            backgroundSize: '100% 3px',
+                            backgroundPosition: 'left bottom',
+                            backgroundRepeat: 'no-repeat',
                           }
                         : undefined
                     }
@@ -292,9 +297,7 @@ export function SpecTable<T>({
                             ))}
                           </dl>
                           <p className="mt-3 max-w-[80ch] text-xs text-dim">
-                            指数と推定fpsは実測1構成からの外挿による推定値です（誤差 ±15〜20%）。
-                            近接したモデル同士の順位は信用できません。
-                            検証状態: {getVerified(r)}／クロックはリファレンス仕様値です。
+                            指数と推定fpsは実測1構成からの外挿による推定値です（誤差 ±15〜20%）。近接したモデル同士の順位は信用できません。検証状態: {getVerified(r)}／クロックはリファレンス仕様値です。
                           </p>
                         </div>
                       </td>

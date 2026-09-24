@@ -24,8 +24,7 @@ export default function AboutPage() {
           このサイトについて
         </h1>
         <p className="max-w-[60ch] text-dim">
-          {SITE.name}は、ゲーミングPCの性能を「推測ではなく計算と実測から」示すことを
-          目的にした個人サイトです。
+          {SITE.name}は、ゲーミングPCの性能を「推測ではなく計算と実測から」示すことを目的にした個人サイトです。
         </p>
       </header>
 
@@ -33,10 +32,7 @@ export default function AboutPage() {
         <section>
           <h2 className="mb-3 font-cond text-xl font-bold">サイトの目的</h2>
           <p className="text-dim">
-            「このPCでこのゲームは何fps出るのか」「どこを変えれば伸びるのか」に、
-            根拠のある形で答えることを目指しています。GPU {tally.gpuCount}モデル・
-            CPU {tally.cpuCount}モデルのスペックを一次資料と照合したうえで、
-            性能指数を自前で計算し、そこから各ゲームのfpsを推定しています。
+            「このPCでこのゲームは何fps出るのか」「どこを変えれば伸びるのか」に、根拠のある形で答えることを目指しています。GPU {tally.gpuCount}モデル・CPU {tally.cpuCount}モデルのスペックを一次資料と照合したうえで、性能指数を自前で計算し、そこから各ゲームのfpsを推定しています。
           </p>
         </section>
 
@@ -49,19 +45,14 @@ export default function AboutPage() {
             <div className="border-l-2 border-accent pl-4">
               <dt className="font-medium text-ink">使っているもの</dt>
               <dd className="mt-1 text-dim">
-                メーカー公式の公開スペック（コア数・クロック・バス幅・キャッシュ容量・TDPなど）、
-                メーカー公表のIPC、自分で行った実測、許諾を得た第三者の測定から算出した係数。
+                メーカー公式の公開スペック（コア数・クロック・バス幅・キャッシュ容量・TDPなど）、メーカー公表のIPC、自分で行った実測、許諾を得た第三者の測定から算出した係数。
               </dd>
             </div>
             <div className="border-l-2 border-rule pl-4">
               <dt className="font-medium text-ink">使っていないもの</dt>
               <dd className="mt-1 text-dim">
-                レビューサイトやYouTubeが公開しているfps数値表の転載。
-                個々の数値は事実でも、表やデータベース全体は著作物として保護されますし、
-                測定条件が違うデータを混ぜると精度がむしろ落ちます。
-                第三者の測定を参照する場合も、取るのは「4K→1440pで何倍になるか」といった
-                <strong className="font-medium text-ink">割り算の結果だけ</strong>で、
-                fps数値そのものは保存していません。
+                レビューサイトやYouTubeが公開しているfps数値表の転載。個々の数値は事実でも、表やデータベース全体は著作物として保護されますし、測定条件が違うデータを混ぜると精度がむしろ落ちます。第三者の測定を参照する場合も、取るのは「4K→1440pで何倍になるか」といった
+                <strong className="font-medium text-ink">割り算の結果だけ</strong>で、fps数値そのものは保存していません。
               </dd>
             </div>
           </dl>
@@ -70,9 +61,7 @@ export default function AboutPage() {
         <section>
           <h2 className="mb-3 font-cond text-xl font-bold">実測環境</h2>
           <p className="mb-3 text-dim">
-            すべての推定の基準になっている実測は、次の1台で行っています。
-            この1台を「アンカー（基準点）」として、他のモデルを公開スペックから推定しています。
-            サイト名の由来でもあります。
+            すべての推定の基準になっている実測は、次の1台で行っています。この1台を「アンカー（基準点）」として、他のモデルを公開スペックから推定しています。サイト名の由来でもあります。
           </p>
           <pre className="overflow-x-auto border border-rule bg-panel p-4 font-mono text-[11px] text-dim">
 {`GPU      Radeon RX 9070 XT 16GB (ASUS)
@@ -97,20 +86,14 @@ Board    MSI B650 GAMING PLUS WIFI
           <p className="text-dim">
             性能指数も推定fpsも、
             <strong className="font-medium text-ink">誤差 ±15〜20% の推定値</strong>
-            です。実測は1構成だけなので、他のモデルはそこからの外挿になります。
-            とくに
+            です。実測は1構成だけなので、他のモデルはそこからの外挿になります。とくに
             <strong className="font-medium text-ink">
               指数が数%しか違わないモデル同士の順位は信用できません
             </strong>
-            。アーキテクチャごとに係数を1つしか持てないためで、実際には逆転しえます。
-            世代をまたいだ大きな差は、それなりに信用できます。
+            。アーキテクチャごとに係数を1つしか持てないためで、実際には逆転しえます。世代をまたいだ大きな差は、それなりに信用できます。
           </p>
           <p className="mt-3 text-dim">
-            根拠が足りない値は出さない方針です。終盤の高負荷時のfpsは、
-            現時点で実測データが無いため公開していません。
-            1% Low（カクつき）は実測から求めた比で出していますが、
-            ばらつきをそのままレンジで表示しています。
-            算出方法は
+            根拠が足りない値は出さない方針です。終盤の高負荷時のfpsは、現時点で実測データが無いため公開していません。1% Low（カクつき）は実測から求めた比で出していますが、ばらつきをそのままレンジで表示しています。算出方法は
             <Link href="/tools/fps" className="text-accent underline">
               ゲーム別fps予想ツール
             </Link>

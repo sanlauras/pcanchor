@@ -51,8 +51,7 @@ export default function ContactPage() {
             </a>
           </p>
           <p className="mt-3 text-xs text-dim">
-            返信までお時間をいただくことがあります。
-            数値の誤りのご指摘は、該当するモデル名とページのURLを添えていただけると助かります。
+            返信までお時間をいただくことがあります。数値の誤りのご指摘は、該当するモデル名とページのURLを添えていただけると助かります。
           </p>
         </section>
 

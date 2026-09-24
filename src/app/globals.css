@@ -1,14 +1,33 @@
 @import "tailwindcss";
 
 /*
- * 全テーマ共通のトークン。暗いサイバー系で固定し、明暗の切り替えは持たない。
- * 背景・罫線・アクセントはテーマごとに下のブロックで決まる。
+ * 配色（2026-09-22 に作り直し。部品メーカーの技術資料（データシート）がモチーフ）。
+ *
+ * 明るい表示1つだけ。以前の暗いテーマ3色（CYAN / AMBER / LIME）と切り替え機能は、
+ * ユーザーの判断でなくした。経緯は CONTEXT.md「デザインの作り直し」。
+ *
+ * **アクセントは役割で2つに分けている。**
+ *   --accent       文字・リンク・枠に使う濃いオレンジ。紙の上で 5.38:1、白の上で 5.99:1、
+ *                  薄いオレンジの面（--accent-soft）の上でも 4.94:1 で、読みやすさの基準 AA（4.5）を満たす
+ *   --accent-vivid 帯・印などの塗りだけに使う信号オレンジ。文字には使わない。
+ *                  上に文字を置くときは墨（--ink）にする（5.92:1）
+ * 色を変えるときは、必ずこの組み合わせのコントラストを計算し直すこと。
  */
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  --ink: #dbe2ec;
-  --dim: #7f8b9c;
+  --paper: #f2f3f0;
+  --panel: #ffffff;
+  --ink: #121416;
+  --dim: #555b63;
+  --rule: #c9ccc6;
+  --rule-soft: #dfe1dc;
+  --accent: #b3390a;
+  --accent-vivid: #ff5a1f;
+  --accent-soft: rgba(255, 90, 31, 0.08);
+  /* 小見出し（アイキャッチ）の色。アクセントを1色に絞るため accent に揃える */
+  --signal: var(--accent);
+
   /* ロゴの字間。ヘッダーとヒーローの2か所で同じ値を使うため変数にしている */
   --display-tracking: 0.01em;
   /*
@@ -16,57 +35,7 @@
    * sticky 要素（右サイドの広告枠）の両方で使う。
    */
   --header-h: 3.5rem;
-  /* アイキャッチの小見出しに使う。アクセントを1色に絞るため accent に揃える */
-  --signal: var(--accent);
 }
-
-/* ===========================================================================
- * テーマ（訪問者が選べる常設機能）
- *
- * html の data-theme 属性で切り替える。既定は cyan。
- * 追加するときはこの下にブロックを1つ足すだけでよい。
- * ThemePicker.tsx の THEMES にも同じ id を足すこと。
- *
- * 背景は濃さを変えず、アクセントに合わせてごくわずかに色味だけ寄せている。
- * 透過率は色ごとに変えてある（同じ値だとシアンとライムが明るく見えるため）。
- * 追加時は必ずコントラストを確認すること（本文・副次テキスト・アクセント）。
- * =========================================================================== */
-
-/* CYAN — 既定 */
-:root,
-:root[data-theme="cyan"] {
-  --paper: #0b0e14;
-  --panel: #10141c;
-  --rule: #232b38;
-  --rule-soft: #181e28;
-  --accent: #22d3ee;
-  --accent-soft: rgba(34, 211, 238, 0.09);
-  --accent-bar: rgba(34, 211, 238, 0.17);
-}
-
-/* AMBER — 背景をわずかに暖色へ */
-:root[data-theme="amber"] {
-  --paper: #100e0a;
-  --panel: #171410;
-  --rule: #322a1f;
-  --rule-soft: #241f17;
-  --accent: #f0a83c;
-  --accent-soft: rgba(240, 168, 60, 0.12);
-  --accent-bar: rgba(240, 168, 60, 0.22);
-}
-
-/* LIME — 背景をわずかに緑へ */
-:root[data-theme="lime"] {
-  --paper: #0a0f0b;
-  --panel: #101611;
-  --rule: #223026;
-  --rule-soft: #18211b;
-  --accent: #9ae64c;
-  --accent-soft: rgba(154, 230, 76, 0.09);
-  --accent-bar: rgba(154, 230, 76, 0.17);
-}
-
-/* =========================================================================== */
 
 @theme inline {
   --color-paper: var(--paper);
@@ -76,8 +45,8 @@
   --color-rule: var(--rule);
   --color-rule-soft: var(--rule-soft);
   --color-accent: var(--accent);
+  --color-accent-vivid: var(--accent-vivid);
   --color-accent-soft: var(--accent-soft);
-  --color-accent-bar: var(--accent-bar);
   --color-signal: var(--signal);
 
   --font-sans: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;

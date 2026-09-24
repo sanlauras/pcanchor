@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { AdSlot } from '@/components/AdSlot';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
+import { PageHeader } from '@/components/PageHeader';
+import { TOOLS } from '@/lib/nav';
 import { SensTool } from '@/components/sens/SensTool';
 import { SENS_GAMES } from '@/lib/sens/games';
 import { assertSensConversionIsConsistent } from '@/lib/sens/selftest';
@@ -26,19 +28,16 @@ export default function SensitivityPage() {
             { href: '/tools/sensitivity', label: '感度換算' },
           ]}
         />
-        <header className="border-b border-ink pt-12 pb-7">
-          <p className="mb-3 font-mono text-[11px] tracking-[0.18em] text-signal uppercase">
-            TOOL / SENSITIVITY
-          </p>
-          <h1 className="mb-4 font-cond text-[clamp(2rem,6vw,3.4rem)] leading-none font-bold tracking-tight">
-            FPS感度の換算・振り向き距離の計算
-          </h1>
-          <p className="max-w-[60ch] text-dim">
-            ゲームを移っても<b className="font-semibold text-ink">同じ振り向き距離</b>で
-            エイムできるように、感度を換算します。ゲーム内感度・eDPI・振り向き距離(cm/360)の
-            どれからでも計算できます。計算はすべてブラウザ内で完結します。
-          </p>
-        </header>
+        <PageHeader
+          eyebrow={TOOLS.sensitivity.eyebrow}
+          title={TOOLS.sensitivity.short}
+          subtitle={TOOLS.sensitivity.long}
+          lead={
+            <>
+              ゲームを移っても<b className="font-semibold text-ink">同じ振り向き距離</b>でエイムできるように、感度を換算します。ゲーム内感度・eDPI・振り向き距離(cm/360)のどれからでも計算できます。計算はすべてブラウザ内で完結します。
+            </>
+          }
+        />
 
         <div className="py-6">
           <SensTool />
@@ -53,21 +52,13 @@ eDPI                = DPI × 感度`}
           </pre>
           <div className="max-w-[80ch] space-y-2">
             <p>
-              <strong className="font-medium text-ink">yaw（ヨー）</strong>は
-              「マウスを1カウント動かすと何度回るか」を表すゲーム側の定数です。
-              ほとんどのFPSでは、回る角度が感度とDPIにそのまま比例するため、
-              この定数が分かれば割り算だけで別のゲームの感度に直せます。
+              <strong className="font-medium text-ink">yaw（ヨー）</strong>は「マウスを1カウント動かすと何度回るか」を表すゲーム側の定数です。ほとんどのFPSでは、回る角度が感度とDPIにそのまま比例するため、この定数が分かれば割り算だけで別のゲームの感度に直せます。
             </p>
             <p>
-              係数は、<strong className="font-medium text-ink">許諾を得た第三者のサイトが公開している値</strong>を
-              使っています。複数のサイトで値が一致していること、そして各サイトが本文に書いている換算の関係
-              （例: 「CS2の感度1.0はOverwatch 2で約3.33」）を当サイトの計算が再現することを、
-              ビルドのたびに自動で確認しています。合わなくなったら公開されません。
+              係数は、<strong className="font-medium text-ink">許諾を得た第三者のサイトが公開している値</strong>を使っています。複数のサイトで値が一致していること、そして各サイトが本文に書いている換算の関係（例: 「CS2の感度1.0はOverwatch 2で約3.33」）を当サイトの計算が再現することを、ビルドのたびに自動で確認しています。合わなくなったら公開されません。
             </p>
             <p>
-              扱うのは腰だめ（覗いていないとき）の感度だけです。ADS・スコープ時の感度は
-              ゲームごとに別の倍率が掛かるため、ここでは換算していません。
-              Rainbow Six Siege は感度のスケールが特殊で根拠のある係数を用意できないため、対応していません。
+              扱うのは腰だめ（覗いていないとき）の感度だけです。ADS・スコープ時の感度はゲームごとに別の倍率が掛かるため、ここでは換算していません。Rainbow Six Siege は感度のスケールが特殊で根拠のある係数を用意できないため、対応していません。
             </p>
             <p>
               自分の構成で何fps出るかを調べるなら

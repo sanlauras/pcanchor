@@ -362,8 +362,7 @@ export function SensTool() {
             <section className="border border-rule bg-panel p-5">
               <h2 className="font-cond text-lg font-bold">他のゲームでの感度</h2>
               <p className="mt-1 text-xs text-dim">
-                振り向き距離が {baseCm.toFixed(1)}cm でそろう感度です（DPI {dpiNum} のまま）。
-                行を押すと、そのゲームを基準に切り替えます。
+                振り向き距離が {baseCm.toFixed(1)}cm でそろう感度です（DPI {dpiNum} のまま）。行を押すと、そのゲームを基準に切り替えます。
               </p>
               <div className="mt-3 overflow-x-auto">
                 <table className="w-full border-collapse text-sm">
@@ -421,8 +420,7 @@ export function SensTool() {
             <section className="border border-rule bg-panel p-5">
               <h2 className="font-cond text-lg font-bold">マウスパッドの幅は足りていますか</h2>
               <p className="mt-1 text-xs text-dim">
-                180度振り向くのに {half.toFixed(1)}cm 動かします。
-                パッドの端から端まで使い切ることはできないので、余裕を見た幅が要ります。
+                180度振り向くのに {half.toFixed(1)}cm 動かします。パッドの端から端まで使い切ることはできないので、余裕を見た幅が要ります。
               </p>
               {padNum > 0 ? (
                 <>
@@ -438,8 +436,7 @@ export function SensTool() {
                   {padNum < half && (
                     <div className="mt-4">
                       <p className="mb-2 text-sm text-ink">
-                        180度に届いていません。横幅 {Math.ceil(half)}cm 以上のパッドなら、
-                        持ち替えずに振り向けます。
+                        180度に届いていません。横幅 {Math.ceil(half)}cm 以上のパッドなら、持ち替えずに振り向けます。
                       </p>
                       <AffiliateLink
                         query="ゲーミングマウスパッド 大型"
@@ -466,8 +463,7 @@ export function SensTool() {
           <section className="border border-rule bg-panel p-5">
             <h2 className="font-cond text-lg font-bold">数値を入れてください</h2>
             <p className="mt-1.5 text-sm text-dim">
-              感度・eDPI・振り向き距離のどれかと、マウスのDPIが必要です。
-              DPIが分からない場合は、マウスの設定ソフトで確認できます。
+              感度・eDPI・振り向き距離のどれかと、マウスのDPIが必要です。DPIが分からない場合は、マウスの設定ソフトで確認できます。
             </p>
           </section>
         )}

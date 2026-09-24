@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
+import { PageHeader } from '@/components/PageHeader';
+import { TOOLS } from '@/lib/nav';
 
 export const metadata: Metadata = {
   title: 'ゲーミングPC向けツール一覧',
@@ -9,60 +11,43 @@ export const metadata: Metadata = {
   alternates: { canonical: '/tools' },
 };
 
-const tools = [
-  {
-    href: '/tools/fps',
-    label: 'ゲーム別fps予想・ボトルネック診断',
-    note: 'GPUとCPUを選ぶと推定fpsと、どちらが足を引っ張っているかが出ます',
-    status: '公開中',
-  },
-  {
-    href: '/tools/build',
-    label: '目標fpsから選ぶPC構成',
-    note: 'ゲーム・設定・出したいfpsを入れると、それを満たす最小のGPUとCPUが出ます',
-    status: '公開中',
-  },
-  {
-    href: '/tools/sensitivity',
-    label: 'FPS感度の換算・振り向き距離の計算',
-    note: 'ゲームを移っても同じ振り向き距離になる感度を出します。eDPI・cm/360 からも計算できます',
-    status: '公開中',
-  },
-];
+// ツール名は src/lib/nav.ts にまとめてある（ヘッダー・ホームと表記を揃えるため）
+const tools = [TOOLS.fps, TOOLS.build, TOOLS.sensitivity];
 
 const planned = [
   '実測fpsの投稿と集計',
   '構成の消費電力・電源容量の目安',
-  '対応ゲームの追加（Apex Legends ほか）',
+  '対応ゲームの追加',
 ];
 
 export default function ToolsPage() {
   return (
     <main className="mx-auto max-w-[1240px] px-5">
       <Breadcrumbs trail={[{ href: '/tools', label: 'ツール' }]} />
-      <header className="border-b border-ink pt-12 pb-7">
-        <p className="mb-3 font-mono text-[11px] tracking-[0.18em] text-signal uppercase">
-          TOOLS
-        </p>
-        <h1 className="mb-4 font-cond text-[clamp(2rem,6vw,3.4rem)] leading-none font-bold tracking-tight">
-          ツール一覧
-        </h1>
-        <p className="max-w-[60ch] text-dim">
-          数値はメーカー公式の公開スペックと自前の実測だけを使っています。
-          計算はすべてブラウザ内で完結します。
-        </p>
-      </header>
+      <PageHeader
+        eyebrow="TOOLS"
+        title="ツール一覧"
+        subtitle="ゲーミングPC向けのツール"
+        lead={
+          <>
+            モデル別の性能はメーカー公式スペックから自前で計算し、ゲーム別の係数は自前の実測と、許諾を得た第三者の測定から算出しています。計算はすべてブラウザ内で完結します。
+          </>
+        }
+      />
 
-      <div className="grid gap-3 py-8 sm:grid-cols-2">
+      <div className="grid gap-3 py-8 sm:grid-cols-3">
         {tools.map((t) => (
           <Link
             key={t.href}
             href={t.href}
-            className="block border border-rule bg-panel p-5 hover:border-ink"
+            className="group flex flex-col border-2 border-ink bg-panel p-5 hover:bg-accent-soft"
           >
-            <p className="font-mono text-xs text-accent">{t.status}</p>
-            <h2 className="mt-1 font-cond text-xl font-bold">{t.label}</h2>
-            <p className="mt-1 text-sm text-dim">{t.note}</p>
+            <p className="font-mono text-[10px] font-semibold tracking-[0.14em] text-accent">公開中</p>
+            <h2 className="mt-1 grid gap-0.5">
+              <span className="font-cond text-2xl font-bold group-hover:text-accent">{t.short}</span>
+              <span className="font-cond text-xs font-bold text-dim">{t.long}</span>
+            </h2>
+            <p className="mt-2 text-sm text-dim">{t.note}</p>
           </Link>
         ))}
       </div>

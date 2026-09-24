@@ -24,8 +24,7 @@ export default function CpuPage() {
           lead={
             <>
               Ryzen 5000〜9000シリーズ、Intel 第10〜14世代および Core Ultra 200S の{' '}
-              <b className="font-semibold text-ink">{tally.cpuCount}モデル</b>。
-              ゲーム性能に効くL3キャッシュと3D V-Cacheの有無まで確認済みです。
+              <b className="font-semibold text-ink">{tally.cpuCount}モデル</b>。ゲーム性能に効くL3キャッシュと3D V-Cacheの有無まで確認済みです。
             </>
           }
         />

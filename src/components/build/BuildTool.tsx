@@ -263,9 +263,7 @@ export function BuildTool() {
               <section className="border border-rule bg-panel p-5">
                 <h2 className="font-cond text-lg font-bold">設定を下げた場合</h2>
                 <p className="mt-1 mb-3 max-w-[62ch] text-xs text-dim">
-                  同じ {targetFps} fps を別の解像度・画質で狙った場合に必要な、最小のGPUです
-                  （コスパ構成の基準）。要求が高すぎるときに、何を妥協すればどこまで下がるかが
-                  分かります。
+                  同じ {targetFps} fps を別の解像度・画質で狙った場合に必要な、最小のGPUです（コスパ構成の基準）。要求が高すぎるときに、何を妥協すればどこまで下がるかが分かります。
                 </p>
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse text-sm">
@@ -311,13 +309,10 @@ export function BuildTool() {
               <ul className="max-w-[70ch] space-y-1">
                 <li>
                   ・<strong className="font-medium text-ink">価格は見ていません。</strong>
-                  当サイトは価格データを持っていないため、「コスパ構成」は
-                  「目標をちょうど満たす、最も性能の低い構成」という意味です。
-                  円あたりの性能で選んだものではありません。
+                  当サイトは価格データを持っていないため、「コスパ構成」は「目標をちょうど満たす、最も性能の低い構成」という意味です。円あたりの性能で選んだものではありません。
                 </li>
                 <li>
-                  ・推定値です（誤差 ±15〜20%）。ぎりぎりの構成は実際には目標を下回ることが
-                  あります。避けたい場合は余裕構成を見てください。
+                  ・推定値です（誤差 ±15〜20%）。ぎりぎりの構成は実際には目標を下回ることがあります。避けたい場合は余裕構成を見てください。
                 </li>
                 <li>
                   ・GPUは目標fpsだけでなく、その設定で必要なVRAMを満たすものだけを出しています。

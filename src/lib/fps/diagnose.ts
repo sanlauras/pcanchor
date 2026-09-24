@@ -130,7 +130,7 @@ export function diagnose(args: {
 
   switch (p.bottleneck) {
     case 'cpu':
-      headline = 'この構成は CPU律速 です';
+      headline = 'この構成はCPU律速です';
       detail =
         `GPU側は ${fmt(p.gpuFps)} fps 出せる計算ですが、CPUが ${fmt(p.cpuFps)} fps で頭打ちになっています。` +
         `GPUには ${pct(p.gpuHeadroom)} の余力が残っています。`;
@@ -142,7 +142,7 @@ export function diagnose(args: {
       break;
 
     case 'gpu': {
-      headline = 'この構成は GPU律速 です';
+      headline = 'この構成はGPU律速です';
       detail =
         `CPUは ${fmt(p.cpuFps)} fps まで対応できますが、GPUが ${fmt(p.gpuFps)} fps で頭打ちになっています。` +
         `CPUには ${pct(p.cpuHeadroom)} の余力が残っています。`;

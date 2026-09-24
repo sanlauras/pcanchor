@@ -24,8 +24,7 @@ export default function GpuPage() {
           lead={
             <>
               GeForce GTX 10シリーズ〜RTX 50シリーズ、Radeon RX 5000〜RX 9000 の{' '}
-              <b className="font-semibold text-ink">{tally.gpuCount}モデル</b>。
-              数値はすべてメーカー公式資料と照合済みで、クロックはリファレンス仕様値に統一しています。
+              <b className="font-semibold text-ink">{tally.gpuCount}モデル</b>。数値はすべてメーカー公式資料と照合済みで、クロックはリファレンス仕様値に統一しています。
             </>
           }
         />
