@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { GameFpsTable } from '@/lib/fps/table';
 import { RESOLUTIONS } from '@/lib/fps/model';
 
@@ -10,6 +11,10 @@ const BOTTLENECK_LABEL: Record<string, string> = {
 /**
  * ゲーム別の推定fps表。個別モデルページの主役。
  * fpsツールと同じ predict() を通しているので、値はページ間で一致する。
+ *
+ * ゲーム名はそのゲームのページへのリンクにし、各表に #apex のような目印（id）を付けている。
+ * GPU・CPU・ゲームのページを互いにつなぐため（2026-09-26 の SEO 改善）。
+ * ゲームページからは /gpu/xxx#apex のように、該当の表へ直接飛べる。
  */
 export function FpsTables({
   tables,
@@ -27,9 +32,11 @@ export function FpsTables({
 
       <div className="space-y-7">
         {tables.map((t) => (
-          <div key={t.gameId}>
+          <div key={t.gameId} id={t.gameId} className="scroll-mt-[calc(var(--header-h)+1rem)]">
             <h3 className="mb-2 flex flex-wrap items-baseline gap-x-3 font-cond text-lg font-bold">
-              {t.gameName}
+              <Link href={`/games/${t.gameId}`} className="underline decoration-rule underline-offset-4 hover:text-accent hover:decoration-accent">
+                {t.gameName}
+              </Link>
               <span className="font-mono text-[10px] font-normal text-dim">
                 根拠: {t.confidenceLabel}
               </span>

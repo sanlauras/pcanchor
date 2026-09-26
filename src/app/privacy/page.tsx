@@ -2,13 +2,14 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { SITE } from '@/lib/site';
+import { pageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'プライバシーポリシー',
   description:
     'PCアンカーにおけるアクセス解析、Cookie、アフィリエイトプログラムの利用と、個人情報の取り扱いについて記載しています。',
-  alternates: { canonical: '/privacy' },
-};
+  path: '/privacy',
+});
 
 export default function PrivacyPage() {
   return (

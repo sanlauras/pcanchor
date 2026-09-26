@@ -2,13 +2,14 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { SITE } from '@/lib/site';
+import { pageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: '利用規約',
   description:
     'PCアンカーの利用条件と免責事項。掲載している性能指数と推定fpsは誤差±15〜20%の推定値であり、実環境での結果を保証するものではありません。',
-  alternates: { canonical: '/terms' },
-};
+  path: '/terms',
+});
 
 export default function TermsPage() {
   return (

@@ -10,10 +10,12 @@ import { absoluteUrl } from '@/lib/site';
 /**
  * サイトマップ。全ページを列挙する。
  * ページを増やしたらここにも足すこと（個別ページはデータから自動で入る）。
+ *
+ * lastmod（最終更新日）は入れない。以前はビルドした時刻を全ページに入れていたため、
+ * 公開のたびに全ページが「更新された」ことになっていた。Google は不正確な lastmod を
+ * 信用しなくなるので、正しい日付を持てない間は出さない方がよい（2026-09-26）。
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const now = new Date();
-
   const fixed: { path: string; priority: number; changeFrequency: 'weekly' | 'monthly' | 'yearly' }[] = [
     { path: '/', priority: 1, changeFrequency: 'weekly' },
     { path: '/tools', priority: 0.6, changeFrequency: 'monthly' },
@@ -32,25 +34,21 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     ...fixed.map((f) => ({
       url: absoluteUrl(f.path),
-      lastModified: now,
       changeFrequency: f.changeFrequency,
       priority: f.priority,
     })),
     ...GAMES.filter((g) => g.supported).map((g) => ({
       url: absoluteUrl(`/games/${g.id}`),
-      lastModified: now,
       changeFrequency: 'monthly' as const,
       priority: 0.8,
     })),
     ...gpus.map((g) => ({
       url: absoluteUrl(`/gpu/${g.slug}`),
-      lastModified: now,
       changeFrequency: 'monthly' as const,
       priority: 0.7,
     })),
     ...cpus.map((c) => ({
       url: absoluteUrl(`/cpu/${c.slug}`),
-      lastModified: now,
       changeFrequency: 'monthly' as const,
       priority: 0.7,
     })),

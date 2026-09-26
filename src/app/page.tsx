@@ -9,13 +9,15 @@ import { TOOL_ORDER, TOOLS } from '@/lib/nav';
 import { cm360 } from '@/lib/sens/convert';
 import { findSensGame } from '@/lib/sens/games';
 import { SITE } from '@/lib/site';
+import { pageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: `${SITE.name}｜ゲーム別fps予想とゲーミングPCスペック比較`,
   description:
     `GPUとCPUを選ぶと、${supportedGameNames('・')} で何fps出るかとボトルネックが分かります。GPU 78モデル・CPU 42モデルのスペックと性能指数も掲載。実測を基準にした推定値です。`,
-  alternates: { canonical: '/' },
-};
+  path: '/',
+  absoluteTitle: true,
+});
 
 /*
  * ホーム（2026-09-22 に作り直し。部品メーカーの技術資料がモチーフ）。

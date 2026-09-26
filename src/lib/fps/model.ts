@@ -205,7 +205,7 @@ export type Prediction = {
 };
 
 /** 律速と判定する境界。この幅に収まっていれば拮抗とみなす */
-const BALANCED_BAND = 0.05;
+export const BALANCED_BAND = 0.05;
 
 /**
  * 予想fpsの誤差幅。

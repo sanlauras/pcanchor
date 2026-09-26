@@ -3,13 +3,14 @@ import Link from 'next/link';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { PageHeader } from '@/components/PageHeader';
 import { TOOLS } from '@/lib/nav';
+import { pageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'ゲーミングPC向けツール一覧',
   description:
     'ゲーミングPC向けのツール。ゲーム別のfps予想とボトルネック診断、目標fpsからのPC構成、FPS感度の換算、GPU/CPUスペックデータベース。',
-  alternates: { canonical: '/tools' },
-};
+  path: '/tools',
+});
 
 // ツール名は src/lib/nav.ts にまとめてある（ヘッダー・ホームと表記を揃えるため）
 const tools = [TOOLS.fps, TOOLS.build, TOOLS.sensitivity];

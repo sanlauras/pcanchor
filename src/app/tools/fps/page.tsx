@@ -5,24 +5,33 @@ import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { PageHeader } from '@/components/PageHeader';
 import { TOOLS } from '@/lib/nav';
 import { FpsTool } from '@/components/fps/FpsTool';
-import { supportedGameNames } from '@/lib/fps/games';
+import { GAMES, supportedGameNames } from '@/lib/fps/games';
 import { assertModelReproducesMeasurements } from '@/lib/fps/selftest';
+import { JsonLd, pageMetadata, webApplicationJsonLd } from '@/lib/seo';
 
 // 計算式が実測4条件を再現するか、ビルド時に確認する。
 // 係数をいじって実測とズレたらここでビルドが落ちる。
 assertModelReproducesMeasurements();
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'ゲーム別fps予想とボトルネック診断｜GPUとCPUを選ぶだけ',
   description:
     `GPUとCPUを選ぶと、${supportedGameNames('・')} の推定fpsが出ます。GPU律速かCPU律速か、どこを変えればfpsが伸びるかまで診断。メーカー公式スペックと実測から計算した推定値です（誤差±15〜20%）。`,
-  alternates: { canonical: '/tools/fps' },
-};
+  path: '/tools/fps',
+});
 
 export default function FpsToolPage() {
   return (
     <div className="mx-auto flex max-w-[1240px] gap-8 px-5">
       <main className="min-w-0 flex-1">
+        {/* ツールであることを検索エンジンに伝える。中身はページに書いてある事実だけ */}
+        <JsonLd
+          data={webApplicationJsonLd({
+            name: TOOLS.fps.long,
+            description: TOOLS.fps.note,
+            path: TOOLS.fps.href,
+          })}
+        />
         <Breadcrumbs
           trail={[
             { href: '/tools', label: 'ツール' },
@@ -45,6 +54,29 @@ export default function FpsToolPage() {
         <div className="py-6">
           <FpsTool />
         </div>
+
+        {/*
+          ゲームごとのページへの入口。ツールは操作して使うものなので、検索エンジンがたどれる
+          普通のリンクをここに置く（2026-09-26 の SEO 改善）。
+        */}
+        <section className="border-t-2 border-ink pt-5">
+          <h2 className="mb-1 font-cond text-lg font-bold">ゲーム別の推奨GPU</h2>
+          <p className="mb-3 text-xs text-dim">
+            ゲームごとに、GPU別の推定fpsと、解像度別に必要なGPU・CPU別の上限をまとめています。
+          </p>
+          <ul className="flex flex-wrap gap-2">
+            {GAMES.filter((g) => g.supported).map((g) => (
+              <li key={g.id}>
+                <Link
+                  href={`/games/${g.id}`}
+                  className="inline-block border-2 border-ink bg-panel px-3 py-1.5 font-cond text-sm font-bold hover:bg-accent-soft hover:text-accent"
+                >
+                  {g.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
 
         <section className="mt-8 border-t border-rule-soft pt-5 text-xs text-dim">
           <h2 className="mb-2 font-cond text-base font-bold text-ink">計算方法</h2>

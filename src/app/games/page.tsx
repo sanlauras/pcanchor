@@ -5,13 +5,14 @@ import { PageHeader } from '@/components/PageHeader';
 import { TOOLS } from '@/lib/nav';
 import { gpus } from '@/lib/data';
 import { GAMES, supportedGameNames } from '@/lib/fps/games';
+import { pageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'ゲーム別の推奨GPU一覧',
   description:
     `${supportedGameNames('・')} の推奨GPUを、GPU別に何fps出るかの一覧で掲載。推奨スペックの目安になります。解像度・画質別の推定値をメーカー公式スペックと実測から計算しています。`,
-  alternates: { canonical: '/games' },
-};
+  path: '/games',
+});
 
 export default function GamesPage() {
   const supported = GAMES.filter((g) => g.supported);

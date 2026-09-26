@@ -1,13 +1,14 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
+import { pageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'お問い合わせ',
   description:
     'PCアンカーへのお問い合わせ。数値の誤りのご指摘、実測データのご提供、掲載についてのご連絡はこちらから。',
-  alternates: { canonical: '/contact' },
-};
+  path: '/contact',
+});
 
 const topics = [
   {

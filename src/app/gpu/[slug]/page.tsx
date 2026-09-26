@@ -7,9 +7,11 @@ import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { FpsTables } from '@/components/model/FpsTables';
 import { SpecList } from '@/components/model/SpecList';
 import { VerifiedTag } from '@/components/spec-table/VerifiedTag';
-import { gpus } from '@/lib/data';
-import { supportedGameNames } from '@/lib/fps/games';
+import { cpus, gpus } from '@/lib/data';
+import { GAMES, supportedGameNames } from '@/lib/fps/games';
+import { PAIRING_RESOLUTION, cpuForGpu } from '@/lib/fps/pairing';
 import { buildFpsTables, nearbyByIndex, referenceCpu } from '@/lib/fps/table';
+import { pageMetadata } from '@/lib/seo';
 
 export function generateStaticParams() {
   return gpus.map((g) => ({ slug: g.slug }));
@@ -26,14 +28,14 @@ export async function generateMetadata({
   const gpu = find(slug);
   if (!gpu) return {};
 
-  return {
-    title: `${gpu.name} は何fps出る？スペックと性能指数`,
+  return pageMetadata({
+    title: `${gpu.name}は何fps出る？ゲーム別の推定fpsとスペック`,
     description:
-      `${gpu.name} が ${supportedGameNames('・')} で何fps出るかを解像度・画質別に掲載。` +
-      `性能指数は ${gpu.perfIndex.toFixed(1)}、VRAM ${gpu.vramGb}GB。` +
+      `${gpu.name} が ${supportedGameNames('・')} で何fps出るかを、1080p・1440p・4Kと画質別に掲載。` +
+      `組み合わせるCPUの目安、性能指数 ${gpu.perfIndex.toFixed(1)}、VRAM ${gpu.vramGb}GB などのスペックも。` +
       `メーカー公式スペックと自前の実測から計算した推定値です（誤差±15〜20%）。`,
-    alternates: { canonical: `/gpu/${gpu.slug}` },
-  };
+    path: `/gpu/${gpu.slug}`,
+  });
 }
 
 export default async function GpuDetailPage({ params }: PageProps<'/gpu/[slug]'>) {
@@ -45,6 +47,13 @@ export default async function GpuDetailPage({ params }: PageProps<'/gpu/[slug]'>
   const tables = buildFpsTables(gpu, cpu);
   const nearby = nearbyByIndex(gpus, gpu);
   const sameArch = gpus.filter((g) => g.arch === gpu.arch && g.name !== gpu.name);
+  // ゲームごとの「CPUが足を引っ張らない最小のCPU」。基準画質・1080p で見る
+  const pairings = GAMES.filter((g) => g.supported).flatMap((game) => {
+    const preset = game.presets.find((p) => p.id === game.featuredPresetId);
+    if (!preset) return [];
+    const pick = cpuForGpu(gpu, game, preset, cpus);
+    return pick ? [{ game, preset, pick }] : [];
+  });
 
   return (
     <div className="mx-auto flex max-w-[1240px] gap-8 px-5">
@@ -61,8 +70,13 @@ export default async function GpuDetailPage({ params }: PageProps<'/gpu/[slug]'>
             {gpu.vendor} / {gpu.arch} / {gpu.releaseYear}
             <VerifiedTag verified={gpu.verified} />
           </p>
-          <h1 className="mb-4 font-cond text-[clamp(1.8rem,5vw,3rem)] leading-none font-bold tracking-tight">
-            {gpu.name}
+          <h1 className="mb-4 grid gap-2">
+            <span className="font-cond text-[clamp(1.8rem,5vw,3rem)] leading-none font-bold tracking-tight">
+              {gpu.name}
+            </span>
+            <span className="font-cond text-base font-bold text-dim sm:text-lg">
+              ゲーム別の推定fpsとスペック
+            </span>
           </h1>
           <p className="max-w-[62ch] text-dim">
             性能指数は{' '}
@@ -79,6 +93,48 @@ export default async function GpuDetailPage({ params }: PageProps<'/gpu/[slug]'>
         </div>
 
         <FpsTables tables={tables} cpuName={cpu.name} />
+
+        {/*
+          組み合わせの目安。CPU の個別ページへつなぐ（2026-09-26 の SEO 改善）。
+          数字は fps予想と同じ predict() から出している。
+        */}
+        {pairings.length > 0 && (
+          <section className="mt-10">
+            <h2 className="mb-1 font-cond text-xl font-bold">このGPUと組み合わせるCPUの目安</h2>
+            <p className="mb-3 max-w-[70ch] text-xs text-dim">
+              {PAIRING_RESOLUTION}・各ゲームの基準の画質で、CPUが足を引っ張らない（CPU側の上限がGPU側とほぼ同じか上回る）最も性能指数の低いCPUです。新品で流通している可能性が高い世代から選んでいます。推定値・誤差 ±15〜20%。
+            </p>
+            <ul className="divide-y divide-rule-soft border-y border-rule">
+              {pairings.map(({ game, preset, pick }) => (
+                <li key={game.id} className="flex flex-wrap items-baseline gap-x-3 gap-y-1 px-1 py-2.5 text-sm">
+                  <Link href={`/games/${game.id}`} className="min-w-[9rem] font-cond font-bold hover:text-accent">
+                    {game.name}
+                    <span className="ml-1 text-xs font-normal text-dim">（{preset.label}）</span>
+                  </Link>
+                  {pick.kind === 'ok' ? (
+                    <span>
+                      <Link href={`/cpu/${pick.cpu.slug}`} className="font-bold text-accent underline underline-offset-2">
+                        {pick.cpu.name}
+                      </Link>
+                      {' 以上'}
+                    </span>
+                  ) : (
+                    <span>
+                      {'現行のどのCPUでもCPU側が上限になります（最も速い '}
+                      <Link href={`/cpu/${pick.cpu.slug}`} className="font-bold text-accent underline underline-offset-2">
+                        {pick.cpu.name}
+                      </Link>
+                      {' でも届きません）'}
+                    </span>
+                  )}
+                  <span className="ml-auto font-mono text-xs tabular-nums text-dim">
+                    GPU側 {pick.gpuFps.toFixed(0)} / CPU側 {pick.cpuFps.toFixed(0)} fps
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <section className="mt-10">
           <h2 className="mb-3 font-cond text-xl font-bold">スペック</h2>
@@ -166,7 +222,7 @@ export default async function GpuDetailPage({ params }: PageProps<'/gpu/[slug]'>
         <section className="mt-10 border-t border-rule-soft pt-5">
           <p className="text-sm text-dim">
             他のCPUと組み合わせた場合や、ボトルネックがどちらにあるかは
-            <Link href="/tools/fps" className="text-accent underline">
+            <Link href={`/tools/fps?gpu=${gpu.slug}`} className="text-accent underline">
               ゲーム別fps予想・ボトルネック診断
             </Link>
             で確認できます。他のモデルとの比較は

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useSyncExternalStore } from 'react';
 import { cpus, gpus } from '@/lib/data';
 import { diagnose } from '@/lib/fps/diagnose';
 import { GAMES, findGame } from '@/lib/fps/games';
@@ -18,12 +18,44 @@ import {
 
 const DEFAULT_GPU = 'Radeon RX 9070 XT';
 const DEFAULT_CPU = 'Ryzen 7 9800X3D';
+const DEFAULT_GAME = 'valorant';
+
+/*
+ * ページのURLの ?game= ?gpu= ?cpu= を、最初の表示の選択として読む（2026-09-26）。
+ * ゲーム・GPU・CPU の個別ページから「この条件で診断する」で飛んできた人が、
+ * 選び直さずに結果を見られるようにするため。
+ *
+ * 読むだけで、URLは書き換えない（canonical は /tools/fps のまま）。
+ * サーバー描画では空として扱い既定の選択で描画し、ブラウザで描画し直すときに差し替える
+ * （感度換算と同じ読み方。サーバーとブラウザで最初の描画が食い違わない）。
+ * 値はゲームの id、GPU・CPU の slug（個別ページのURLと同じもの）。知らない値は無視する。
+ */
+function subscribeUrl(onChange: () => void) {
+  window.addEventListener('popstate', onChange);
+  return () => window.removeEventListener('popstate', onChange);
+}
+const getSearch = () => window.location.search;
+const getServerSearch = () => '';
+
+function selectionFromUrl(search: string) {
+  const params = new URLSearchParams(search);
+  const game = GAMES.find((g) => g.supported && g.id === params.get('game'));
+  const gpu = gpus.find((g) => g.slug === params.get('gpu'));
+  const cpu = cpus.find((c) => c.slug === params.get('cpu'));
+  return { gameId: game?.id ?? null, gpuName: gpu?.name ?? null, cpuName: cpu?.name ?? null };
+}
 
 export function FpsTool() {
-  const [gpuName, setGpuName] = useState(DEFAULT_GPU);
-  const [cpuName, setCpuName] = useState(DEFAULT_CPU);
-  const [gameId, setGameId] = useState('valorant');
-  const [presetId, setPresetId] = useState('high');
+  const fromUrl = selectionFromUrl(useSyncExternalStore(subscribeUrl, getSearch, getServerSearch));
+
+  // null は「まだ自分で選んでいない」。その間は URL → 既定値 の順に使う
+  const [gpuPick, setGpuName] = useState<string | null>(null);
+  const [cpuPick, setCpuName] = useState<string | null>(null);
+  const [gamePick, setGameId] = useState<string | null>(null);
+  const [presetPick, setPresetId] = useState<string | null>(null);
+  const gpuName = gpuPick ?? fromUrl.gpuName ?? DEFAULT_GPU;
+  const cpuName = cpuPick ?? fromUrl.cpuName ?? DEFAULT_CPU;
+  const gameId = gamePick ?? fromUrl.gameId ?? DEFAULT_GAME;
   const [resolution, setResolution] = useState<ResolutionId>('1440p');
   const [memory, setMemory] = useState('');
   const [psu, setPsu] = useState('');
@@ -32,14 +64,17 @@ export function FpsTool() {
   const cpu = cpus.find((c) => c.name === cpuName) ?? cpus[0]!;
   const game = findGame(gameId);
   const res = RESOLUTIONS.find((r) => r.id === resolution)!;
-  // ゲームを切り替えるとプリセットの顔ぶれが変わる。無ければ先頭に落とす
+  // 画質を選んでいなければ、そのゲームの基準の画質（VALORANT は全て高）。
+  // ゲームを切り替えるとプリセットの顔ぶれが変わるので、無ければ先頭に落とす
+  const presetId = presetPick ?? game.featuredPresetId;
   const preset = game.presets.find((p) => p.id === presetId) ?? game.presets[0];
 
   function selectGame(id: string) {
     setGameId(id);
     const next = findGame(id);
     if (!next.presets.some((p) => p.id === presetId)) {
-      setPresetId(next.presets[0]?.id ?? '');
+      // 選び直したゲームにその画質が無ければ、そのゲームの基準の画質に戻す
+      setPresetId(null);
     }
   }
 

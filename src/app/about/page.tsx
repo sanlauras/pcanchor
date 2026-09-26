@@ -3,13 +3,14 @@ import Link from 'next/link';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { tally } from '@/lib/data/summary';
 import { SITE } from '@/lib/site';
+import { pageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'このサイトについて｜算出方法と実測環境',
   description:
     'PCアンカーの運営者情報、性能指数と推定fpsの算出方法、実測に使っている機材と測定手順、使わないと決めているデータの方針をまとめています。',
-  alternates: { canonical: '/about' },
-};
+  path: '/about',
+});
 
 export default function AboutPage() {
   return (

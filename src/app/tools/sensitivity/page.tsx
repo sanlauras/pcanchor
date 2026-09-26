@@ -7,21 +7,30 @@ import { TOOLS } from '@/lib/nav';
 import { SensTool } from '@/components/sens/SensTool';
 import { SENS_GAMES } from '@/lib/sens/games';
 import { assertSensConversionIsConsistent } from '@/lib/sens/selftest';
+import { JsonLd, pageMetadata, webApplicationJsonLd } from '@/lib/seo';
 
 // 係数が参考サイトの公開値とズレたら、ここでビルドが落ちる
 assertSensConversionIsConsistent();
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'FPS感度の換算・振り向き距離(cm/360)の計算',
   description:
     `${SENS_GAMES.map((g) => g.name).join('・')} の感度を相互に換算します。ゲーム内感度・eDPI・振り向き距離(cm/360)のどれからでも計算でき、マウスパッドの幅が足りているかも確認できます。計算はブラウザ内で完結します。`,
-  alternates: { canonical: '/tools/sensitivity' },
-};
+  path: '/tools/sensitivity',
+});
 
 export default function SensitivityPage() {
   return (
     <div className="mx-auto flex max-w-[1240px] gap-8 px-5">
       <main className="min-w-0 flex-1">
+        {/* ツールであることを検索エンジンに伝える。中身はページに書いてある事実だけ */}
+        <JsonLd
+          data={webApplicationJsonLd({
+            name: TOOLS.sensitivity.long,
+            description: TOOLS.sensitivity.note,
+            path: TOOLS.sensitivity.href,
+          })}
+        />
         <Breadcrumbs
           trail={[
             { href: '/tools', label: 'ツール' },

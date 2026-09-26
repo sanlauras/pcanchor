@@ -5,13 +5,14 @@ import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { Masthead } from '@/components/Masthead';
 import { GpuTable } from '@/components/spec-table/GpuTable';
 import { tally } from '@/lib/data/summary';
+import { pageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'GPU性能比較 78モデル｜スペックと推定fps',
   description:
     'GeForce GTX 10シリーズからRTX 50シリーズ、Radeon RX 5000からRX 9000まで、GPU 78モデルの検証済みスペックと性能指数（推定）。全件メーカー公式資料と照合しています。',
-  alternates: { canonical: '/gpu' },
-};
+  path: '/gpu',
+});
 
 export default function GpuPage() {
   return (
@@ -31,6 +32,9 @@ export default function GpuPage() {
 
         <EstimateNote kind="gpu" />
 
+        <h2 className="mt-6 mb-2 font-cond text-xl font-bold">
+          GPU {tally.gpuCount}モデルの性能指数とスペック
+        </h2>
         <GpuTable />
 
         <div className="mt-10">
