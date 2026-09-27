@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { GameFpsTable } from '@/lib/fps/table';
 import { RESOLUTIONS } from '@/lib/fps/model';
+import { lighterSentence } from '@/lib/fps/scene';
 
 const BOTTLENECK_LABEL: Record<string, string> = {
   gpu: 'GPU律速',
@@ -40,7 +41,20 @@ export function FpsTables({
               <span className="font-mono text-[10px] font-normal text-dim">
                 根拠: {t.confidenceLabel}
               </span>
+              {/* ゲームページの GPU 別の表と同じ印（性能の低い GPU では予想が高めに出る） */}
+              {t.overpredicts && (
+                <span className="text-[11px] font-normal whitespace-nowrap text-accent">
+                  ※このGPUでは予想が高めに出る傾向があります
+                </span>
+              )}
             </h3>
+            {/* どんな場面の値か。Apex は激しい戦闘シーンが基準なので、表の前に出す */}
+            {t.highlight && (
+              <p className="mb-2 max-w-[70ch] border-l-2 border-accent pl-3 text-xs text-dim">
+                <strong className="font-medium text-ink">{t.highlight.title}。</strong>
+                {lighterSentence(t.highlight, t.cap)}
+              </p>
+            )}
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-sm">
                 <thead>
@@ -87,6 +101,22 @@ export function FpsTables({
                 </tbody>
               </table>
             </div>
+            {/* 1% Low（カクつきの目安）。fps予想ツールと同じ計算。平均だけでは分からない差が出る */}
+            {t.lows && t.lows.cells.length > 0 && (
+              <p className="mt-2 text-xs text-dim">
+                <span className="font-medium text-ink">1% Low（カクつきの目安）・{t.lows.presetLabel}:</span>{' '}
+                {t.lows.cells.map((c, i) => (
+                  <span key={c.resolution} className="whitespace-nowrap">
+                    {i > 0 && ' / '}
+                    {RESOLUTIONS.find((r) => r.id === c.resolution)?.short}{' '}
+                    <span className="font-mono tabular-nums">
+                      {c.min.toFixed(0)}〜{c.max.toFixed(0)}
+                    </span>
+                  </span>
+                ))}
+                {' fps'}
+              </p>
+            )}
             <ul className="mt-2 space-y-1 text-xs text-dim">
               {t.notes.map((n) => (
                 <li key={n}>・{n}</li>

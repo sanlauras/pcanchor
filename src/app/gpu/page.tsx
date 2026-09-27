@@ -5,7 +5,9 @@ import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { Masthead } from '@/components/Masthead';
 import { GpuTable } from '@/components/spec-table/GpuTable';
 import { tally } from '@/lib/data/summary';
-import { pageMetadata } from '@/lib/seo';
+import { gpuColumns } from '@/components/spec-table/columns';
+import { lastUpdated } from '@/lib/changelog';
+import { JsonLd, datasetJsonLd, pageMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = pageMetadata({
   title: 'GPU性能比較 78モデル｜スペックと推定fps',
@@ -19,6 +21,16 @@ export default function GpuPage() {
     <div className="mx-auto flex max-w-[1240px] gap-8 px-5">
       <main className="min-w-0 flex-1">
         <Breadcrumbs trail={[{ href: '/gpu', label: 'GPU一覧' }]} />
+        {/* データセットの構造化データ（2026-09-27）。項目名は表の列と同じものを使う */}
+        <JsonLd
+          data={datasetJsonLd({
+            name: `GPU ${tally.gpuCount}モデルのスペックと性能指数`,
+            description: metadata.description as string,
+            path: '/gpu',
+            dateModified: lastUpdated('/gpu'),
+            variables: gpuColumns.map((c) => c.label).filter((l) => l !== 'モデル'),
+          })}
+        />
         <Masthead
           eyebrow="GPU DATABASE"
           title="GPUスペック一覧"

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { AffiliateLink } from '@/components/AffiliateLink';
 import { cpus, gpus } from '@/lib/data';
 import { hasAmazonTag } from '@/lib/affiliate';
@@ -19,25 +19,113 @@ import { REFRESH_RATES, RESOLUTIONS, type ResolutionId } from '@/lib/fps/model';
 
 const supported = GAMES.filter((g) => g.supported);
 
+/*
+ * 入力の状態は URL に持つ（2026-09-27。SEO監査の指摘: 条件を共有・ブックマークできなかった）。
+ * 例: /tools/build?game=apex&res=1440p&fps=240
+ * 読み方と書き方は感度換算（SensTool）と同じ。既定値と同じ項目は URL に書かない（短く保つため）。
+ * サーバー描画では既定値で描き、ブラウザで URL の値に差し替える（最初の描画が食い違わない）。
+ * canonical は /tools/build のまま（パラメータ付きの URL はインデックスさせない）。
+ */
+type Settings = {
+  game: string;
+  res: ResolutionId;
+  /** 空なら、そのゲームの先頭の画質 */
+  preset: string;
+  fps: string;
+  gpuv: '' | 'NVIDIA' | 'AMD';
+  cpuv: '' | 'Intel' | 'AMD';
+  tier: Tier;
+  /** new = 新品で買える世代に絞る（既定）/ all = 古い世代も含める */
+  gen: 'new' | 'all';
+};
+
+const DEFAULTS: Settings = {
+  game: supported[0]!.id,
+  res: '1080p',
+  preset: '',
+  fps: '144',
+  gpuv: '',
+  cpuv: '',
+  tier: 'value',
+  gen: 'new',
+};
+
+const KEYS = Object.keys(DEFAULTS) as (keyof Settings)[];
+
+/** URLを書き換えたことを自分自身に知らせるための合図 */
+const CHANGE_EVENT = 'pcanchor:build-change';
+
+function subscribe(onChange: () => void) {
+  window.addEventListener('popstate', onChange);
+  window.addEventListener(CHANGE_EVENT, onChange);
+  return () => {
+    window.removeEventListener('popstate', onChange);
+    window.removeEventListener(CHANGE_EVENT, onChange);
+  };
+}
+const getSnapshot = () => window.location.search;
+const getServerSnapshot = () => '';
+
+/** URL の値を読む。知らない値・壊れた値は既定値に落とす */
+function parseSettings(search: string): Settings {
+  const q = new URLSearchParams(search);
+  const game = supported.find((g) => g.id === q.get('game'))?.id ?? DEFAULTS.game;
+  const res = RESOLUTIONS.find((r) => r.id === q.get('res'))?.id ?? DEFAULTS.res;
+  const preset = findGame(game).presets.find((p) => p.id === q.get('preset'))?.id ?? '';
+  // 空欄は「自分で消した」ので空のまま。数字が1つも無い値（?fps=abc）は壊れた値として既定値に戻す
+  const rawFps = q.get('fps');
+  const digits = (rawFps ?? '').replace(/[^0-9]/g, '').slice(0, 4);
+  const fps = rawFps === null ? DEFAULTS.fps : rawFps === '' || digits !== '' ? digits : DEFAULTS.fps;
+  const gpuv = q.get('gpuv');
+  const cpuv = q.get('cpuv');
+  const tier = TIERS.find((x) => x.id === q.get('tier'))?.id ?? DEFAULTS.tier;
+  return {
+    game,
+    res,
+    preset,
+    fps,
+    gpuv: gpuv === 'NVIDIA' || gpuv === 'AMD' ? gpuv : '',
+    cpuv: cpuv === 'Intel' || cpuv === 'AMD' ? cpuv : '',
+    tier,
+    gen: q.get('gen') === 'all' ? 'all' : 'new',
+  };
+}
+
+/** 入力を書き換える。クリックや入力のときにだけ呼ばれる（描画中には呼ばない） */
+function updateSettings(patch: Partial<Settings>) {
+  const merged = { ...parseSettings(window.location.search), ...patch };
+  const url = new URL(window.location.href);
+  for (const key of KEYS) {
+    const value = String(merged[key]);
+    if (value === String(DEFAULTS[key])) url.searchParams.delete(key);
+    else url.searchParams.set(key, value);
+  }
+  window.history.replaceState(null, '', url);
+  window.dispatchEvent(new Event(CHANGE_EVENT));
+}
+
 export function BuildTool() {
-  const [gameId, setGameId] = useState(supported[0]!.id);
-  const [resolution, setResolution] = useState<ResolutionId>('1080p');
-  const [target, setTarget] = useState('144');
-  const [gpuVendor, setGpuVendor] = useState('');
-  const [cpuVendor, setCpuVendor] = useState('');
-  const [tier, setTier] = useState<Tier>('value');
+  const settings = parseSettings(useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot));
+  const { game: gameId, res: resolution, fps: target, gpuv: gpuVendor, cpuv: cpuVendor, tier } = settings;
   // 既定でON。放っておくと新品で買えない古いカードばかり出るため
-  const [currentGenOnly, setCurrentGenOnly] = useState(true);
+  const currentGenOnly = settings.gen === 'new';
 
   const game = findGame(gameId);
-  const [presetId, setPresetId] = useState(game.presets[0]?.id ?? '');
-  const preset = game.presets.find((p) => p.id === presetId) ?? game.presets[0];
+  const preset = game.presets.find((p) => p.id === settings.preset) ?? game.presets[0];
+  const presetId = preset?.id ?? '';
+
+  const setResolution = (v: ResolutionId) => updateSettings({ res: v });
+  const setPresetId = (v: string) => updateSettings({ preset: v === game.presets[0]?.id ? '' : v });
+  const setTarget = (v: string) => updateSettings({ fps: v.replace(/[^0-9]/g, '').slice(0, 4) });
+  const setGpuVendor = (v: string) => updateSettings({ gpuv: v as Settings['gpuv'] });
+  const setCpuVendor = (v: string) => updateSettings({ cpuv: v as Settings['cpuv'] });
+  const setTier = (v: Tier) => updateSettings({ tier: v });
+  const setCurrentGenOnly = (on: boolean) => updateSettings({ gen: on ? 'new' : 'all' });
 
   // ゲームを変えるとプリセットの顔ぶれが変わるので、無効になったら先頭に戻す
   function changeGame(id: string) {
-    setGameId(id);
     const g = findGame(id);
-    if (!g.presets.some((p) => p.id === presetId)) setPresetId(g.presets[0]?.id ?? '');
+    updateSettings({ game: id, preset: g.presets.some((p) => p.id === presetId) && presetId !== g.presets[0]?.id ? presetId : '' });
   }
 
   const targetFps = Number(target);

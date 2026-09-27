@@ -20,6 +20,13 @@ const DEFAULT_GPU = 'Radeon RX 9070 XT';
 const DEFAULT_CPU = 'Ryzen 7 9800X3D';
 const DEFAULT_GAME = 'valorant';
 
+/** スマホの1行の結果に添える、上限を決めている側 */
+const BOTTLENECK_SHORT: Record<Prediction['bottleneck'], string> = {
+  gpu: 'GPU律速',
+  cpu: 'CPU律速',
+  balanced: 'GPUとCPUが拮抗',
+};
+
 /*
  * ページのURLの ?game= ?gpu= ?cpu= を、最初の表示の選択として読む（2026-09-26）。
  * ゲーム・GPU・CPU の個別ページから「この条件で診断する」で飛んできた人が、
@@ -130,6 +137,34 @@ export function FpsTool() {
           </Select>
         </Field>
 
+        {/*
+          スマホだけに出す1行の結果（2026-09-27。SEO監査の指摘: スマホでは結果が画面の下に隠れ、
+          選んでも何も起きていないように見えた）。結果の本体は入力欄の下にあるので、そこへ飛べるようにする。
+          値は下の結果と同じもの（計算は変えていない）。PC 幅では結果が横に並ぶので出さない。
+        */}
+        {game.supported && result && preset && (
+          <a
+            href="#fps-result"
+            data-mobile-summary
+            className="flex items-center justify-between gap-3 border-2 border-ink bg-panel px-3 py-2 lg:hidden"
+          >
+            <span className="min-w-0">
+              <span className="block font-mono text-[10px] tracking-wider text-dim">
+                {res.short} / {preset.label}
+              </span>
+              <span className="font-mono text-2xl font-semibold tabular-nums text-accent">
+                {result.prediction.uncapped.toFixed(0)}
+              </span>
+              <span className="ml-1.5 text-xs text-dim">
+                fps（推定）・{BOTTLENECK_SHORT[result.prediction.bottleneck]}
+              </span>
+            </span>
+            <span className="shrink-0 bg-ink px-2 py-1 font-mono text-[11px] font-semibold text-paper">
+              詳しく ↓
+            </span>
+          </a>
+        )}
+
         {game.supported && (
           <>
             <Field label="解像度" required>
@@ -169,7 +204,7 @@ export function FpsTool() {
       {/* ------------------------------------------------ 結果 */}
       <div className="space-y-5">
         {game.supported && result && preset ? (
-          <section className="border border-rule bg-panel p-5">
+          <section id="fps-result" className="scroll-mt-[calc(var(--header-h)+1rem)] border border-rule bg-panel p-5">
             <p className="font-mono text-[10px] tracking-wider text-dim uppercase">
               {game.name} / {res.short} / {preset.label}
             </p>

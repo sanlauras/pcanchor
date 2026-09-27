@@ -1,0 +1,22 @@
+# Cloudflare Pages が読む、応答ヘッダーの設定（2026-09-27 追加。SEO監査の指摘）。
+# 経緯と判断は CONTEXT.md「SEO監査の対応（2026-09-27）」。
+#
+# Strict-Transport-Security  以後は https だけで接続させる（1年）。preload は付けていない（外すのが難しいため）
+# X-Content-Type-Options     ファイルの種類をブラウザに推測させない
+# X-Frame-Options            他のサイトの枠（iframe）の中に表示させない
+# Referrer-Policy            外部サイトへ移るとき、ドメインだけを伝える（ページのパスは渡さない）
+# Permissions-Policy         カメラ・マイク・位置情報を使わないことを宣言する
+#
+# CSP（読み込んでよいスクリプトの制限）は入れていない。Google Analytics と、Next.js がページに
+# 埋め込むスクリプトを許可し損ねると、ツールや計測が止まるため。入れるなら別の作業として検証する。
+
+/*
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# ファイル名にハッシュが入っていて中身が変わらないもの。長く保存させる
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable

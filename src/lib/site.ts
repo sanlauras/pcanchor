@@ -14,6 +14,14 @@ export const SITE = {
     'GPUとCPUを選ぶと、ゲームごとの推定fpsとボトルネックが分かります。モデル別の性能はメーカー公式スペックから自前で計算し、自前の実測を基準点にしています。',
 } as const;
 
+/**
+ * 運営者（2026-09-27 追加）。ペンネームはユーザーの指定。
+ * /about の紹介と、構造化データ（Person）の両方で使う。
+ */
+export const OPERATOR = {
+  name: 'そうし',
+} as const;
+
 /** 絶対URLを作る。canonical と sitemap で使う */
 export function absoluteUrl(path: string): string {
   return new URL(path, SITE.url).toString();

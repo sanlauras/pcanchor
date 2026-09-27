@@ -1,7 +1,14 @@
 import type { Cpu, Gpu } from '@/lib/data';
 import { cpus } from '@/lib/data';
 import { GAMES } from './games';
-import { type Bottleneck, RESOLUTIONS, type ResolutionId, predict } from './model';
+import {
+  type Bottleneck,
+  type GameHighlight,
+  type GameProfile,
+  RESOLUTIONS,
+  type ResolutionId,
+  predict,
+} from './model';
 
 /**
  * 個別モデルページとゲーム別ページで使う、ゲーム別fps表の組み立て。
@@ -38,6 +45,12 @@ export type GameFpsTable = {
   cap: number | null;
   confidenceLabel: string;
   notes: string[];
+  /** どんな場面の値か（Apex なら激しい戦闘シーン）。ゲームページの強調枠と同じもの */
+  highlight: GameHighlight | null;
+  /** このGPUでは予想が実際より高めに出る傾向があるか（Apex の指数15未満。ゲームページの印と同じ判定） */
+  overpredicts: boolean;
+  /** 基準画質での 1% Low（カクつき）の幅。解像度ごと。比が無いゲームは null */
+  lows: { presetLabel: string; cells: { resolution: ResolutionId; min: number; max: number }[] } | null;
   rows: FpsRow[];
 };
 
@@ -57,6 +70,9 @@ export function buildFpsTables(gpu: Gpu, cpu: Cpu): GameFpsTable[] {
     cap: game.cap,
     confidenceLabel: game.confidenceLabel,
     notes: game.notes,
+    highlight: game.highlight,
+    overpredicts: game.overpredictsBelowIndex !== null && gpu.perfIndex < game.overpredictsBelowIndex,
+    lows: featuredLows(gpu, cpu, game),
     rows: game.presets.map((preset) => ({
       presetId: preset.id,
       presetLabel: preset.label,
@@ -77,6 +93,25 @@ export function buildFpsTables(gpu: Gpu, cpu: Cpu): GameFpsTable[] {
       }),
     })),
   }));
+}
+
+/** 基準画質の 1% Low の幅（fps予想ツールと同じ predict().fps1Low） */
+function featuredLows(gpu: Gpu, cpu: Cpu, game: GameProfile): GameFpsTable['lows'] {
+  const preset = game.presets.find((p) => p.id === game.featuredPresetId);
+  if (!preset?.lowRatio) return null;
+  return {
+    presetLabel: preset.label,
+    cells: RESOLUTIONS.flatMap((res) => {
+      const low = predict({
+        gpuFps4kHigh: gpu.fpsValorant4kHigh,
+        cpuCeiling: cpu.fpsValorantCeiling,
+        resolution: res.id,
+        game,
+        preset,
+      }).fps1Low;
+      return low ? [{ resolution: res.id, min: low.min, max: low.max }] : [];
+    }),
+  };
 }
 
 /**

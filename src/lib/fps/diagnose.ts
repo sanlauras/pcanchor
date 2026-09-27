@@ -61,6 +61,19 @@ function fmt(v: number): string {
 }
 
 /**
+ * GPU の VRAM 容量を、vram4kMb と同じ単位（GB × 1000）で返す。
+ *
+ * vram4kMb は測定の「GB」表示を1000倍して持っている（実測 8.19GB → 8190）。以前は容量側だけ
+ * GB × 1024 で比べていたため、8GB カード（8192）が VALORANT 4K 全て高（8190）に「足りる」ことになり、
+ * CONTEXT.md「VRAMについて」の実測の結論（8GBカードでは不足する）と食い違っていた（2026-09-27 に修正）。
+ * 比較も GB への戻しも、必ずこの関数と VRAM_MB_PER_GB を通すこと。
+ */
+export const VRAM_MB_PER_GB = 1000;
+export function vramCapacityMb(gpu: Pick<Gpu, 'vramGb'>): number {
+  return gpu.vramGb * VRAM_MB_PER_GB;
+}
+
+/**
  * その解像度・プリセットでのVRAM要求量(MB)。
  * 4Kの実測値を基準に、画素比で概算する。
  * 実測では画質を下げてもVRAMがほとんど減らなかったため、
@@ -193,12 +206,12 @@ export function diagnose(args: {
 
   // ---- VRAM。平均fpsではなく 1% Low（カクつき）に効く独立の軸 ----
   const needMb = vramNeedMb(preset, resolution);
-  const haveMb = gpu.vramGb * 1024;
+  const haveMb = vramCapacityMb(gpu);
   let vramWarning: string | null = null;
   if (needMb !== null && haveMb < needMb) {
     vramWarning =
-      `${game.name} をこの設定で動かすと、VRAMを約 ${(needMb / 1024).toFixed(1)}GB 使う見込みです` +
-      `（4Kでの実測 ${(preset.vram4kMb! / 1024).toFixed(1)}GB を基準に算出）。` +
+      `${game.name} をこの設定で動かすと、VRAMを約 ${(needMb / VRAM_MB_PER_GB).toFixed(1)}GB 使う見込みです` +
+      `（4Kでの測定 ${(preset.vram4kMb! / VRAM_MB_PER_GB).toFixed(2)}GB を基準に算出）。` +
       `このGPUは ${gpu.vramGb}GB なので不足します。` +
       '平均fpsにはあまり出ませんが、カクつき（1% Low）の主因になります。' +
       '実測では画質を下げてもVRAM使用量はほとんど減らなかったため、設定を下げても解消しない可能性があります。';

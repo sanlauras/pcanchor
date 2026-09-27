@@ -6,7 +6,9 @@ import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { cpus, gpus } from '@/lib/data';
 import { GAMES } from '@/lib/fps/games';
 import { RESOLUTIONS, type ResolutionId } from '@/lib/fps/model';
+import { OFFICIAL_REQUIREMENTS } from '@/lib/fps/official-requirements';
 import { cpuSideFps } from '@/lib/fps/pairing';
+import { sceneSentence } from '@/lib/fps/scene';
 import { rankGpusForGame, referenceCpu } from '@/lib/fps/table';
 import { JsonLd, pageMetadata } from '@/lib/seo';
 
@@ -33,6 +35,7 @@ export async function generateMetadata({
     description:
       `${game.name} を1080p・1440p・4Kで60・144・240fps出すのに必要なGPUと、` +
       `GPU ${gpus.length}モデル別の推定fps、CPU別のfps上限を掲載。` +
+      (OFFICIAL_REQUIREMENTS[game.id] ? '公式の必要・推奨動作環境も載せています。' : '') +
       `メーカー公式スペックと実測から計算した推定値です（誤差±15〜20%）。`,
     path: `/games/${game.id}`,
   });
@@ -105,8 +108,11 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
     min1440: minimumGpu(byResolution[1]!.ranked, 144),
     lowestCpu: cpuCaps[cpuCaps.length - 1]!,
     highestCpu: cpuCaps[0]!,
+    // どんな場面の値か（Apex は激しい戦闘シーン）。画面の強調枠と同じ中身を答えにも入れる
+    scene: game.highlight ? sceneSentence(game.highlight, game.cap) : null,
   });
   const diagnoseHref = `/tools/fps?game=${game.id}`;
+  const official = OFFICIAL_REQUIREMENTS[game.id] ?? null;
 
   return (
     <div className="mx-auto flex max-w-[1240px] gap-8 px-5">
@@ -174,6 +180,43 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
               </p>
             )}
           </div>
+        )}
+
+        {/*
+          ゲーム会社の公式の動作環境。公式ページの記載をそのまま写し、確認日と出典を添える。
+          fps の計算には使っていないことも明記する（このサイトの推定とは別物のため）。
+        */}
+        {official && (
+          <section className="pt-7">
+            <h2 className="mb-1 font-cond text-xl font-bold">公式の必要・推奨動作環境</h2>
+            <p className="mb-3 max-w-[70ch] text-xs text-dim">
+              {`ゲーム会社が公表している条件です（${official.checkedOn} に確認）。「動くかどうか」の目安で、このページの推定fpsの計算には使っていません。何fps出るかは、この下の表を見てください。`}
+            </p>
+            <div className="grid gap-4 md:grid-cols-2">
+              {official.tiers.map((tier) => (
+                <div key={tier.label} className="border-2 border-ink bg-panel">
+                  <h3 className="border-b-2 border-ink bg-rule-soft px-3 py-1.5 font-cond text-sm font-bold">
+                    {tier.label}
+                  </h3>
+                  <dl className="divide-y divide-rule-soft text-sm">
+                    {tier.rows.map(([k, v]) => (
+                      <div key={k} className="grid grid-cols-[5.5rem_1fr] gap-3 px-3 py-1.5">
+                        <dt className="font-mono text-[11px] text-dim">{k}</dt>
+                        <dd>{v}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
+              ))}
+            </div>
+            <p className="mt-2 text-[11px] text-dim">
+              {'出典: '}
+              <a href={official.sourceUrl} target="_blank" rel="noopener" className="text-accent underline">
+                {official.sourceLabel}
+              </a>
+              {official.caveat && `。${official.caveat}`}
+            </p>
+          </section>
         )}
 
         <section className="py-7">
@@ -449,8 +492,9 @@ function gameFaq(args: {
   min1440: GpuEntry;
   lowestCpu: { cpu: { name: string }; fps: number };
   highestCpu: { cpu: { name: string }; fps: number };
+  scene: string | null;
 }): { q: string; a: string }[] {
-  const { gameName, presetLabel, cpuName, cap, min1080, min1440, lowestCpu, highestCpu } = args;
+  const { gameName, presetLabel, cpuName, cap, min1080, min1440, lowestCpu, highestCpu, scene } = args;
   const at = (label: string, e: GpuEntry) =>
     e ? `${label}なら${e.gpu.name}（推定${e.uncapped.toFixed(0)}fps）` : `${label}では掲載しているGPUでは届かず`;
 
@@ -459,7 +503,8 @@ function gameFaq(args: {
       q: `${gameName}で144fpsを出すには、どのGPUが必要ですか？`,
       a:
         `画質「${presetLabel}」の場合、${at('1080p', min1080)}、${at('1440p', min1440)}が、` +
-        `144fpsに届く最も性能指数の低いGPUの目安です。CPUは${cpuName}の場合の推定値で、誤差は±15〜20%です。`,
+        `144fpsに届く最も性能指数の低いGPUの目安です。CPUは${cpuName}の場合の推定値で、誤差は±15〜20%です。` +
+        (scene ?? ''),
     },
     {
       q: `${gameName}のfpsは、CPUによってどれくらい変わりますか？`,

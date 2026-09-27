@@ -5,12 +5,14 @@ import { AdSlot } from '@/components/AdSlot';
 import { AffiliateLink } from '@/components/AffiliateLink';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { FpsTables } from '@/components/model/FpsTables';
+import { IndexStrip } from '@/components/model/IndexStrip';
 import { SpecList } from '@/components/model/SpecList';
 import { VerifiedTag } from '@/components/spec-table/VerifiedTag';
 import { cpus, gpus } from '@/lib/data';
 import { GAMES, supportedGameNames } from '@/lib/fps/games';
 import { PAIRING_RESOLUTION, gpuForCpu } from '@/lib/fps/pairing';
 import { buildFpsTables, nearbyByIndex } from '@/lib/fps/table';
+import { cpuHeadline, describeRatio, generationNeighbors, rankByIndex } from '@/lib/model-summary';
 import { pageMetadata } from '@/lib/seo';
 
 /** CPUページで組み合わせる基準GPU。実測アンカーのGPUを使う */
@@ -50,6 +52,9 @@ export default async function CpuDetailPage({ params }: PageProps<'/cpu/[slug]'>
   const tables = buildFpsTables(gpu, cpu);
   const nearby = nearbyByIndex(cpus, cpu);
   const sameArch = cpus.filter((c) => c.arch === cpu.arch && c.name !== cpu.name);
+  // このモデルだけの情報（2026-09-27 の SEO監査への対応。数字はすべて既存の計算から）
+  const headline = cpuHeadline(cpu);
+  const generation = generationNeighbors(cpus, cpu, 'cpu');
   // ゲームごとの「このCPUが足を引っ張らずに済む上限のGPU」。基準画質・1080p で見る
   const pairings = GAMES.filter((g) => g.supported).flatMap((game) => {
     const preset = game.presets.find((p) => p.id === game.featuredPresetId);
@@ -88,14 +93,49 @@ export default async function CpuDetailPage({ params }: PageProps<'/cpu/[slug]'>
             <strong className="font-mono font-semibold text-ink">
               {cpu.perfIndex.toFixed(1)}
             </strong>
-            （Ryzen 7 9800X3D = 100）。{cpu.cores}コア{cpu.threads}スレッド、L3キャッシュ {cpu.l3CacheMb}MB
-            {cpu.has3dVCache && '（3D V-Cache 搭載）'}。以下のfpsは、GPUに {gpu.name} を組み合わせた場合の推定値です。
+            （Ryzen 7 9800X3D = 100）で、掲載している CPU {cpus.length}モデル中{' '}
+            <strong className="font-semibold text-ink">{rankByIndex(cpus, cpu)}位</strong>
+            。{cpu.cores}コア{cpu.threads}スレッド、L3キャッシュ {cpu.l3CacheMb}MB
+            {cpu.has3dVCache && '（3D V-Cache 搭載）'}、ソケット {cpu.socket}。
+          </p>
+          {/* このモデルのまとめ。CPU側の上限は解像度と画質によらない（下の表・ゲームページと同じ計算） */}
+          <p className="mt-3 max-w-[62ch] text-dim">
+            {'GPUが十分に速いとき、このCPUで出せるfpsの上限は、'}
+            {headline.map((h, i) => (
+              <span key={h.game.id}>
+                {i > 0 && '、'}
+                {`${h.game.name}で約 `}
+                <strong className="font-mono font-semibold text-ink">{h.fps.toFixed(0)}</strong>
+                {' fps'}
+                {h.game.cap !== null && h.fps > h.game.cap && `（実際の画面は ${h.game.cap} fps で止まる）`}
+              </span>
+            ))}
+            {' が目安です（推定・誤差 ±15〜20%）。以下の表は、GPUに '}
+            {gpu.name}
+            {' を組み合わせた場合の推定値です。'}
           </p>
         </header>
 
         {/* 販売ページへの導線。タグ未設定なら何も描画されない */}
         <div className="mt-6">
-          <AffiliateLink query={cpu.name} variant="block" model={cpu} />
+          {/*
+            CPU には VRAM が無いので、GPU 向けの既定の注意書き（型番とVRAM容量）は使わない（2026-09-27 の SEO監査の指摘）。
+            CPU で間違えやすいのは、手持ちのマザーボードと合わないソケットを買うこと。
+          */}
+          <AffiliateLink
+            query={cpu.name}
+            variant="block"
+            model={cpu}
+            advice={
+              <>
+                検索結果には別のモデルやアクセサリも表示されます。
+                <strong className="font-medium text-ink">
+                  型番と、ソケット（このCPUは {cpu.socket}）がマザーボードに合うか
+                </strong>
+                を確認してから購入してください。CPUクーラーが付属するかは販売ページで確認できます。
+              </>
+            }
+          />
         </div>
 
         <FpsTables tables={tables} cpuName={cpu.name} />
@@ -187,6 +227,49 @@ export default async function CpuDetailPage({ params }: PageProps<'/cpu/[slug]'>
             </p>
           </section>
         )}
+
+        {/* 全モデルの中での位置と、前後の世代の同じクラスとの差。どちらも性能指数だけから出す */}
+        <section className="mt-10">
+          <h2 className="mb-1 font-cond text-xl font-bold">CPU {cpus.length}モデルの中での位置</h2>
+          <p className="mb-3 max-w-[70ch] text-xs text-dim">
+            横軸はゲーム向けの性能指数（推定・誤差 ±15〜20%）。細い線が掲載している各CPU、オレンジの太い線がこのCPUです。
+          </p>
+          <IndexStrip
+            values={cpus.map((c) => c.perfIndex)}
+            target={cpu.perfIndex}
+            anchorValue={100}
+            anchorLabel="9800X3D"
+            caption={`${cpu.name} は CPU ${cpus.length}モデル中 ${rankByIndex(cpus, cpu)}位`}
+          />
+          {(generation.previous || generation.next) && (
+            <ul className="mt-4 space-y-1.5 text-sm">
+              {generation.previous && (
+                <li>
+                  <span className="mr-2 font-mono text-[11px] text-dim">前の世代</span>
+                  <Link href={`/cpu/${generation.previous.model.slug}`} className="font-bold text-accent underline underline-offset-2">
+                    {generation.previous.model.name}
+                  </Link>
+                  {` より性能指数が${describeRatio(generation.previous.ratio)}`}
+                  <span className="ml-1 font-mono text-xs text-dim">
+                    （指数 {generation.previous.model.perfIndex.toFixed(1)}）
+                  </span>
+                </li>
+              )}
+              {generation.next && (
+                <li>
+                  <span className="mr-2 font-mono text-[11px] text-dim">次の世代</span>
+                  <Link href={`/cpu/${generation.next.model.slug}`} className="font-bold text-accent underline underline-offset-2">
+                    {generation.next.model.name}
+                  </Link>
+                  {` より性能指数が${describeRatio(generation.next.ratio)}`}
+                  <span className="ml-1 font-mono text-xs text-dim">
+                    （指数 {generation.next.model.perfIndex.toFixed(1)}）
+                  </span>
+                </li>
+              )}
+            </ul>
+          )}
+        </section>
 
         <section className="mt-10">
           <h2 className="mb-1 font-cond text-xl font-bold">性能が近いCPU</h2>

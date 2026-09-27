@@ -27,8 +27,8 @@ type Props = {
   model?: { arch: string; releaseYear: number };
   /**
    * 検索結果を見るときの注意書きを差し替える。
-   * 既定はGPU/CPU向けの「型番とVRAM容量を確認」。
-   * マウスパッドのように別の確認点があるものに使う。
+   * 既定はGPU向けの「型番とVRAM容量を確認」。
+   * CPU（ソケットを確認）やマウスパッドのように、別の確認点があるものに使う。
    */
   advice?: React.ReactNode;
 };

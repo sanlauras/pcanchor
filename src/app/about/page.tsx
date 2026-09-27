@@ -2,13 +2,13 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { tally } from '@/lib/data/summary';
-import { SITE } from '@/lib/site';
+import { OPERATOR, SITE } from '@/lib/site';
 import { pageMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = pageMetadata({
-  title: 'このサイトについて｜算出方法と実測環境',
+  title: 'このサイトについて｜運営者と実測環境',
   description:
-    'PCアンカーの運営者情報、性能指数と推定fpsの算出方法、実測に使っている機材と測定手順、使わないと決めているデータの方針をまとめています。',
+    `PCアンカーの運営者（${OPERATOR.name}）の紹介、サイトの目的、使うデータと使わないデータの方針、実測に使っている機材と測定手順をまとめています。`,
   path: '/about',
 });
 
@@ -25,11 +25,29 @@ export default function AboutPage() {
           このサイトについて
         </h1>
         <p className="max-w-[60ch] text-dim">
-          {SITE.name}は、ゲーミングPCの性能を「推測ではなく計算と実測から」示すことを目的にした個人サイトです。
+          {SITE.name}は、ゲーミングPCの性能を「推測ではなく計算と実測から」示すことを目的にした、{OPERATOR.name}の個人サイトです。
         </p>
       </header>
 
       <div className="space-y-10 py-8 text-sm leading-relaxed">
+        {/*
+          運営者の紹介（2026-09-27 追加）。書いてよいのはユーザー本人から聞いた事実だけ。
+          機材の写真・実測の生データ・社名の似た会社との関係の一言は、ユーザーの判断で載せない。
+        */}
+        <section id="operator" className="scroll-mt-[calc(var(--header-h)+1rem)]">
+          <h2 className="mb-3 font-cond text-xl font-bold">運営者</h2>
+          <div className="border-2 border-ink bg-panel p-5">
+            <p className="font-cond text-lg font-bold text-ink">{OPERATOR.name}</p>
+            <p className="mt-2 text-dim">
+              {'小学生のころから FPS を遊んでいて、もう10年以上になります。好きな FPS / TPS は Fortnite と VALORANT。'}
+              {'ほかにもマインクラフトや Apex Legends など、いろいろなゲームを遊んでいます。'}
+            </p>
+            <p className="mt-2 text-dim">
+              {'このサイトの実測は、運営者自身のPC（下の「実測環境」）で行っています。'}
+            </p>
+          </div>
+        </section>
+
         <section>
           <h2 className="mb-3 font-cond text-xl font-bold">サイトの目的</h2>
           <p className="text-dim">
@@ -94,11 +112,15 @@ Board    MSI B650 GAMING PLUS WIFI
             。アーキテクチャごとに係数を1つしか持てないためで、実際には逆転しえます。世代をまたいだ大きな差は、それなりに信用できます。
           </p>
           <p className="mt-3 text-dim">
-            根拠が足りない値は出さない方針です。終盤の高負荷時のfpsは、現時点で実測データが無いため公開していません。1% Low（カクつき）は実測から求めた比で出していますが、ばらつきをそのままレンジで表示しています。算出方法は
-            <Link href="/tools/fps" className="text-accent underline">
-              ゲーム別fps予想ツール
+            根拠が足りない値は出さない方針です。終盤の高負荷時のfpsは、現時点で実測データが無いため公開していません。1% Low（カクつき）は実測から求めた比で出していますが、ばらつきをそのままレンジで表示しています。計算式と係数の出どころは
+            <Link href="/methodology" className="text-accent underline">
+              算出方法
             </Link>
-            のページに掲載しています。
+            のページにまとめています。サイトの変更は
+            <Link href="/changelog" className="text-accent underline">
+              更新履歴
+            </Link>
+            で公開しています。
           </p>
         </section>
 
@@ -112,8 +134,8 @@ Board    MSI B650 GAMING PLUS WIFI
               </dd>
             </div>
             <div className="flex gap-4 border-b border-rule-soft py-1.5">
-              <dt className="w-28 shrink-0 text-xs">運営</dt>
-              <dd>個人運営</dd>
+              <dt className="w-28 shrink-0 text-xs">運営者</dt>
+              <dd>{OPERATOR.name}（個人運営）</dd>
             </div>
             <div className="flex gap-4 border-b border-rule-soft py-1.5">
               <dt className="w-28 shrink-0 text-xs">お問い合わせ</dt>

@@ -10,7 +10,7 @@ import { Analytics } from '@/components/Analytics';
 import { MobileMenu } from '@/components/MobileMenu';
 import { AMAZON_DISCLOSURE, hasAmazonTag } from '@/lib/affiliate';
 import { HEADER_NAV } from '@/lib/nav';
-import { SITE } from '@/lib/site';
+import { OPERATOR, SITE } from '@/lib/site';
 import './globals.css';
 
 // 日本語本文は端末のシステムフォントを使う（日本語ウェブフォントは重いため）。
@@ -41,12 +41,16 @@ const plexCond = IBM_Plex_Sans_Condensed({
  * unicode-range 付きで全部入る。latin だけを preload させ、日本語は
  * 実際に使う文字のぶんだけ遅延取得させている。
  * display:'swap' なのでフォント待ちで表示は止まらない。
+ *
+ * preload はしない（2026-09-27）。見出しの欧文は先に並ぶ Plex で出るので、この書体の
+ * latin ファイルはほぼ使われない。先読みさせると、表示に必要な CSS と回線を取り合うだけだった。
  */
 const jpHeading = BIZ_UDPGothic({
   variable: '--font-jp',
   subsets: ['latin'],
   weight: ['700'],
   display: 'swap',
+  preload: false,
 });
 
 /*
@@ -55,13 +59,17 @@ const jpHeading = BIZ_UDPGothic({
  * 輪郭がざらついて欠ける書体。字の構造自体は壊れないので、
  * ロゴサイズ(20px)でも読める範囲に崩れが収まる。
  * 飾りはこのロゴだけに閉じ込め、読ませる文章には使わない。
- * 欧文のみ・1ファイルなので数十KB。
+ *
+ * 輪郭が複雑なため、欧文のみでも約200KBある（2026-09-27 に測定）。
+ * preload すると、スマホの遅い回線で表示に必要な CSS と回線を取り合い、
+ * 最初の表示が遅れていた（SEO監査の指摘）。ロゴは読み込みまで代わりの書体で出るので、先読みはしない。
  */
 const dispRubik = Rubik_Distressed({
   variable: '--font-rubik-dist',
   subsets: ['latin'],
   weight: '400',
   display: 'swap',
+  preload: false,
 });
 
 const fontVars = [
@@ -97,7 +105,9 @@ export const metadata: Metadata = {
 };
 
 const footerNav = [
-  { href: '/about', label: 'このサイトについて' },
+  { href: '/about', label: 'このサイトについて・運営者' },
+  { href: '/methodology', label: '算出方法' },
+  { href: '/changelog', label: '更新履歴' },
   { href: '/privacy', label: 'プライバシーポリシー' },
   { href: '/terms', label: '利用規約' },
   { href: '/contact', label: 'お問い合わせ' },
@@ -120,7 +130,18 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         '@type': 'Organization',
         '@id': `${SITE.url}/#organization`,
         name: SITE.name,
+        alternateName: SITE.nameEn,
         url: SITE.url,
+        // 正方形の PNG（Google の要件。SVG は不可）。scripts/make-logo.mjs で icon.svg から作る
+        logo: `${SITE.url}/logo.png`,
+        founder: { '@id': `${SITE.url}/about#operator` },
+      },
+      {
+        // 運営者。/about に表示している紹介と同じ内容だけを書く
+        '@type': 'Person',
+        '@id': `${SITE.url}/about#operator`,
+        name: OPERATOR.name,
+        url: `${SITE.url}/about`,
       },
     ],
   };

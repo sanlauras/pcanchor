@@ -1,6 +1,6 @@
 import type { Cpu, Gpu } from '@/lib/data';
 import { isCurrentCpu, isCurrentGenGpu } from '@/lib/generation';
-import { vramNeedMb } from './diagnose';
+import { VRAM_MB_PER_GB, vramCapacityMb, vramNeedMb } from './diagnose';
 import { findGame } from './games';
 import { type GameProfile, type PresetProfile, type ResolutionId, predict } from './model';
 
@@ -170,7 +170,7 @@ function solveTier(args: {
       gpus,
       req.gpuVendor,
       gpuFpsOf,
-      (g) => vram === null || g.vramGb * 1024 >= vram,
+      (g) => vram === null || vramCapacityMb(g) >= vram,
       isCurrentGenGpu,
     ),
     cpu: narrow(cpus, req.cpuVendor, cpuFpsOf, () => true, isCurrentCpu),
@@ -318,10 +318,10 @@ export function assertBuildInverts(gpus: readonly Gpu[], cpus: readonly Cpu[]): 
       }
 
       // VRAMも条件に入っているはずなので、足りないものが選ばれていないこと
-      if (t.vramNeedMb !== null && gpu.vramGb * 1024 < t.vramNeedMb) {
+      if (t.vramNeedMb !== null && vramCapacityMb(gpu) < t.vramNeedMb) {
         problems.push(
           `${label}: ${gpu.name} は VRAM ${gpu.vramGb}GB で、` +
-            `必要な ${(t.vramNeedMb / 1024).toFixed(1)}GB に足りないのに選ばれている`,
+            `必要な ${(t.vramNeedMb / VRAM_MB_PER_GB).toFixed(1)}GB に足りないのに選ばれている`,
         );
       }
 
@@ -337,7 +337,7 @@ export function assertBuildInverts(gpus: readonly Gpu[], cpus: readonly Cpu[]): 
           game,
           preset,
         });
-        const vramOk = t.vramNeedMb === null || below.vramGb * 1024 >= t.vramNeedMb;
+        const vramOk = t.vramNeedMb === null || vramCapacityMb(below) >= t.vramNeedMb;
         if (q.gpuFps >= t.requiredAvg && vramOk) {
           problems.push(
             `${label}: ${gpu.name} より下の ${below.name} でも届くので、最小になっていない`,

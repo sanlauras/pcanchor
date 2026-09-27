@@ -87,6 +87,39 @@ export function webApplicationJsonLd({
   };
 }
 
+/**
+ * GPU・CPU 一覧の構造化データ（Dataset。2026-09-27 追加）。
+ *
+ * 表に実際に載せている項目だけを variableMeasured に書く。ライセンスは定めていないので書かない
+ * （無い情報を構造化データだけに書かない）。更新日は更新履歴から決めた日付（ページの表示と同じ）。
+ */
+export function datasetJsonLd({
+  name,
+  description,
+  path,
+  dateModified,
+  variables,
+}: {
+  name: string;
+  description: string;
+  path: string;
+  dateModified: string;
+  variables: string[];
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Dataset',
+    name,
+    description,
+    url: absoluteUrl(path),
+    inLanguage: 'ja',
+    isAccessibleForFree: true,
+    dateModified,
+    creator: { '@id': `${SITE.url}/#organization` },
+    variableMeasured: variables,
+  };
+}
+
 /** 構造化データを <script> で埋め込む。中身はページに表示している内容と一致させること */
 export function JsonLd({ data }: { data: object }) {
   return (

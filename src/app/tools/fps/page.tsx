@@ -14,9 +14,10 @@ import { JsonLd, pageMetadata, webApplicationJsonLd } from '@/lib/seo';
 assertModelReproducesMeasurements();
 
 export const metadata: Metadata = pageMetadata({
-  title: 'ゲーム別fps予想とボトルネック診断｜GPUとCPUを選ぶだけ',
+  // 「ボトルネックチェッカー」は同じ目的で使われる言い方（2026-09-27 の SEO監査の指摘で題名に入れた）
+  title: 'ゲーム別fps予想・ボトルネックチェッカー｜GPUとCPUを選ぶだけ',
   description:
-    `GPUとCPUを選ぶと、${supportedGameNames('・')} の推定fpsが出ます。GPU律速かCPU律速か、どこを変えればfpsが伸びるかまで診断。メーカー公式スペックと実測から計算した推定値です（誤差±15〜20%）。`,
+    `GPUとCPUを選ぶと、${supportedGameNames('・')} の推定fpsが出ます。GPU律速かCPU律速か（ボトルネック診断）、どこを変えればfpsが伸びるかまで分かります。メーカー公式スペックと実測から計算した推定値です（誤差±15〜20%）。`,
   path: '/tools/fps',
 });
 
@@ -95,20 +96,11 @@ CPU由来fps = そのCPUの「Valorant 天井」推定fps × ゲームの重さ`
               大きく表示している予想fpsは、ゲーム側のfps上限を含めない理論値です（PCの性能を見るため）。Apex Legends のように上限があるゲームでは、上限を超える構成に「実際の画面では上限で止まる」旨を添えています。
             </p>
             <p>
-              モデル別の性能（指数）はメーカー公式スペックから自前で計算しています。そこに「そのゲームがどれくらい重いか」「設定と解像度でどれくらい変わるか」を係数として掛けます。係数は割り算で出した比率だけを持っており、fps数値表は保存していません。
-            </p>
-            <p>
-              <strong className="font-medium text-ink">VALORANT</strong> —
-              RX 9070 XT + Ryzen 7 9800X3D での自前の実測4条件から導出。4K→1440p は ×1.87、全て高→全て低は ×1.74 でどちらも実測値です。1080p だけは実測がなく（実測した1080pはCPU律速でGPU側の値が取れなかった）、実測の1.87と画素比から指数則で外挿しています。
-            </p>
-            <p>
-              <strong className="font-medium text-ink">Fortnite</strong> —
-              許諾を得たうえで、Boss Benchmarks さんの実測（Ryzen 7 9800X3D + RTX 5070 Ti）から算出。CPUが自前の実測機と同一のため、ゲーム間の重さを直接比較できています。解像度係数はプリセットごとに異なり（重い設定ほど画素数に比例して重くなる）、GPU使用率が97%以上でGPU律速と確認できた条件だけを使っています。
-            </p>
-            <p>
-              <strong className="font-medium text-ink">Apex Legends</strong> —
-              許諾を得たうえで、第三者の測定から算出。GPU側は Core i9 13900K で
-              GPU 30枚を測った結果（射撃訓練場の重い場面）、CPU側は RTX 4090 で CPU 15個を測った結果（キングスキャニオン）を使っています。Apex では上位のGPUほどfpsの伸びが鈍り、性能指数が2倍になってもfpsは約1.6倍です。これを「GPU性能の効き方」として式に入れています（VALORANT と Fortnite は1で、指数に比例）。低・中の設定はフルHDの測定しかないため、WQHD / 4K は最高設定の解像度係数を流用した近似です。
+              モデル別の性能（指数）はメーカー公式スペックから自前で計算し、ゲームごとの重さや設定・解像度の効き方を係数として掛けています。係数は割り算で出した比率だけを持っており、fps数値表は保存していません。指数の計算式と、ゲームごとの係数の出どころは
+              <Link href="/methodology" className="text-accent underline">
+                算出方法
+              </Link>
+              のページにまとめています。
             </p>
             <p>
               ゲームを移るときにマウス感度をそろえるなら

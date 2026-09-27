@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { FactTable } from '@/components/PageHeader';
+import { siteLastUpdated } from '@/lib/changelog';
 import { cpus, gpus } from '@/lib/data';
 import { tally } from '@/lib/data/summary';
 import { GAMES, supportedGameNames } from '@/lib/fps/games';
@@ -130,6 +131,10 @@ export default function Home() {
         <span>GPU {tally.gpuCount} / CPU {tally.cpuCount}</span>
         <span>{supported.length} TITLES</span>
         <span>推定・誤差 ±15〜20%</span>
+        {/* 最終更新日。他のページはパンくずの横に出している（日付は更新履歴から） */}
+        <Link href="/changelog" className="hover:text-accent-vivid">
+          UPDATED <time dateTime={siteLastUpdated()}>{siteLastUpdated()}</time>
+        </Link>
       </div>
 
       {/*
@@ -156,9 +161,13 @@ export default function Home() {
             </span>
           </h1>
           <p className="mt-7 font-cond text-[clamp(1.5rem,3.6vw,2.25rem)] leading-snug font-bold text-balance">
-            {/* 狭い画面でも「デバ／イス」のように単語の途中で切れないよう、読点で区切って折り返す */}
-            <span className="inline-block">ゲーミングPCとデバイスを、</span>
-            <span className="inline-block">数字で選ぶ。</span>
+            {/*
+              読点で必ず2行に分ける。以前は1行に収まるかを幅に任せていたが、見出しの日本語フォントが
+              読み込まれると字幅が変わって「数字で選ぶ。」だけが2行目に落ち、下の中身が押し下げられていた
+              （スマホで画面のズレ CLS 0.15。2026-09-27 の SEO監査）。
+            */}
+            <span className="block">ゲーミングPCとデバイスを、</span>
+            <span className="block">数字で選ぶ。</span>
           </p>
           {/* 日本語の文を JSX で改行すると継ぎ目に空白が入るので、1文ずつ1行に書く */}
           <p className="mt-4 max-w-[58ch] text-dim">

@@ -5,7 +5,9 @@ import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { Masthead } from '@/components/Masthead';
 import { CpuTable } from '@/components/spec-table/CpuTable';
 import { tally } from '@/lib/data/summary';
-import { pageMetadata } from '@/lib/seo';
+import { cpuColumns } from '@/components/spec-table/columns';
+import { lastUpdated } from '@/lib/changelog';
+import { JsonLd, datasetJsonLd, pageMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = pageMetadata({
   title: 'CPU性能比較 42モデル｜性能指数とfps上限',
@@ -19,6 +21,16 @@ export default function CpuPage() {
     <div className="mx-auto flex max-w-[1240px] gap-8 px-5">
       <main className="min-w-0 flex-1">
         <Breadcrumbs trail={[{ href: '/cpu', label: 'CPU一覧' }]} />
+        {/* データセットの構造化データ（2026-09-27）。項目名は表の列と同じものを使う */}
+        <JsonLd
+          data={datasetJsonLd({
+            name: `CPU ${tally.cpuCount}モデルのスペックと性能指数`,
+            description: metadata.description as string,
+            path: '/cpu',
+            dateModified: lastUpdated('/cpu'),
+            variables: cpuColumns.map((c) => c.label).filter((l) => l !== 'モデル'),
+          })}
+        />
         <Masthead
           eyebrow="CPU DATABASE"
           title="CPUスペック一覧"

@@ -13,7 +13,8 @@ import { JsonLd, pageMetadata, webApplicationJsonLd } from '@/lib/seo';
 assertSensConversionIsConsistent();
 
 export const metadata: Metadata = pageMetadata({
-  title: 'FPS感度の換算・振り向き距離(cm/360)の計算',
+  // 「振り向き計算」は同じ目的で探す人が使う言い方（2026-09-27 の SEO監査の指摘で題名と見出しに入れた）
+  title: 'FPS感度の換算・振り向き計算（cm/360）',
   description:
     `${SENS_GAMES.map((g) => g.name).join('・')} の感度を相互に換算します。ゲーム内感度・eDPI・振り向き距離(cm/360)のどれからでも計算でき、マウスパッドの幅が足りているかも確認できます。計算はブラウザ内で完結します。`,
   path: '/tools/sensitivity',
@@ -40,7 +41,7 @@ export default function SensitivityPage() {
         <PageHeader
           eyebrow={TOOLS.sensitivity.eyebrow}
           title={TOOLS.sensitivity.short}
-          subtitle={TOOLS.sensitivity.long}
+          subtitle="FPS感度の換算・振り向き計算（cm/360）"
           lead={
             <>
               ゲームを移っても<b className="font-semibold text-ink">同じ振り向き距離</b>でエイムできるように、感度を換算します。ゲーム内感度・eDPI・振り向き距離(cm/360)のどれからでも計算できます。計算はすべてブラウザ内で完結します。
