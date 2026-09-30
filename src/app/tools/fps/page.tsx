@@ -60,7 +60,7 @@ export default function FpsToolPage() {
           ゲームごとのページへの入口。ツールは操作して使うものなので、検索エンジンがたどれる
           普通のリンクをここに置く（2026-09-26 の SEO 改善）。
         */}
-        <section className="border-t-2 border-ink pt-5">
+        <section className="border-t-2 border-frame pt-5">
           <h2 className="mb-1 font-cond text-lg font-bold">ゲーム別の推奨GPU</h2>
           <p className="mb-3 text-xs text-dim">
             ゲームごとに、GPU別の推定fpsと、解像度別に必要なGPU・CPU別の上限をまとめています。
@@ -70,7 +70,7 @@ export default function FpsToolPage() {
               <li key={g.id}>
                 <Link
                   href={`/games/${g.id}`}
-                  className="inline-block border-2 border-ink bg-panel px-3 py-1.5 font-cond text-sm font-bold hover:bg-accent-soft hover:text-accent"
+                  className="inline-block rounded-lg border border-frame bg-panel px-3 py-1.5 font-cond text-sm font-bold hover:bg-accent-soft hover:text-accent"
                 >
                   {g.name}
                 </Link>
@@ -81,7 +81,7 @@ export default function FpsToolPage() {
 
         <section className="mt-8 border-t border-rule-soft pt-5 text-xs text-dim">
           <h2 className="mb-2 font-cond text-base font-bold text-ink">計算方法</h2>
-          <pre className="mb-3 overflow-x-auto border border-rule bg-panel p-3 font-mono text-[11px]">
+          <pre className="rounded-lg mb-3 overflow-x-auto border border-rule bg-panel p-3 font-mono text-[11px]">
 {`予想fps（理論値） = min(GPU由来fps, CPU由来fps)
 実際の画面のfps   = min(予想fps, ゲーム固有の上限)
 

@@ -48,8 +48,8 @@ export function AffiliateLink({ query, variant = 'inline', model, advice }: Prop
           href={href}
           target="_blank"
           rel="sponsored noopener"
-          className="flex items-center justify-between gap-3 border border-accent bg-accent
-                     px-5 py-3.5 font-cond text-base font-bold text-paper
+          className="flex items-center justify-between gap-3 rounded-lg border border-accent-vivid bg-accent-vivid
+                     px-5 py-3.5 shadow-glow font-cond text-base font-bold text-on-accent
                      hover:brightness-110"
         >
           <span>

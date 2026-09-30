@@ -1,15 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <!--
-    2026-09-22 のデザインの作り直しで配色を変えた。
-    サイトの帯の四角い印と同じ「信号オレンジの地に墨色」（コントラスト 5.92:1）。
-    ブラウザのタブが明るくても暗くても埋もれない。
+    2026-09-27 の暗いデザインへの作り直しで配色を変えた。
+    サイトの背景と同じ紺の地に、アクセントの明るい青の錨（コントラスト 8.35:1）。
+    角を少し丸めて、サイトのカードの形にそろえている。
+    変えたら npm run favicon と node scripts/make-logo.mjs を実行し直すこと。
   -->
-  <rect width="32" height="32" fill="#ff5a1f"/>
+  <rect width="32" height="32" rx="7" fill="#0d1726"/>
+  <rect x="0.75" y="0.75" width="30.5" height="30.5" rx="6.25" fill="none" stroke="#24426b" stroke-width="1.5"/>
   <!-- 錨（アンカー）を簡略化した形。サイト名の由来 -->
-  <g stroke="#121416" stroke-width="2.6" fill="none" stroke-linecap="round">
+  <g stroke="#5cb8ff" stroke-width="2.6" fill="none" stroke-linecap="round">
     <path d="M16 9v15"/>
     <path d="M10 14h12"/>
     <path d="M8 19a8 8 0 0 0 16 0"/>
   </g>
-  <circle cx="16" cy="7" r="2.6" fill="none" stroke="#121416" stroke-width="2.6"/>
+  <circle cx="16" cy="7" r="2.6" fill="none" stroke="#5cb8ff" stroke-width="2.6"/>
 </svg>

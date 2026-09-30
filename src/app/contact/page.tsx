@@ -29,7 +29,7 @@ export default function ContactPage() {
   return (
     <main className="mx-auto max-w-[820px] px-5">
       <Breadcrumbs trail={[{ href: '/contact', label: 'お問い合わせ' }]} />
-      <header className="border-b border-ink pt-8 pb-7">
+      <header className="border-b border-frame pt-8 pb-7">
         <h1 className="mb-4 font-cond text-[clamp(1.8rem,5vw,3rem)] leading-none font-bold tracking-tight">
           お問い合わせ
         </h1>
@@ -39,7 +39,7 @@ export default function ContactPage() {
       </header>
 
       <div className="space-y-8 py-8 text-sm leading-relaxed">
-        <section className="border border-rule bg-panel p-5">
+        <section className="rounded-lg border border-rule bg-panel p-5">
           <h2 className="mb-2 font-cond text-lg font-bold">連絡先</h2>
           <p className="text-dim">
             メールでご連絡ください。

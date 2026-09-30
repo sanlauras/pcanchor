@@ -17,7 +17,7 @@ export default function AboutPage() {
     <main className="mx-auto max-w-[820px] px-5">
       <Breadcrumbs trail={[{ href: '/about', label: 'このサイトについて' }]} />
 
-      <header className="border-b border-ink pt-8 pb-7">
+      <header className="border-b border-frame pt-8 pb-7">
         <p className="mb-3 font-mono text-[11px] tracking-[0.18em] text-signal uppercase">
           ABOUT
         </p>
@@ -36,7 +36,7 @@ export default function AboutPage() {
         */}
         <section id="operator" className="scroll-mt-[calc(var(--header-h)+1rem)]">
           <h2 className="mb-3 font-cond text-xl font-bold">運営者</h2>
-          <div className="border-2 border-ink bg-panel p-5">
+          <div className="rounded-lg border border-frame bg-panel p-5">
             <p className="font-cond text-lg font-bold text-ink">{OPERATOR.name}</p>
             <p className="mt-2 text-dim">
               {'小学生のころから FPS を遊んでいて、もう10年以上になります。好きな FPS / TPS は Fortnite と VALORANT。'}
@@ -82,7 +82,7 @@ export default function AboutPage() {
           <p className="mb-3 text-dim">
             すべての推定の基準になっている実測は、次の1台で行っています。この1台を「アンカー（基準点）」として、他のモデルを公開スペックから推定しています。サイト名の由来でもあります。
           </p>
-          <pre className="overflow-x-auto border border-rule bg-panel p-4 font-mono text-[11px] text-dim">
+          <pre className="rounded-lg overflow-x-auto border border-rule bg-panel p-4 font-mono text-[11px] text-dim">
 {`GPU      Radeon RX 9070 XT 16GB (ASUS)
 CPU      Ryzen 7 9800X3D
 RAM      32GB (16GB x2) DDR5

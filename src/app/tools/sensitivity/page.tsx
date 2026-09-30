@@ -55,7 +55,7 @@ export default function SensitivityPage() {
 
         <section className="mt-8 border-t border-rule-soft pt-5 text-xs text-dim">
           <h2 className="mb-2 font-cond text-base font-bold text-ink">計算方法</h2>
-          <pre className="mb-3 overflow-x-auto border border-rule bg-panel p-3 font-mono text-[11px]">
+          <pre className="rounded-lg mb-3 overflow-x-auto border border-rule bg-panel p-3 font-mono text-[11px]">
 {`振り向き距離 cm/360 = 360 ÷ (yaw × 感度 × DPI) × 2.54
 別ゲームの感度      = 元の感度 × (元のyaw × 元のDPI) ÷ (先のyaw × 先のDPI)
 eDPI                = DPI × 感度`}

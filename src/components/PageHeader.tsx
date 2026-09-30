@@ -21,7 +21,7 @@ type Props = {
 
 export function PageHeader({ eyebrow, title, subtitle, lead, facts }: Props) {
   return (
-    <header className="grid gap-6 border-b-2 border-ink pt-10 pb-8 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+    <header className="grid gap-6 border-b-2 border-frame pt-10 pb-8 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
       <div className="min-w-0">
         <p className="mb-3 font-mono text-[11px] font-semibold tracking-[0.18em] text-signal uppercase">
           {eyebrow}
@@ -45,13 +45,13 @@ export function PageHeader({ eyebrow, title, subtitle, lead, facts }: Props) {
 /** 技術資料の表題欄のような、ラベルと値の表。ホームのヒーローでも使う */
 export function FactTable({ facts, className = '' }: { facts: HeaderFact[]; className?: string }) {
   return (
-    <dl className={`border-2 border-ink bg-panel text-sm md:min-w-[18rem] ${className}`}>
+    <dl className={`rounded-lg border border-frame bg-panel text-sm md:min-w-[18rem] ${className}`}>
       {facts.map((f) => (
         <div
           key={f.label}
-          className="grid grid-cols-[8.5rem_minmax(0,1fr)] border-b border-ink last:border-b-0"
+          className="grid grid-cols-[8.5rem_minmax(0,1fr)] border-b border-frame last:border-b-0"
         >
-          <dt className="border-r border-ink px-2.5 py-1.5 font-mono text-[10px] font-semibold tracking-[0.1em] text-dim uppercase">
+          <dt className="border-r border-frame px-2.5 py-1.5 font-mono text-[10px] font-semibold tracking-[0.1em] text-dim uppercase">
             {f.label}
           </dt>
           <dd className="px-3 py-1.5 font-cond font-bold tabular-nums">{f.value}</dd>

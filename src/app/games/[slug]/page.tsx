@@ -124,7 +124,7 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
           ]}
         />
 
-        <header className="border-b border-ink pt-6 pb-7">
+        <header className="border-b border-frame pt-6 pb-7">
           <p className="mb-3 font-mono text-[11px] tracking-[0.18em] text-signal uppercase">
             GAME / {game.name}
           </p>
@@ -137,7 +137,7 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
           {/* 検索から来た人が、そのままこのゲームで診断に入れるように */}
           <Link
             href={diagnoseHref}
-            className="group mt-5 inline-flex items-center gap-3 border-2 border-ink bg-ink px-4 py-2.5 font-cond text-base font-bold text-paper hover:bg-accent-vivid hover:text-ink"
+            className="group mt-5 inline-flex items-center gap-3 rounded-lg border border-accent-vivid bg-accent-vivid px-4 py-2.5 font-cond text-base font-bold text-on-accent shadow-glow hover:brightness-110"
           >
             {game.name}で自分の構成を診断する
             <span aria-hidden className="transition-transform group-hover:translate-x-1 motion-reduce:transition-none">
@@ -147,7 +147,7 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
         </header>
 
         {game.highlight && (
-          <div className="mt-7 border border-accent bg-accent-soft p-4">
+          <div className="mt-7 rounded-lg border border-accent bg-accent-soft p-4">
             <p className="font-cond text-base font-bold text-ink">
               {game.highlight.title}
             </p>
@@ -194,8 +194,8 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
             </p>
             <div className="grid gap-4 md:grid-cols-2">
               {official.tiers.map((tier) => (
-                <div key={tier.label} className="border-2 border-ink bg-panel">
-                  <h3 className="border-b-2 border-ink bg-rule-soft px-3 py-1.5 font-cond text-sm font-bold">
+                <div key={tier.label} className="rounded-lg border border-frame bg-panel">
+                  <h3 className="border-b-2 border-frame bg-rule-soft px-3 py-1.5 font-cond text-sm font-bold">
                     {tier.label}
                   </h3>
                   <dl className="divide-y divide-rule-soft text-sm">
@@ -229,9 +229,9 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
               `性能指数${floor}未満のGPUは予想が高めに出るため、ここには出していません。`}
           </p>
           <div className="md:overflow-x-auto">
-            <table className="spec-table w-full border-collapse border-2 border-ink bg-panel text-sm">
+            <table className="spec-table w-full border-collapse rounded-lg border border-frame bg-panel text-sm">
               <thead>
-                <tr className="border-b-2 border-ink bg-rule-soft">
+                <tr className="border-b-2 border-frame bg-rule-soft">
                   <th scope="col" className="px-3 py-2 text-left font-mono text-[10px] font-semibold tracking-[0.12em] text-dim">
                     目標
                   </th>
@@ -298,7 +298,7 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
           <div className="md:overflow-x-auto">
             <table className="spec-table w-full border-collapse text-sm">
               <thead>
-                <tr className="border-y border-ink">
+                <tr className="border-y border-frame">
                   <th className="px-2 py-2 text-left font-cond text-xs">GPU</th>
                   <th className="px-2 py-2 text-right font-cond text-xs whitespace-nowrap">
                     {featured.label}
@@ -376,7 +376,7 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
 
         <section className="mt-10">
           <h2 className="mb-3 font-cond text-xl font-bold">よくある質問</h2>
-          <dl className="divide-y divide-rule border-y-2 border-ink">
+          <dl className="divide-y divide-rule border-y-2 border-frame">
             {faq.map((f) => (
               <div key={f.q} className="py-4">
                 <dt className="font-cond text-base font-bold">{f.q}</dt>

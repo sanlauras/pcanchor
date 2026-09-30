@@ -195,7 +195,7 @@ export function BuildTool() {
             min={1}
             value={target}
             onChange={(e) => setTarget(e.target.value)}
-            className="w-full border border-rule bg-panel px-3 py-2 text-sm outline-none focus:border-accent"
+            className="rounded-lg w-full border border-rule bg-panel px-3 py-2 text-sm outline-none focus:border-accent"
           />
           {/* モニターのHzから選べた方が早い。REFRESH_RATES は予想ツールと共通 */}
           <span className="mt-2 flex flex-wrap gap-1.5">
@@ -204,10 +204,10 @@ export function BuildTool() {
                 key={hz}
                 type="button"
                 onClick={() => setTarget(String(hz))}
-                className={`cursor-pointer border px-2 py-1 font-mono text-[11px] ${
+                className={`cursor-pointer rounded-md border px-2 py-1 font-mono text-[11px] ${
                   target === String(hz)
                     ? 'border-accent bg-accent-soft text-accent'
-                    : 'border-rule text-dim hover:border-ink hover:text-ink'
+                    : 'border-rule text-dim hover:border-accent hover:text-ink'
                 }`}
               >
                 {hz}Hz
@@ -260,7 +260,7 @@ export function BuildTool() {
 
       <div className="space-y-5">
         {!valid || !result?.tiers ? (
-          <p className="border border-rule bg-panel p-5 text-sm text-dim">
+          <p className="rounded-lg border border-rule bg-panel p-5 text-sm text-dim">
             出したいfpsを入力してください。
           </p>
         ) : (
@@ -283,8 +283,8 @@ export function BuildTool() {
                     type="button"
                     onClick={() => setTier(t.tier)}
                     aria-pressed={on}
-                    className={`cursor-pointer border p-4 text-left ${
-                      on ? 'border-accent bg-accent-soft' : 'border-rule bg-panel hover:border-ink'
+                    className={`cursor-pointer rounded-lg border p-4 text-left ${
+                      on ? 'border-accent bg-accent-soft' : 'border-rule bg-panel hover:border-accent'
                     }`}
                   >
                     <p className={`font-cond font-bold ${on ? 'text-accent' : 'text-ink'}`}>
@@ -306,7 +306,7 @@ export function BuildTool() {
             </div>
 
             {current && (
-              <section className="border border-rule bg-panel p-5">
+              <section className="rounded-lg border border-rule bg-panel p-5">
                 <h2 className="font-cond text-lg font-bold">{currentMeta.label}</h2>
                 <p className="mt-1 max-w-[62ch] text-sm text-dim">
                   {currentMeta.summary}
@@ -348,7 +348,7 @@ export function BuildTool() {
             )}
 
             {result.alts.length > 0 && (
-              <section className="border border-rule bg-panel p-5">
+              <section className="rounded-lg border border-rule bg-panel p-5">
                 <h2 className="font-cond text-lg font-bold">設定を下げた場合</h2>
                 <p className="mt-1 mb-3 max-w-[62ch] text-xs text-dim">
                   同じ {targetFps} fps を別の解像度・画質で狙った場合に必要な、最小のGPUです（コスパ構成の基準）。要求が高すぎるときに、何を妥協すればどこまで下がるかが分かります。
@@ -356,7 +356,7 @@ export function BuildTool() {
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse text-sm">
                     <thead>
-                      <tr className="border-y border-ink">
+                      <tr className="border-y border-frame">
                         <th className="px-2 py-2 text-left font-cond text-xs">解像度</th>
                         <th className="px-2 py-2 text-left font-cond text-xs">画質</th>
                         <th className="px-2 py-2 text-left font-cond text-xs">必要な最小GPU</th>
@@ -507,7 +507,7 @@ function Select({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full cursor-pointer border border-rule bg-panel px-3 py-2 text-sm outline-none focus:border-accent"
+      className="rounded-lg w-full cursor-pointer border border-rule bg-panel px-3 py-2 text-sm outline-none focus:border-accent"
     >
       {children}
     </select>

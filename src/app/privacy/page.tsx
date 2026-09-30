@@ -15,7 +15,7 @@ export default function PrivacyPage() {
   return (
     <main className="mx-auto max-w-[820px] px-5">
       <Breadcrumbs trail={[{ href: '/privacy', label: 'プライバシーポリシー' }]} />
-      <header className="border-b border-ink pt-8 pb-7">
+      <header className="border-b border-frame pt-8 pb-7">
         <h1 className="font-cond text-[clamp(1.8rem,5vw,3rem)] leading-none font-bold tracking-tight">
           プライバシーポリシー
         </h1>

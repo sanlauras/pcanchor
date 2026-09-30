@@ -30,7 +30,7 @@ export function IndexStrip({
   const ticks = Array.from({ length: top / 50 + 1 }, (_, i) => i * 50);
 
   return (
-    <figure className="max-w-[640px] border border-rule bg-panel p-3">
+    <figure className="rounded-lg max-w-[640px] border border-rule bg-panel p-3">
       <svg
         viewBox={`0 0 ${W} ${H}`}
         className="block h-auto w-full"
@@ -54,15 +54,15 @@ export function IndexStrip({
         {/* 基準（= 100） */}
         <line x1={x(anchorValue)} x2={x(anchorValue)} y1={12} y2={30} stroke="var(--ink)" strokeDasharray="2 2" strokeWidth={1} />
         {/* このモデル */}
-        <line x1={x(target)} x2={x(target)} y1={6} y2={30} stroke="var(--accent-vivid)" strokeWidth={4} />
+        <line x1={x(target)} x2={x(target)} y1={6} y2={30} stroke="var(--accent)" strokeWidth={4} />
       </svg>
       <figcaption className="mt-1 flex flex-wrap justify-between gap-x-4 font-mono text-[10px] text-dim">
         <span>
-          <span aria-hidden className="mr-1 inline-block h-2.5 w-1 bg-accent-vivid align-middle" />
+          <span aria-hidden className="mr-1 inline-block h-2.5 w-1 bg-accent align-middle" />
           このモデル {target.toFixed(1)}
         </span>
         <span>
-          <span aria-hidden className="mr-1 inline-block h-2.5 w-px border-l border-dashed border-ink align-middle" />
+          <span aria-hidden className="mr-1 inline-block h-2.5 w-px border-l border-dashed border-frame align-middle" />
           {anchorLabel} = {anchorValue}
         </span>
         <span>{caption}</span>

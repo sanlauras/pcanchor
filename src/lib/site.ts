@@ -9,6 +9,8 @@ export const SITE = {
   name: 'PCアンカー',
   nameEn: 'PC Anchor',
   tagline: 'ゲーミングPCの実測基準',
+  /** ヘッダーとフッターのロゴの下に添える文言（2026-09-30 ユーザーの指定） */
+  logoTagline: 'あなたのPCを、最高のパフォーマンスへ。',
   url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://pcanchor.jp',
   description:
     'GPUとCPUを選ぶと、ゲームごとの推定fpsとボトルネックが分かります。モデル別の性能はメーカー公式スペックから自前で計算し、自前の実測を基準点にしています。',

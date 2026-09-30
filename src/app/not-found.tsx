@@ -37,7 +37,7 @@ const links = [
 export default function NotFound() {
   return (
     <main className="mx-auto max-w-[1240px] px-5">
-      <header className="border-b border-ink pt-14 pb-8">
+      <header className="border-b border-frame pt-14 pb-8">
         <p className="mb-3 font-mono text-[11px] tracking-[0.18em] text-signal uppercase">
           404 NOT FOUND
         </p>
@@ -54,7 +54,7 @@ export default function NotFound() {
           <Link
             key={l.href}
             href={l.href}
-            className="block border border-rule bg-panel p-5 hover:border-ink"
+            className="rounded-lg block border border-rule bg-panel p-5 hover:border-accent"
           >
             <h2 className="font-cond text-lg font-bold">{l.label}</h2>
             <p className="mt-1 text-sm text-dim">{l.note}</p>

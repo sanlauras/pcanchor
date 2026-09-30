@@ -22,7 +22,7 @@ export const metadata: Metadata = pageMetadata({
  */
 
 const H2 = 'mb-3 font-cond text-xl font-bold';
-const PRE = 'overflow-x-auto border border-rule bg-panel p-4 font-mono text-[11px] text-dim';
+const PRE = 'rounded-lg overflow-x-auto border border-rule bg-panel p-4 font-mono text-[11px] text-dim';
 
 export default function MethodologyPage() {
   const supported = GAMES.filter((g) => g.supported);
@@ -32,7 +32,7 @@ export default function MethodologyPage() {
     <main className="mx-auto max-w-[820px] px-5">
       <Breadcrumbs trail={[{ href: '/methodology', label: '算出方法' }]} />
 
-      <header className="border-b border-ink pt-8 pb-7">
+      <header className="border-b border-frame pt-8 pb-7">
         <p className="mb-3 font-mono text-[11px] tracking-[0.18em] text-signal uppercase">
           METHODOLOGY
         </p>

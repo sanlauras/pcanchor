@@ -1,15 +1,19 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import {
   BIZ_UDPGothic,
+  Exo_2,
   IBM_Plex_Mono,
   IBM_Plex_Sans_Condensed,
-  Rubik_Distressed,
 } from 'next/font/google';
 import Link from 'next/link';
 import { Analytics } from '@/components/Analytics';
+import { AnchorMark } from '@/components/AnchorMark';
 import { MobileMenu } from '@/components/MobileMenu';
+import { NavGroup } from '@/components/NavGroup';
+import { NavLink } from '@/components/NavLink';
+import { Wordmark } from '@/components/Wordmark';
 import { AMAZON_DISCLOSURE, hasAmazonTag } from '@/lib/affiliate';
-import { HEADER_NAV } from '@/lib/nav';
+import { HOME_NAV, NAV_GROUPS, SITE_INFO_NAV } from '@/lib/nav';
 import { OPERATOR, SITE } from '@/lib/site';
 import './globals.css';
 
@@ -54,30 +58,31 @@ const jpHeading = BIZ_UDPGothic({
 });
 
 /*
- * ロゴ（ヘッダー左上とトップのヒーロー）に使う欧文ディスプレイフォント。
+ * ロゴ（ヘッダー左上とトップのヒーロー）に使う欧文フォント。
  *
- * 輪郭がざらついて欠ける書体。字の構造自体は壊れないので、
- * ロゴサイズ(20px)でも読める範囲に崩れが収まる。
- * 飾りはこのロゴだけに閉じ込め、読ませる文章には使わない。
- *
- * 輪郭が複雑なため、欧文のみでも約200KBある（2026-09-27 に測定）。
- * preload すると、スマホの遅い回線で表示に必要な CSS と回線を取り合い、
- * 最初の表示が遅れていた（SEO監査の指摘）。ロゴは読み込みまで代わりの書体で出るので、先読みはしない。
+ * 2026-09-27 の暗いデザインへの作り直しで、ざらついた Rubik Distressed（欧文だけで約200KB）から、
+ * イメージ画像のようなすっきりした太字の Exo 2 に替えた（ユーザーの判断）。
+ * 使うのはロゴの太さ1つ・欧文だけなので軽い。ロゴは最初の画面に必ず出るので先読みする。
  */
-const dispRubik = Rubik_Distressed({
-  variable: '--font-rubik-dist',
+const logoFont = Exo_2({
+  variable: '--font-logo',
   subsets: ['latin'],
-  weight: '400',
+  weight: '800',
   display: 'swap',
-  preload: false,
 });
 
 const fontVars = [
   plexMono.variable,
   plexCond.variable,
   jpHeading.variable,
-  dispRubik.variable,
+  logoFont.variable,
 ].join(' ');
+
+/** ブラウザのアドレスバーなどの色。背景の紺に合わせる */
+export const viewport: Viewport = {
+  themeColor: '#070d18',
+  colorScheme: 'dark',
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
@@ -105,9 +110,7 @@ export const metadata: Metadata = {
 };
 
 const footerNav = [
-  { href: '/about', label: 'このサイトについて・運営者' },
-  { href: '/methodology', label: '算出方法' },
-  { href: '/changelog', label: '更新履歴' },
+  ...SITE_INFO_NAV,
   { href: '/privacy', label: 'プライバシーポリシー' },
   { href: '/terms', label: '利用規約' },
   { href: '/contact', label: 'お問い合わせ' },
@@ -159,27 +162,34 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
           スクロールしても上に残す。一覧ページは行数が多く、下まで行くと
           ナビが画面外に出て戻る手段が無くなるため。
           重なり順は 比較トレイ(z-10) < ヘッダー(z-20) < 比較モーダル(z-50)。
-          技術資料の表題のように、下に墨色の太い罫線を引く。
+          紺の半透明の帯で、後ろをぼかす（イメージ画像のヘッダー）。
         */}
-        <header className="sticky top-0 z-20 border-b-2 border-ink bg-paper">
+        <header className="sticky top-0 z-20 border-b border-frame bg-paper/80 backdrop-blur-md">
           <div className="mx-auto flex h-(--header-h) max-w-[1240px] items-center gap-x-6 px-5">
-            {/* ロゴはヒーローと同じ書体・同じ英語表記で揃える */}
+            {/* ロゴはヒーローと同じ書体・同じ英語表記で揃える。左の錨はファビコンと同じ形 */}
             <Link
               href="/"
-              className="shrink-0 font-display text-2xl leading-none tracking-[var(--display-tracking)] uppercase hover:text-accent"
+              className="flex shrink-0 items-center gap-2.5 hover:opacity-85"
             >
-              {SITE.nameEn}
+              <AnchorMark gradient className="size-8 shrink-0" />
+              <span className="flex flex-col">
+                <span className="font-display text-xl leading-none font-extrabold tracking-[var(--display-tracking)] uppercase">
+                  <Wordmark />
+                </span>
+                {/* ロゴの下の文言（2026-09-30 ユーザーの指定）。メニューを3つにまとめたので、どの幅でも並べて入る */}
+                <span className="mt-1 font-cond text-[10px] leading-none font-bold tracking-[0.06em] whitespace-nowrap text-dim">
+                  {SITE.logoTagline}
+                </span>
+              </span>
             </Link>
-            {/* PC幅は横に並べる。スマホは MENU の中に縦に並べる（横スクロールで隠れないように） */}
-            <nav className="hidden min-w-0 flex-1 md:flex md:flex-wrap md:gap-x-1" aria-label="メイン">
-              {HEADER_NAV.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="shrink-0 px-2.5 py-1.5 font-cond text-sm font-bold whitespace-nowrap text-dim hover:text-accent"
-                >
-                  {item.label}
-                </Link>
+            {/*
+              PC 幅は「ホーム」「ツール ∨」「データベース ∨」。まとめにカーソルを合わせると下に一覧が出る（2026-09-30）。
+              スマホは MENU の中に同じまとめ方で縦に並べる（横スクロールで隠れないように）
+            */}
+            <nav className="hidden h-full min-w-0 flex-1 md:flex md:gap-x-1" aria-label="メイン">
+              <NavLink href={HOME_NAV.href} label={HOME_NAV.label} />
+              {NAV_GROUPS.map((group) => (
+                <NavGroup key={group.label} group={group} />
               ))}
             </nav>
             <MobileMenu />
@@ -188,11 +198,20 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
 
         <div className="flex-1">{children}</div>
 
-        <footer className="mt-12 border-t-2 border-ink">
+        <footer className="mt-12 border-t border-frame bg-panel/60">
           <div className="mx-auto max-w-[1240px] px-5 py-8 text-xs text-dim">
+            <div className="mb-5 flex items-center gap-2.5">
+              <AnchorMark gradient className="size-7 shrink-0" />
+              <p className="flex flex-col">
+                <span className="font-display text-base leading-none font-extrabold tracking-[var(--display-tracking)] text-ink uppercase">
+                  <Wordmark />
+                </span>
+                <span className="mt-1 font-cond text-[10px] leading-none font-bold tracking-[0.06em]">{SITE.logoTagline}</span>
+              </p>
+            </div>
             <nav className="mb-5 flex flex-wrap gap-x-5 gap-y-2" aria-label="フッター">
               {footerNav.map((item) => (
-                <Link key={item.href} href={item.href} className="hover:text-ink">
+                <Link key={item.href} href={item.href} className="hover:text-accent">
                   {item.label}
                 </Link>
               ))}

@@ -294,7 +294,7 @@ export function SensTool() {
       <div className="space-y-5">
         {ready ? (
           <>
-            <section className="border border-rule bg-panel p-5">
+            <section className="rounded-lg border border-rule bg-panel p-5">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <p className="font-mono text-[10px] tracking-wider text-dim uppercase">
                   {game.name} / {fmtSens(baseSens)}
@@ -303,7 +303,7 @@ export function SensTool() {
                 <button
                   type="button"
                   onClick={copyLink}
-                  className="cursor-pointer border border-rule px-2.5 py-1 font-mono text-[10px] text-dim hover:border-ink hover:text-ink"
+                  className="cursor-pointer rounded-md border border-rule px-2.5 py-1 font-mono text-[10px] text-dim hover:border-accent hover:text-ink"
                 >
                   {copied ? 'コピーしました' : 'リンクをコピー'}
                 </button>
@@ -333,7 +333,7 @@ export function SensTool() {
             </section>
 
             {showScope && (
-              <section className="border border-accent bg-accent-soft p-5">
+              <section className="rounded-lg border border-accent bg-accent-soft p-5">
                 <h2 className="font-cond text-lg font-bold">覗き込み時（倍率 {scopeNum}）</h2>
                 <div className="mt-3 flex flex-wrap items-baseline gap-x-6 gap-y-1">
                   <span className="font-mono text-3xl font-semibold tabular-nums text-ink">
@@ -359,7 +359,7 @@ export function SensTool() {
               </section>
             )}
 
-            <section className="border border-rule bg-panel p-5">
+            <section className="rounded-lg border border-rule bg-panel p-5">
               <h2 className="font-cond text-lg font-bold">他のゲームでの感度</h2>
               <p className="mt-1 text-xs text-dim">
                 振り向き距離が {baseCm.toFixed(1)}cm でそろう感度です（DPI {dpiNum} のまま）。行を押すと、そのゲームを基準に切り替えます。
@@ -367,7 +367,7 @@ export function SensTool() {
               <div className="mt-3 overflow-x-auto">
                 <table className="w-full border-collapse text-sm">
                   <thead>
-                    <tr className="border-y border-ink">
+                    <tr className="border-y border-frame">
                       <th className="px-2 py-2 text-left font-cond text-xs">ゲーム</th>
                       <th className="px-2 py-2 text-right font-cond text-xs whitespace-nowrap">感度</th>
                       <th className="px-2 py-2 text-right font-cond text-xs whitespace-nowrap">eDPI</th>
@@ -417,7 +417,7 @@ export function SensTool() {
               </ul>
             </section>
 
-            <section className="border border-rule bg-panel p-5">
+            <section className="rounded-lg border border-rule bg-panel p-5">
               <h2 className="font-cond text-lg font-bold">マウスパッドの幅は足りていますか</h2>
               <p className="mt-1 text-xs text-dim">
                 180度振り向くのに {half.toFixed(1)}cm 動かします。パッドの端から端まで使い切ることはできないので、余裕を見た幅が要ります。
@@ -460,7 +460,7 @@ export function SensTool() {
             </section>
           </>
         ) : (
-          <section className="border border-rule bg-panel p-5">
+          <section className="rounded-lg border border-rule bg-panel p-5">
             <h2 className="font-cond text-lg font-bold">数値を入れてください</h2>
             <p className="mt-1.5 text-sm text-dim">
               感度・eDPI・振り向き距離のどれかと、マウスのDPIが必要です。DPIが分からない場合は、マウスの設定ソフトで確認できます。
@@ -495,7 +495,7 @@ function Select({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full cursor-pointer border border-rule bg-panel px-3 py-2 text-sm outline-none focus:border-accent"
+      className="rounded-lg w-full cursor-pointer border border-rule bg-panel px-3 py-2 text-sm outline-none focus:border-accent"
     >
       {children}
     </select>
@@ -519,7 +519,7 @@ function NumberInput({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full border border-rule bg-panel px-3 py-2 text-sm outline-none focus:border-accent"
+      className="rounded-lg w-full border border-rule bg-panel px-3 py-2 text-sm outline-none focus:border-accent"
     />
   );
 }
@@ -537,10 +537,10 @@ function Chips({
             type="button"
             aria-pressed={on}
             onClick={() => onChange(it.id)}
-            className={`cursor-pointer border px-3 py-1.5 text-xs ${
+            className={`cursor-pointer rounded-md border px-3 py-1.5 text-xs ${
               on
                 ? 'border-accent bg-accent-soft text-accent'
-                : 'border-rule text-dim hover:border-ink hover:text-ink'
+                : 'border-rule text-dim hover:border-accent hover:text-ink'
             }`}
           >
             {it.label}

@@ -38,7 +38,7 @@ export default function GamesPage() {
           <Link
             key={g.id}
             href={`/games/${g.id}`}
-            className="block border border-rule bg-panel p-5 hover:border-ink"
+            className="rounded-lg block border border-rule bg-panel p-5 hover:border-accent"
           >
             <p className="font-mono text-xs text-accent">{g.presets.length}段階の画質に対応</p>
             <h2 className="mt-1 font-cond text-xl font-bold">{g.name}</h2>

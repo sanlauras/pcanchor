@@ -117,7 +117,7 @@ export function SpecTable<T>({
           onChange={(e) => setQuery(e.target.value)}
           placeholder="モデル名で検索"
           aria-label="モデル名で検索"
-          className="w-full max-w-xs border border-rule bg-panel px-3 py-2 text-sm
+          className="rounded-lg w-full max-w-xs border border-rule bg-panel px-3 py-2 text-sm
                      outline-none focus:border-accent sm:w-64"
         />
         <FilterChips label="メーカー" values={vendors} active={vendor} onChange={setVendor} />
@@ -130,7 +130,7 @@ export function SpecTable<T>({
       <div className="md:overflow-x-auto">
         <table className="spec-table w-full border-collapse text-sm">
           <thead>
-            <tr className="border-y border-ink">
+            <tr className="border-y border-frame">
               <th
                 scope="col"
                 className="w-10 px-1 py-2 text-left font-cond text-[10px] font-semibold text-dim"
@@ -241,7 +241,7 @@ export function SpecTable<T>({
                                 onClick={() => setOpenName(isOpen ? null : name)}
                                 aria-expanded={isOpen}
                                 aria-label={`${name} のスペックをこの場で開く`}
-                                className="cursor-pointer border border-rule px-1.5 font-mono text-[10px] leading-tight text-dim hover:border-ink hover:text-ink"
+                                className="cursor-pointer rounded-md border border-rule px-1.5 font-mono text-[10px] leading-tight text-dim hover:border-accent hover:text-ink"
                               >
                                 {isOpen ? '▴' : '▾'}
                               </button>
@@ -320,7 +320,7 @@ export function SpecTable<T>({
         比較トレイ。**0件のときも出す。**
         選ぶまで隠していると、機能があること自体に気づけないため。
       */}
-      <div className="sticky bottom-0 z-10 mt-4 border-t border-ink bg-panel/95 py-3 backdrop-blur">
+      <div className="sticky bottom-0 z-10 mt-4 border-t border-frame bg-panel/95 py-3 backdrop-blur">
         {picked.length === 0 ? (
           <p className="text-xs text-dim">
             <span aria-hidden className="mr-1.5 text-accent">
@@ -354,7 +354,7 @@ export function SpecTable<T>({
             <button
               type="button"
               onClick={() => setPicked([])}
-              className="ml-auto cursor-pointer border border-rule px-3 py-1.5 text-xs hover:border-ink"
+              className="ml-auto cursor-pointer rounded-md border border-rule px-3 py-1.5 text-xs hover:border-accent"
             >
               全て解除
             </button>
@@ -362,8 +362,8 @@ export function SpecTable<T>({
               type="button"
               onClick={() => setCompareOpen(true)}
               disabled={picked.length < 2}
-              className="cursor-pointer border border-accent bg-accent px-3 py-1.5 text-xs
-                         font-medium text-paper disabled:cursor-not-allowed disabled:opacity-40"
+              className="cursor-pointer rounded-md border border-accent-vivid bg-accent-vivid px-3 py-1.5 text-xs
+                         font-medium text-on-accent disabled:cursor-not-allowed disabled:opacity-40"
             >
               比較する
             </button>
@@ -414,10 +414,10 @@ function FilterChips({
             type="button"
             aria-pressed={on}
             onClick={() => onChange(on ? null : v)}
-            className={`cursor-pointer border px-2 py-1 text-xs whitespace-nowrap ${
+            className={`cursor-pointer rounded-md border px-2 py-1 text-xs whitespace-nowrap ${
               on
                 ? 'border-accent bg-accent-soft text-accent'
-                : 'border-rule text-dim hover:border-ink hover:text-ink'
+                : 'border-rule text-dim hover:border-accent hover:text-ink'
             }`}
           >
             {v}

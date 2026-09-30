@@ -1,58 +1,73 @@
 @import "tailwindcss";
 
 /*
- * 配色（2026-09-22 に作り直し。部品メーカーの技術資料（データシート）がモチーフ）。
+ * 配色（2026-09-27 に暗い青へ作り直し。ユーザーが示したイメージ画像がもと）。
  *
- * 明るい表示1つだけ。以前の暗いテーマ3色（CYAN / AMBER / LIME）と切り替え機能は、
- * ユーザーの判断でなくした。経緯は CONTEXT.md「デザインの作り直し」。
+ * 2026-09-22 の明るい技術資料風（DATASHEET）から、ユーザーの判断で暗いデザインに戻した。
+ * 経緯は CONTEXT.md「暗いデザインへの作り直し」。変数の名前は明るい配色のときのまま使い回している
+ * （paper = 背景、ink = 文字）。名前を変えると全ページのクラスを書き換えることになるため。
  *
  * **アクセントは役割で2つに分けている。**
- *   --accent       文字・リンク・枠に使う濃いオレンジ。紙の上で 5.38:1、白の上で 5.99:1、
- *                  薄いオレンジの面（--accent-soft）の上でも 4.94:1 で、読みやすさの基準 AA（4.5）を満たす
- *   --accent-vivid 帯・印などの塗りだけに使う信号オレンジ。文字には使わない。
- *                  上に文字を置くときは墨（--ink）にする（5.92:1）
- * 色を変えるときは、必ずこの組み合わせのコントラストを計算し直すこと。
+ *   --accent       文字・リンクに使う明るい青。背景の上で 9.03:1、カードの上で 8.35:1
+ *   --accent-vivid ボタン・帯などの塗りだけに使う青。上の文字は必ず --on-accent（白。4.90:1）にする。
+ *                  --ink（青白）を乗せると 4.15:1 で基準に届かない
+ * --dim（補足の文字）は背景の上で 8.06:1、カードの上で 7.45:1。
+ * 色を変えるときは、必ずこの組み合わせのコントラストを計算し直すこと（読みやすさの基準 AA は 4.5 以上）。
+ *
+ * --frame は太い枠・区切りの線。明るい配色では文字と同じ墨色（border-ink）を枠に使っていたが、
+ * 暗い配色で同じことをすると白い太枠になるため、枠専用の青みの色を分けた。
  */
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
-  --paper: #f2f3f0;
-  --panel: #ffffff;
-  --ink: #121416;
-  --dim: #555b63;
-  --rule: #c9ccc6;
-  --rule-soft: #dfe1dc;
-  --accent: #b3390a;
-  --accent-vivid: #ff5a1f;
-  --accent-soft: rgba(255, 90, 31, 0.08);
+  --paper: #070d18;
+  --panel: #0d1726;
+  /* カードの上に重ねる、もう一段明るい面（表の見出し行など） */
+  --raise: #12203a;
+  --ink: #e6edf6;
+  --dim: #9aa8bc;
+  --rule: #1c2c45;
+  --rule-soft: #142236;
+  --frame: #24426b;
+  --accent: #5cb8ff;
+  --accent-vivid: #1a6fd6;
+  --on-accent: #ffffff;
+  --accent-soft: rgba(59, 157, 255, 0.12);
+  /* カードのごく弱い光。イメージ画像の、青く光る枠の雰囲気 */
+  --glow: 0 0 0 1px rgba(92, 184, 255, 0.04), 0 8px 28px -12px rgba(26, 111, 214, 0.45);
   /* 小見出し（アイキャッチ）の色。アクセントを1色に絞るため accent に揃える */
   --signal: var(--accent);
 
   /* ロゴの字間。ヘッダーとヒーローの2か所で同じ値を使うため変数にしている */
-  --display-tracking: 0.01em;
+  --display-tracking: 0.02em;
   /*
    * 固定ヘッダーの高さ。ヘッダー自身と、その下に潜らせたくない
    * sticky 要素（右サイドの広告枠）の両方で使う。
    */
-  --header-h: 3.5rem;
+  --header-h: 3.75rem;
 }
 
 @theme inline {
   --color-paper: var(--paper);
   --color-panel: var(--panel);
+  --color-raise: var(--raise);
   --color-ink: var(--ink);
   --color-dim: var(--dim);
   --color-rule: var(--rule);
   --color-rule-soft: var(--rule-soft);
+  --color-frame: var(--frame);
   --color-accent: var(--accent);
   --color-accent-vivid: var(--accent-vivid);
+  --color-on-accent: var(--on-accent);
   --color-accent-soft: var(--accent-soft);
   --color-signal: var(--signal);
 
+  --shadow-glow: var(--glow);
+
   --font-sans: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, monospace;
-  /* ロゴ専用。輪郭がざらつく書体なので、読ませる文章には使わない */
-  --font-display: var(--font-rubik-dist), var(--font-plex-cond), system-ui, sans-serif;
+  /* ロゴ専用。イメージ画像に合わせた、すっきりした太い欧文（2026-09-27 に Rubik Distressed から替えた） */
+  --font-display: var(--font-logo), var(--font-plex-cond), system-ui, sans-serif;
   /*
    * 見出し。フォントの選択は1文字ずつ行われるので、この順番に意味がある。
    * 英数字（GPU名・fps値・指数）は Plex Condensed の締まった字面のまま、
@@ -61,8 +76,26 @@
   --font-cond: var(--font-plex-cond), var(--font-jp), system-ui, sans-serif;
 }
 
+/*
+ * 青のグラデーションの文字（イメージ画像の見出しの2行目）。
+ * 読めない環境（色の重ね方に対応していないブラウザ）では、単色の --accent で出る。
+ */
+.text-gradient {
+  color: var(--accent);
+  background: linear-gradient(90deg, #3b9dff 0%, #5cc8ff 55%, #8fdcff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 body {
-  background: var(--paper);
+  /*
+   * 上の方だけ、ほんのり青く光らせる（イメージ画像の奥行き）。
+   * no-repeat が無いと、この光が画面の高さごとに繰り返され、長いページで色の段差が出ていた（2026-09-30 に修正）
+   */
+  background:
+    radial-gradient(1200px 600px at 70% -10%, rgba(26, 111, 214, 0.16), transparent 70%) no-repeat,
+    var(--paper);
   color: var(--ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -88,8 +121,8 @@ body {
   }
 
   .spec-table tr.spec-row {
-    border: 1px solid var(--rule);
-    border-radius: 6px;
+    border: 1px solid var(--frame);
+    border-radius: 8px;
     background: var(--panel);
     margin-bottom: 10px;
     padding: 10px 12px;

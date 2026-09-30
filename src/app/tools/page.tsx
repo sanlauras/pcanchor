@@ -41,7 +41,7 @@ export default function ToolsPage() {
           <Link
             key={t.href}
             href={t.href}
-            className="group flex flex-col border-2 border-ink bg-panel p-5 hover:bg-accent-soft"
+            className="group flex flex-col rounded-lg border border-frame bg-panel p-5 hover:bg-accent-soft"
           >
             <p className="font-mono text-[10px] font-semibold tracking-[0.14em] text-accent">公開中</p>
             <h2 className="mt-1 grid gap-0.5">

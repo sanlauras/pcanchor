@@ -58,7 +58,7 @@ export function FpsTables({
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-sm">
                 <thead>
-                  <tr className="border-y border-ink">
+                  <tr className="border-y border-frame">
                     <th className="px-2 py-2 text-left font-cond text-xs whitespace-nowrap">
                       画質
                     </th>

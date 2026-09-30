@@ -82,7 +82,7 @@ export default async function GpuDetailPage({ params }: PageProps<'/gpu/[slug]'>
           ]}
         />
 
-        <header className="border-b border-ink pt-6 pb-7">
+        <header className="border-b border-frame pt-6 pb-7">
           <p className="mb-3 flex flex-wrap items-center gap-2 font-mono text-[11px] tracking-[0.18em] text-signal uppercase">
             {gpu.vendor} / {gpu.arch} / {gpu.releaseYear}
             <VerifiedTag verified={gpu.verified} />
@@ -133,7 +133,7 @@ export default async function GpuDetailPage({ params }: PageProps<'/gpu/[slug]'>
           当てはまる条件が無いモデルでは、節ごと出さない。
         */}
         {shortfalls.length > 0 && (
-          <section className="mt-10 border-2 border-ink bg-panel p-4">
+          <section className="mt-10 rounded-lg border border-frame bg-panel p-4">
             <h2 className="mb-1 font-cond text-xl font-bold">
               VRAM {gpu.vramGb}GB では足りなくなる見込みの条件
             </h2>
@@ -250,7 +250,7 @@ export default async function GpuDetailPage({ params }: PageProps<'/gpu/[slug]'>
         <section className="mt-10">
           <h2 className="mb-1 font-cond text-xl font-bold">GPU {gpus.length}モデルの中での位置</h2>
           <p className="mb-3 max-w-[70ch] text-xs text-dim">
-            横軸は性能指数（推定・誤差 ±15〜20%）。細い線が掲載している各GPU、オレンジの太い線がこのGPUです。
+            横軸は性能指数（推定・誤差 ±15〜20%）。細い線が掲載している各GPU、明るい青の太い線がこのGPUです。
           </p>
           <IndexStrip
             values={gpus.map((g) => g.perfIndex)}
@@ -303,7 +303,7 @@ export default async function GpuDetailPage({ params }: PageProps<'/gpu/[slug]'>
               <li key={g.slug}>
                 <Link
                   href={`/gpu/${g.slug}`}
-                  className="flex items-baseline justify-between gap-3 border border-rule bg-panel px-3 py-2 text-sm hover:border-ink"
+                  className="rounded-lg flex items-baseline justify-between gap-3 border border-rule bg-panel px-3 py-2 text-sm hover:border-accent"
                 >
                   <span>{g.name}</span>
                   <span className="font-mono text-xs tabular-nums text-dim">
@@ -323,7 +323,7 @@ export default async function GpuDetailPage({ params }: PageProps<'/gpu/[slug]'>
                 <li key={g.slug}>
                   <Link
                     href={`/gpu/${g.slug}`}
-                    className="inline-block border border-rule px-2.5 py-1 text-xs text-dim hover:border-ink hover:text-ink"
+                    className="inline-block border border-rule px-2.5 py-1 text-xs text-dim hover:border-accent hover:text-ink"
                   >
                     {g.name}
                   </Link>

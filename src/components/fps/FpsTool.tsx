@@ -146,7 +146,7 @@ export function FpsTool() {
           <a
             href="#fps-result"
             data-mobile-summary
-            className="flex items-center justify-between gap-3 border-2 border-ink bg-panel px-3 py-2 lg:hidden"
+            className="flex items-center justify-between gap-3 rounded-lg border border-frame bg-panel px-3 py-2 lg:hidden"
           >
             <span className="min-w-0">
               <span className="block font-mono text-[10px] tracking-wider text-dim">
@@ -159,7 +159,7 @@ export function FpsTool() {
                 fps（推定）・{BOTTLENECK_SHORT[result.prediction.bottleneck]}
               </span>
             </span>
-            <span className="shrink-0 bg-ink px-2 py-1 font-mono text-[11px] font-semibold text-paper">
+            <span className="shrink-0 rounded-md bg-accent-vivid px-2 py-1 font-mono text-[11px] font-semibold text-on-accent">
               詳しく ↓
             </span>
           </a>
@@ -204,7 +204,7 @@ export function FpsTool() {
       {/* ------------------------------------------------ 結果 */}
       <div className="space-y-5">
         {game.supported && result && preset ? (
-          <section id="fps-result" className="scroll-mt-[calc(var(--header-h)+1rem)] border border-rule bg-panel p-5">
+          <section id="fps-result" className="rounded-lg scroll-mt-[calc(var(--header-h)+1rem)] border border-rule bg-panel p-5">
             <p className="font-mono text-[10px] tracking-wider text-dim uppercase">
               {game.name} / {res.short} / {preset.label}
             </p>
@@ -240,7 +240,7 @@ export function FpsTool() {
               平均の3割程度しか出ない設定があり、平均だけ見て決めると必ず外すため。
             */}
             {result.prediction.fps1Low && preset.lowRatio && (
-              <div className="mt-4 border border-accent bg-accent-soft p-4">
+              <div className="mt-4 rounded-lg border border-accent bg-accent-soft p-4">
                 <p className="font-cond text-base font-bold text-ink">
                   カクつきの底は {result.prediction.fps1Low.min.toFixed(0)} fps です
                 </p>
@@ -277,7 +277,7 @@ export function FpsTool() {
               注記の箇条書きに埋めず、数値のすぐ下に独立した枠で出す。
             */}
             {game.highlight && (
-              <div className="mt-4 border border-accent bg-accent-soft p-4">
+              <div className="mt-4 rounded-lg border border-accent bg-accent-soft p-4">
                 <p className="font-cond text-base font-bold text-ink">
                   {game.highlight.title}
                 </p>
@@ -329,7 +329,7 @@ export function FpsTool() {
             </div>
           </section>
         ) : (
-          <section className="border border-rule bg-panel p-5">
+          <section className="rounded-lg border border-rule bg-panel p-5">
             <h2 className="font-cond text-lg font-bold">
               {game.name} のfps数値は出せません
             </h2>
@@ -405,7 +405,7 @@ export function FpsTool() {
             </section>
 
             {result.diagnosis.vramWarning && (
-              <section className="border-l-2 border-ink bg-panel px-5 py-4">
+              <section className="border-l-2 border-frame bg-panel px-5 py-4">
                 <h2 className="font-cond text-base font-bold">VRAMが不足します</h2>
                 <p className="mt-1.5 text-sm text-dim">{result.diagnosis.vramWarning}</p>
               </section>
@@ -577,7 +577,7 @@ function Select({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full cursor-pointer border border-rule bg-panel px-3 py-2 text-sm outline-none focus:border-accent"
+      className="rounded-lg w-full cursor-pointer border border-rule bg-panel px-3 py-2 text-sm outline-none focus:border-accent"
     >
       {children}
     </select>
@@ -595,7 +595,7 @@ function NumberInput({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full border border-rule bg-panel px-3 py-2 text-sm outline-none focus:border-accent"
+      className="rounded-lg w-full border border-rule bg-panel px-3 py-2 text-sm outline-none focus:border-accent"
     />
   );
 }
@@ -613,10 +613,10 @@ function Chips({
             type="button"
             aria-pressed={on}
             onClick={() => onChange(it.id)}
-            className={`cursor-pointer border px-3 py-1.5 text-xs ${
+            className={`cursor-pointer rounded-md border px-3 py-1.5 text-xs ${
               on
                 ? 'border-accent bg-accent-soft text-accent'
-                : 'border-rule text-dim hover:border-ink hover:text-ink'
+                : 'border-rule text-dim hover:border-accent hover:text-ink'
             }`}
           >
             {it.label}
