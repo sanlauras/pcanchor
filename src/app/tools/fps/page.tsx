@@ -5,7 +5,9 @@ import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { PageHeader } from '@/components/PageHeader';
 import { TOOLS } from '@/lib/nav';
 import { FpsTool } from '@/components/fps/FpsTool';
+import { tally } from '@/lib/data/summary';
 import { GAMES, supportedGameNames } from '@/lib/fps/games';
+import { REFRESH_RATES } from '@/lib/fps/model';
 import { assertModelReproducesMeasurements } from '@/lib/fps/selftest';
 import { JsonLd, pageMetadata, webApplicationJsonLd } from '@/lib/seo';
 
@@ -16,8 +18,9 @@ assertModelReproducesMeasurements();
 export const metadata: Metadata = pageMetadata({
   // 「ボトルネックチェッカー」は同じ目的で使われる言い方（2026-09-27 の SEO監査の指摘で題名に入れた）
   title: 'ゲーム別fps予想・ボトルネックチェッカー｜GPUとCPUを選ぶだけ',
+  // 説明文の前半に、実際に検索されている「fps診断」を入れた（2026-10-10。Search Console の検索語から）
   description:
-    `GPUとCPUを選ぶと、${supportedGameNames('・')} の推定fpsが出ます。GPU律速かCPU律速か（ボトルネック診断）、どこを変えればfpsが伸びるかまで分かります。メーカー公式スペックと実測から計算した推定値です（誤差±15〜20%）。`,
+    `GPUとCPUを選ぶだけのfps診断・ボトルネックチェッカー。${supportedGameNames('・')} の推定fpsと、GPU律速かCPU律速か、どこを変えればfpsが伸びるかが分かります。推定値・誤差±15〜20%。`,
   path: '/tools/fps',
 });
 
@@ -55,6 +58,8 @@ export default function FpsToolPage() {
         <div className="py-6">
           <FpsTool />
         </div>
+
+        <HowToUse />
 
         {/*
           ゲームごとのページへの入口。ツールは操作して使うものなので、検索エンジンがたどれる
@@ -119,5 +124,72 @@ CPU由来fps = そのCPUの「Valorant 天井」推定fps × ゲームの重さ`
 
       <AdSlot variant="rail" />
     </div>
+  );
+}
+
+/**
+ * 使い方・結果の見方・対応範囲（2026-10-10 追加）。
+ *
+ * このページは「fps診断」「ボトルネック診断」「ボトルネック 計算」で探されている（Search Console）。
+ * 何でも測れる道具を期待して来た人にも、何が分かって何が分からないかが最初に伝わるようにする。
+ * **書くのは、ツールに実際にある機能と確かな事実だけ**。数・ゲーム名・Hz はデータから出す（直書きしない）。
+ */
+function HowToUse() {
+  const H3 = 'mb-2 font-cond text-base font-bold';
+  return (
+    <section className="mb-10 border-t-2 border-frame pt-5">
+      <h2 className="mb-4 font-cond text-lg font-bold">使い方と結果の見方</h2>
+      <div className="grid gap-6 text-sm text-dim md:grid-cols-3">
+        <div>
+          <h3 className={H3 + ' text-ink'}>使い方</h3>
+          <ol className="list-decimal space-y-1.5 pl-5">
+            <li>{`GPU と CPU を選びます（GPU ${tally.gpuCount}モデル・CPU ${tally.cpuCount}モデル）。`}</li>
+            <li>ゲーム・解像度・画質を選びます。</li>
+            <li>選んだ時点で結果が出ます。押すボタンはありません。</li>
+          </ol>
+        </div>
+        <div>
+          <h3 className={H3 + ' text-ink'}>結果の見方</h3>
+          <dl className="space-y-1.5">
+            <div>
+              <dt className="inline font-medium text-ink">平均fps（推定）</dt>
+              <dd className="inline">{' … 大きく出している数字。ゲーム側のfps上限を除いた理論値です。'}</dd>
+            </div>
+            <div>
+              <dt className="inline font-medium text-ink">1% Low</dt>
+              <dd className="inline">{' … カクつきの目安。平均が高くても、ここが低いと滑らかに感じません。'}</dd>
+            </div>
+            <div>
+              <dt className="inline font-medium text-ink">GPU律速・CPU律速・拮抗</dt>
+              <dd className="inline">{' … GPUとCPUのどちらが上限を決めているか（ボトルネック）。上限を決めている側を良くすると、fpsが伸びます。'}</dd>
+            </div>
+            <div>
+              <dt className="inline font-medium text-ink">モニターを活かせるか</dt>
+              <dd className="inline">{` … ${REFRESH_RATES[0]}〜${REFRESH_RATES[REFRESH_RATES.length - 1]}Hz のモニターごとに、足りるかを判定します。`}</dd>
+            </div>
+            <div>
+              <dt className="inline font-medium text-ink">VRAM の注意</dt>
+              <dd className="inline">{' … VRAM が足りない見込みのときだけ出ます。'}</dd>
+            </div>
+          </dl>
+        </div>
+        <div>
+          <h3 className={H3 + ' text-ink'}>対応範囲と限界</h3>
+          <ul className="space-y-1.5">
+            <li>{`・対応ゲームは ${supportedGameNames('・')} です。係数の根拠がそろったゲームだけを載せています。`}</li>
+            <li>・デスクトップ向けの GPU・CPU が対象です。</li>
+            <li>・DLSS・FSR などのアップスケーリングとフレーム生成は、計算に含めていません。</li>
+            <li>・メモリと電源の容量は、fps の計算には使っていません（入力すると、必要なときだけ注意を出します）。</li>
+            <li>
+              {'・推定値で、誤差は ±15〜20% です。計算の根拠は'}
+              <Link href="/methodology" className="text-accent underline">
+                算出方法
+              </Link>
+              {'にまとめています。'}
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
   );
 }

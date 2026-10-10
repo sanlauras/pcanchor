@@ -33,12 +33,16 @@ export async function generateMetadata({
   const cpu = find(slug);
   if (!cpu) return {};
 
+  /*
+   * 題名と説明文（2026-10-10 に見直し）。GPU 個別ページと同じ理由（表示はされているのにクリック率 2.7%、
+   * 検索語は「core ultra 7 ゲーム性能」「9950 cpu」など型番＋性能）。説明文の前半に性能指数・順位・主なスペックを寄せた。
+   */
   return pageMetadata({
-    title: `${cpu.name}のゲーム性能｜fps上限と合うGPU`,
+    title: `${cpu.name}の性能｜ゲームでのfps上限と合うGPU・スペック`,
     description:
-      `${cpu.name} が ${supportedGameNames('・')} で何fpsまで出せるかの推定値と、性能を出し切れるGPUの目安。` +
-      `性能指数 ${cpu.perfIndex.toFixed(1)}、${cpu.cores}コア${cpu.threads}スレッド、L3キャッシュ ${cpu.l3CacheMb}MB。` +
-      `メーカー公式スペックと自前の実測から計算しています（誤差±15〜20%）。`,
+      `${cpu.name}のゲーム向け性能指数は${cpu.perfIndex.toFixed(1)}（9800X3D=100）で、CPU ${cpus.length}モデル中${rankByIndex(cpus, cpu)}位。` +
+      `${cpu.cores}コア${cpu.threads}スレッド・L3 ${cpu.l3CacheMb}MB・TDP ${cpu.tdpW}W・${cpu.socket}。` +
+      `${supportedGameNames('・')}でのfps上限の推定値と、性能を出し切れるGPUの目安を掲載。推定値・誤差±15〜20%。`,
     path: `/cpu/${cpu.slug}`,
   });
 }

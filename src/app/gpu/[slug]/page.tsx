@@ -37,12 +37,18 @@ export async function generateMetadata({
   const gpu = find(slug);
   if (!gpu) return {};
 
+  /*
+   * 題名と説明文（2026-10-10 に見直し）。Search Console で、GPU 個別ページは平均 6.9位に表示されているのに
+   * クリック率が 3% 前後だった。実際の検索語は「3090ti 性能」「rx6800 tdp」のような「型番＋性能・TDP」なので、
+   * 題名に「性能」を入れ、説明文の前半（検索結果で切られない範囲）に性能指数・順位・VRAM・TDP を寄せた。
+   * 数字はページに出している値と同じ。経緯と変更前の数字は CONTEXT.md「検索流入の改善（2026-10-10）」
+   */
   return pageMetadata({
-    title: `${gpu.name}は何fps出る？ゲーム別の推定fpsとスペック`,
+    title: `${gpu.name}の性能｜ゲーム別の推定fps・スペック（VRAM・TDP）`,
     description:
-      `${gpu.name} が ${supportedGameNames('・')} で何fps出るかを、1080p・1440p・4Kと画質別に掲載。` +
-      `組み合わせるCPUの目安、性能指数 ${gpu.perfIndex.toFixed(1)}、VRAM ${gpu.vramGb}GB などのスペックも。` +
-      `メーカー公式スペックと自前の実測から計算した推定値です（誤差±15〜20%）。`,
+      `${gpu.name}の性能指数は${gpu.perfIndex.toFixed(1)}（RX 9070 XT=100）で、GPU ${gpus.length}モデル中${rankByIndex(gpus, gpu)}位。` +
+      `VRAM ${gpu.vramGb}GB・TDP ${gpu.tdpW}W。` +
+      `${supportedGameNames('・')}の推定fpsを1080p・1440p・4Kと画質別に掲載し、組み合わせるCPUの目安も。推定値・誤差±15〜20%。`,
     path: `/gpu/${gpu.slug}`,
   });
 }
