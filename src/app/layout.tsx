@@ -11,9 +11,10 @@ import { AnchorMark } from '@/components/AnchorMark';
 import { MobileMenu } from '@/components/MobileMenu';
 import { NavGroup } from '@/components/NavGroup';
 import { NavLink } from '@/components/NavLink';
+import { ThemeScope } from '@/components/ThemeScope';
 import { Wordmark } from '@/components/Wordmark';
 import { AMAZON_DISCLOSURE, hasAmazonTag } from '@/lib/affiliate';
-import { HOME_NAV, NAV_GROUPS, SITE_INFO_NAV } from '@/lib/nav';
+import { BLOG_NAV, HOME_NAV, NAV_GROUPS, SITE_INFO_NAV } from '@/lib/nav';
 import { OPERATOR, SITE } from '@/lib/site';
 import './globals.css';
 
@@ -164,6 +165,8 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
           重なり順は 比較トレイ(z-10) < ヘッダー(z-20) < 比較モーダル(z-50)。
           紺の半透明の帯で、後ろをぼかす（イメージ画像のヘッダー）。
         */}
+        {/* ブログのときだけ、ヘッダーからフッターまでを明るい配色にする（ThemeScope。2026-10-13） */}
+        <ThemeScope>
         <header className="sticky top-0 z-20 border-b border-frame bg-paper/80 backdrop-blur-md">
           <div className="mx-auto flex h-(--header-h) max-w-[1240px] items-center gap-x-6 px-5">
             {/* ロゴはヒーローと同じ書体・同じ英語表記で揃える。左の錨はファビコンと同じ形 */}
@@ -173,8 +176,15 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
             >
               <AnchorMark gradient className="size-8 shrink-0" />
               <span className="flex flex-col">
-                <span className="font-display text-xl leading-none font-extrabold tracking-[var(--display-tracking)] uppercase">
-                  <Wordmark />
+                <span className="flex items-center gap-2">
+                  {/* ロゴの文字は1つの箱に入れる（並べる箱に直接入れると「PC A NCHOR」と文字の間が空いてしまう） */}
+                  <span className="font-display text-xl leading-none font-extrabold tracking-[var(--display-tracking)] uppercase">
+                    <Wordmark />
+                  </span>
+                  {/* ブログのページだけに出る印（globals.css の .blog-only） */}
+                  <span className="blog-only rounded bg-accent-vivid px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-[0.14em] text-on-accent">
+                    BLOG
+                  </span>
                 </span>
                 {/* ロゴの下の文言（2026-09-30 ユーザーの指定）。メニューを3つにまとめたので、どの幅でも並べて入る */}
                 <span className="mt-1 font-cond text-[10px] leading-none font-bold tracking-[0.06em] whitespace-nowrap text-dim">
@@ -191,6 +201,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
               {NAV_GROUPS.map((group) => (
                 <NavGroup key={group.label} group={group} />
               ))}
+              <NavLink href={BLOG_NAV.href} label={BLOG_NAV.label} />
             </nav>
             <MobileMenu />
           </div>
@@ -235,6 +246,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
             <span className="mt-2 inline-block">© {SITE.name}</span>
           </div>
         </footer>
+        </ThemeScope>
       </body>
     </html>
   );

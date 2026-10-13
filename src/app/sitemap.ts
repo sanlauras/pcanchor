@@ -3,6 +3,8 @@ import type { MetadataRoute } from 'next';
 // メタデータのルートは内部的に Route Handler なので、
 // 静的書き出し（output: 'export'）では静的化を明示する必要がある
 export const dynamic = 'force-static';
+import { BLOG_CATEGORIES } from '@/content/blog/categories';
+import { publishedPosts } from '@/content/blog';
 import { lastUpdated } from '@/lib/changelog';
 import { cpus, gpus } from '@/lib/data';
 import { GAMES } from '@/lib/fps/games';
@@ -42,5 +44,23 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...gpus.map((g) => `/gpu/${g.slug}`),
     ...cpus.map((c) => `/cpu/${c.slug}`),
   ];
-  return paths.map((path) => ({ url: absoluteUrl(path), lastModified: lastUpdated(path) }));
+  const site = paths.map((path) => ({ url: absoluteUrl(path), lastModified: lastUpdated(path) }));
+
+  // ブログ（2026-10-13）。公開済みの記事だけを入れる（下書きは入れない）。
+  // 日付は記事の更新日（updatedAt）。ブログトップとカテゴリは、その中の記事のいちばん新しい更新日
+  const posts = publishedPosts();
+  const newest = (list: typeof posts) => list.map((p) => p.meta.updatedAt).sort().at(-1);
+  const blog =
+    posts.length === 0
+      ? []
+      : [
+          { url: absoluteUrl('/blog'), lastModified: newest(posts) },
+          ...BLOG_CATEGORIES.flatMap((c) => {
+            const inCat = posts.filter((p) => p.meta.category === c.id);
+            return inCat.length > 0 ? [{ url: absoluteUrl(`/blog/category/${c.id}`), lastModified: newest(inCat) }] : [];
+          }),
+          ...posts.map((p) => ({ url: absoluteUrl(`/blog/${p.meta.slug}`), lastModified: p.meta.updatedAt })),
+        ];
+
+  return [...site, ...blog];
 }

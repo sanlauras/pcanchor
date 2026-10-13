@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { HOME_NAV, NAV_GROUPS, type NavLink, SITE_INFO_NAV, isCurrentSection } from '@/lib/nav';
+import { BLOG_NAV, HOME_NAV, NAV_GROUPS, type NavLink, SITE_INFO_NAV, isCurrentSection } from '@/lib/nav';
 
 /**
  * スマホ幅のメニュー。
@@ -62,6 +62,7 @@ export function MobileMenu() {
         {/* PC のヘッダーと同じまとめ方（ホーム・ツール・データベース）。中身と順番は nav.ts の NAV_GROUPS */}
         <ul className="px-3 pt-3">
           <MenuItem item={HOME_NAV} pathname={pathname} onNavigate={closeFrom} />
+          <MenuItem item={BLOG_NAV} pathname={pathname} onNavigate={closeFrom} />
         </ul>
         {NAV_GROUPS.map((group) => (
           <div key={group.label}>

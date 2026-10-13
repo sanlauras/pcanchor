@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { AdSlot } from '@/components/AdSlot';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { PageHeader } from '@/components/PageHeader';
+import { RelatedArticles } from '@/components/blog/RelatedArticles';
 import { TOOLS } from '@/lib/nav';
 import { FpsTool } from '@/components/fps/FpsTool';
 import { tally } from '@/lib/data/summary';
@@ -83,6 +84,9 @@ export default function FpsToolPage() {
             ))}
           </ul>
         </section>
+
+        {/* ブログの関連する記事（2026-10-13）。記事が無ければ何も出さない */}
+        <RelatedArticles path="/tools/fps" className="mt-8" />
 
         <section className="mt-8 border-t border-rule-soft pt-5 text-xs text-dim">
           <h2 className="mb-2 font-cond text-base font-bold text-ink">計算方法</h2>

@@ -12,10 +12,11 @@ export type Crumb = { href: string; label: string };
  * 日付は更新履歴（src/lib/changelog.ts）から決め、同じ値を WebPage の dateModified に入れる。
  * ホーム以外の全ページがパンくずを持っているので、ここに置けば漏れがない。
  */
-export function Breadcrumbs({ trail }: { trail: Crumb[] }) {
+export function Breadcrumbs({ trail, updated: updatedOverride }: { trail: Crumb[]; updated?: string }) {
   const items = [{ href: '/', label: 'ホーム' }, ...trail];
   const path = items[items.length - 1]!.href;
-  const updated = lastUpdated(path);
+  // ブログの記事は、記事ごとの更新日（記事の meta.updatedAt）を渡す。それ以外は更新履歴から決める
+  const updated = updatedOverride ?? lastUpdated(path);
 
   const jsonLd = {
     '@context': 'https://schema.org',

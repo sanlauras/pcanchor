@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { AdSlot } from '@/components/AdSlot';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
+import { RelatedArticles } from '@/components/blog/RelatedArticles';
 import { cpus, gpus } from '@/lib/data';
 import { GAMES } from '@/lib/fps/games';
 import { RESOLUTIONS, type ResolutionId } from '@/lib/fps/model';
@@ -429,6 +430,9 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
             </li>
           </ul>
         </section>
+
+        {/* ブログの関連する記事（2026-10-13）。そのゲームの記事が無ければ何も出さない */}
+        <RelatedArticles path={`/games/${game.id}`} className="mt-8" />
 
         {RESOLUTIONS.length > 0 && (
           <section className="mt-8 border-t border-rule-soft pt-5">

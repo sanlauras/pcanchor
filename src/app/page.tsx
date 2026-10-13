@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ToolIcon } from '@/components/ToolIcon';
 import { Wordmark } from '@/components/Wordmark';
+import { visiblePosts } from '@/content/blog';
 import { siteLastUpdated } from '@/lib/changelog';
 import { cpus, gpus } from '@/lib/data';
 import { tally } from '@/lib/data/summary';
@@ -170,6 +171,7 @@ function HeroBackdrop() {
 
 export default function Home() {
   const examples = toolExamples();
+  const latestPosts = visiblePosts().slice(0, 4);
   const supported = GAMES.filter((g) => g.supported);
 
   // ヒーローの下の入口（イメージ画像の4枚のカード）。今ある機能だけを並べる
@@ -384,7 +386,32 @@ export default function Home() {
           </div>
         </Section>
 
-        {/* 記事・まとめができたら、ここに <Section label="ARTICLES" …> を足す */}
+        {/* ブログの新しい記事（2026-10-13）。記事が1本も無いときは節ごと出さない */}
+        {latestPosts.length > 0 && (
+          <Section label="ARTICLES" title="ブログ" meta={`${latestPosts.length} NEW`}>
+            <ul className="grid gap-3 md:grid-cols-2">
+              {latestPosts.map(({ meta: m }) => (
+                <li key={m.slug}>
+                  <Link
+                    href={`/blog/${m.slug}`}
+                    className="group/go flex h-full items-center justify-between gap-3 rounded-xl border border-frame bg-panel p-5 hover:border-accent hover:shadow-glow"
+                  >
+                    <span className="min-w-0">
+                      <span className="block font-cond text-lg leading-snug font-bold group-hover/go:text-accent">{m.title}</span>
+                      <span className="mt-1 block text-xs text-dim">更新 {m.updatedAt}</span>
+                    </span>
+                    <GoMark />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-4 text-sm">
+              <Link href="/blog" className="text-accent underline">
+                ブログの記事をすべて見る
+              </Link>
+            </p>
+          </Section>
+        )}
 
         <Section label="NOTE" title="数値の扱いについて" meta="推定値">
           <div className="max-w-[68ch] space-y-2 border-l-2 border-accent pl-4 text-sm text-dim">

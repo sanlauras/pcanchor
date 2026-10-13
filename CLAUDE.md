@@ -39,6 +39,13 @@ Next.js / TypeScript / Tailwind / Supabase / Vercel。
 - ページの内容を変えたら `src/lib/changelog.ts` に1行足す。各ページの「最終更新」・dateModified・
   サイトマップの lastmod はここから決まる（2026-09-27〜。足さないと更新日が古いまま残る）
 
+## ブログ記事の決まり（2026-10-13〜。詳細は CONTEXT.md「ブログ」）
+
+- 記事は `src/content/blog/` の TSX ファイル1つ＝1本。**fps の数字は手で書かず、`src/components/blog/GameData.tsx` の部品で計算から出す**
+- 他社の fps（レビュー・動画の測定値）を本文に載せない（絶対ルール1）。公式の情報は出典と確認日を `meta.sources` に
+- 製品とアフィリエイトリンクは `src/content/products.ts`。公式ページで確かめた情報と、案件ごとの URL があるものだけ。架空の URL を入れない
+- 確認待ちの記事は `status: 'draft'`（公開のビルドに出ない）。人が中身と出典を確かめてから `published` にする
+
 ## 実測アンカー（唯一の実測データ）
 
 RX 9070 XT + Ryzen 7 9800X3D の1台のみ。Valorantで測定。

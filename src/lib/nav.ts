@@ -76,6 +76,9 @@ export type NavLink = {
 /** ヘッダーのいちばん左。まとめではなく、そのままのリンク */
 export const HOME_NAV: NavLink = { href: '/', label: 'ホーム' };
 
+/** ブログ（2026-10-13 追加）。ヘッダーでは「データベース」の右、スマホの MENU ではホームの下 */
+export const BLOG_NAV: NavLink = { href: '/blog', label: 'ブログ', sub: 'ゲーミングPCの選び方と解説' };
+
 export type NavGroup = { label: string; items: NavLink[] };
 
 /**

@@ -88,6 +88,49 @@
   -webkit-text-fill-color: transparent;
 }
 
+/*
+ * ブログ（/blog）だけの明るい配色（2026-10-13。ユーザーの依頼「ブログは明るい編集メディアに」）。
+ *
+ * サイトの部品はすべて色の変数で書いてあるので、ここで変数を明るい値に差し替えるだけで、
+ * 同じヘッダー・フッター・部品が明るく出る。当てるのは src/components/ThemeScope.tsx（URL が /blog で始まるとき）。
+ * 既存の暗いページには影響しない。
+ *
+ * コントラスト（計算済み・基準 AA は 4.5 以上）:
+ *   ink   地 15.30 / カード 16.40     dim    地 7.04 / カード 7.55
+ *   accent 地 5.90 / カード 6.32 / 薄い青の面 5.60（文字・リンク用。暗い配色より濃い青にした）
+ *   on-accent（白）on accent-vivid 4.90（ボタン）
+ * 強いグラデーションや発光は使わない（依頼の方針）。
+ */
+.theme-light {
+  color-scheme: light;
+
+  --paper: #f6f7f9;
+  --panel: #ffffff;
+  --raise: #eef2f7;
+  --ink: #18202b;
+  --dim: #4a5566;
+  --rule: #dde3ea;
+  --rule-soft: #eaeef3;
+  --frame: #cfd8e3;
+  --accent: #0a5cc2;
+  --accent-vivid: #1a6fd6;
+  --on-accent: #ffffff;
+  --accent-soft: rgba(10, 92, 194, 0.08);
+  --glow: 0 1px 2px rgba(24, 32, 43, 0.06), 0 6px 18px -10px rgba(24, 32, 43, 0.25);
+  --signal: var(--accent);
+
+  background: var(--paper);
+  color: var(--ink);
+}
+
+/* ブログのときだけ見せる印（ヘッダーのロゴの横の「BLOG」など）。JavaScript を使わずに出し分ける */
+.blog-only {
+  display: none;
+}
+.theme-light .blog-only {
+  display: inline-flex;
+}
+
 body {
   /*
    * 上の方だけ、ほんのり青く光らせる（イメージ画像の奥行き）。

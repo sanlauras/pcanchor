@@ -22,6 +22,18 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: '2026-10-13',
+    title: 'Fortnite のページに公式の必要・推奨動作環境を掲載',
+    body: 'Epic Games 公式の最小・推奨システム要件をそのまま載せ、確認日と出典を添えました。',
+    areas: ['/games/fortnite'],
+  },
+  {
+    date: '2026-10-13',
+    title: 'ブログを開設',
+    body: 'ゲームと目標fpsから PC を選ぶための記事を始めました。記事の fps は、ツールと同じ計算で出した推定値です。ホーム、fps予想、ゲーム別のページから関連する記事へ移れます。',
+    areas: ['/', '/tools/fps', '/games'],
+  },
+  {
     date: '2026-10-11',
     title: 'fps予想に使い方と結果の見方を追加',
     body: '使い方、結果の数字の見方（平均fps・1% Low・律速・モニターの判定）、対応しているゲームと計算に含めていないもの（DLSS・FSR・フレーム生成など）をまとめました。',
