@@ -23,6 +23,12 @@ export type ChangelogEntry = {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     date: '2026-11-09',
+    title: 'ホームを作り直し',
+    body: 'ゲームから探す入口、FPS予想と必要スペック診断の計算例、データベースとガイドへの入口、算出方法とデータの信頼性（実測・推定・公式の違い）、更新情報を並べました。計算例の数字は、ツールと同じ計算による推定値です。',
+    areas: ['/'],
+  },
+  {
+    date: '2026-11-09',
     title: 'メニューを整理し、広告とアフィリエイトリンクを外す',
     body: 'メニューを「PC診断・ツール」「ゲーム別」「GPU・CPUデータベース」「PC選びのガイド」「PC ANCHOR について」の5つにまとめました。GPU・CPUのページ、構成選び、感度換算にあった Amazon へのリンクと、空の広告枠を外しています。ガイド（ブログ）もサイト全体と同じ配色にしました。',
     areas: ['/gpu', '/cpu', '/tools/build', '/tools/sensitivity', '/privacy'],

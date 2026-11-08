@@ -58,8 +58,9 @@ export function ToolCard({
           →
         </span>
       </span>
-      {description && <span className="mt-2 block text-sm leading-relaxed text-dim">{description}</span>}
-      {meta && <span className="mt-auto block pt-3 text-xs text-dim">{meta}</span>}
+      {/* 中に表や段落（ブロックの要素）を入れられるよう、div にしている（リンクの中に div を置くのは HTML の決まりで可） */}
+      {description && <div className="mt-2 text-sm leading-relaxed text-dim">{description}</div>}
+      {meta && <div className="mt-auto pt-3 text-xs text-dim">{meta}</div>}
     </Link>
   );
 }
