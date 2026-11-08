@@ -13,7 +13,7 @@ export function ProductSlot({ slot, title }: { slot: string; title: string }) {
   if (list.length === 0) {
     if (process.env.NODE_ENV !== 'development') return null;
     return (
-      <div className="my-6 rounded-lg border-2 border-dashed border-[#b45309] bg-[#fff7ed] p-4 text-sm">
+      <div className="my-6 rounded-lg border-2 border-dashed border-caution bg-caution-soft p-4 text-sm">
         <p className="font-bold">【開発中だけの表示】製品の置き場所「{slot}」（{title}）に、まだ製品がありません</p>
         <p className="mt-1 text-dim">
           src/content/products.ts に、公式ページで確かめた情報（確認日つき）と案件のアフィリエイト URL を入れ、slots に「{slot}」を書くと、ここに製品が出ます。公開のページには、この枠は出ません。

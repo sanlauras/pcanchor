@@ -20,7 +20,7 @@ export function NavLink({ href, label }: { href: string; label: string }) {
       aria-current={active ? 'page' : undefined}
       className={`relative flex shrink-0 items-center px-2.5 font-cond text-sm font-bold whitespace-nowrap hover:text-accent
                   after:absolute after:inset-x-2.5 after:bottom-0 after:h-0.5 after:rounded-full after:content-['']
-                  ${active ? 'text-accent after:bg-accent after:shadow-[0_0_8px_var(--accent)]' : 'text-dim'}`}
+                  ${active ? 'text-accent after:bg-accent' : 'text-dim'}`}
     >
       {label}
     </Link>

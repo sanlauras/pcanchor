@@ -16,8 +16,11 @@ import { type NavGroup as NavGroupData, isCurrentSection } from '@/lib/nav';
  *   （タップでもマウスの「合わせた」合図が先に来るので、pointerType がマウスのときだけ合わせて開くようにしている）
  *
  * **中のリンクは閉じている間も HTML に残す**（visibility で隠すだけ）。検索エンジンがたどれる内部リンクを減らさないため。
+ *
+ * 2026-11-09 の全面再設計: 項目に section があれば、その前に区切り線と小見出しを入れる（「その他のツール」など）。
+ * 右端のまとめ（PC ANCHOR について）は、箱が画面の外にはみ出さないよう右揃えで開く（align="right"）。
  */
-export function NavGroup({ group }: { group: NavGroupData }) {
+export function NavGroup({ group, align = 'left' }: { group: NavGroupData; align?: 'left' | 'right' }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -64,7 +67,7 @@ export function NavGroup({ group }: { group: NavGroupData }) {
         }}
         className={`relative flex shrink-0 cursor-pointer items-center gap-1 px-2.5 font-cond text-sm font-bold whitespace-nowrap hover:text-accent
                     after:absolute after:inset-x-2.5 after:bottom-0 after:h-0.5 after:rounded-full after:content-['']
-                    ${active ? 'text-accent after:bg-accent after:shadow-[0_0_8px_var(--accent)]' : open ? 'text-ink' : 'text-dim'}`}
+                    ${active ? 'text-accent after:bg-accent' : open ? 'text-ink' : 'text-dim'}`}
       >
         {group.label}
         <svg
@@ -84,7 +87,7 @@ export function NavGroup({ group }: { group: NavGroupData }) {
       {/* 箱。上の余白（pt-2）も当たり判定なので、カーソルを名前から箱へ動かしても閉じない */}
       <div
         id={panelId}
-        className={`absolute top-full left-0 z-30 pt-2 motion-safe:transition motion-safe:duration-150
+        className={`absolute top-full ${align === 'right' ? 'right-0' : 'left-0'} z-30 pt-2 motion-safe:transition motion-safe:duration-150
                     ${open ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-1 opacity-0'}`}
       >
         <ul className="w-80 rounded-xl border border-frame bg-panel p-2 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.7)]">
@@ -92,6 +95,11 @@ export function NavGroup({ group }: { group: NavGroupData }) {
             const current = isCurrentSection(pathname, item.href);
             return (
               <li key={item.href}>
+                {item.section && (
+                  <p className="mx-3 mt-2 mb-1 border-t border-rule pt-2.5 font-mono text-[10px] font-semibold tracking-[0.14em] text-dim">
+                    {item.section}
+                  </p>
+                )}
                 <Link
                   href={item.href}
                   onClick={() => setOpen(false)}
@@ -111,7 +119,7 @@ export function NavGroup({ group }: { group: NavGroupData }) {
                     </span>
                     {item.sub && <span className="mt-0.5 block text-[11px] leading-tight text-dim">{item.sub}</span>}
                   </span>
-                  {current && <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-accent shadow-[0_0_8px_var(--accent)]" />}
+                  {current && <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-accent" />}
                 </Link>
               </li>
             );

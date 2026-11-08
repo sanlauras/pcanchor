@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { AdSlot } from '@/components/AdSlot';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { PageHeader } from '@/components/PageHeader';
 import { TOOLS } from '@/lib/nav';
@@ -79,13 +78,7 @@ eDPI                = DPI × 感度`}
             </p>
           </div>
         </section>
-
-        <div className="mt-10">
-          <AdSlot variant="inline" />
-        </div>
       </main>
-
-      <AdSlot variant="rail" />
     </div>
   );
 }

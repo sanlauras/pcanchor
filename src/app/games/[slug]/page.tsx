@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { AdSlot } from '@/components/AdSlot';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { RelatedArticles } from '@/components/blog/RelatedArticles';
 import { cpus, gpus } from '@/lib/data';
@@ -445,13 +444,7 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
             </p>
           </section>
         )}
-
-        <div className="mt-10">
-          <AdSlot variant="inline" />
-        </div>
       </main>
-
-      <AdSlot variant="rail" />
     </div>
   );
 }

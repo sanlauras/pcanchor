@@ -11,10 +11,10 @@ import { AnchorMark } from '@/components/AnchorMark';
 import { MobileMenu } from '@/components/MobileMenu';
 import { NavGroup } from '@/components/NavGroup';
 import { NavLink } from '@/components/NavLink';
-import { ThemeScope } from '@/components/ThemeScope';
 import { Wordmark } from '@/components/Wordmark';
 import { AMAZON_DISCLOSURE, hasAmazonTag } from '@/lib/affiliate';
-import { BLOG_NAV, HOME_NAV, NAV_GROUPS, SITE_INFO_NAV } from '@/lib/nav';
+import { GAMES } from '@/lib/fps/games';
+import { BLOG_NAV, type NavLink as NavItem, SITE_INFO_NAV, mainNavGroups } from '@/lib/nav';
 import { OPERATOR, SITE } from '@/lib/site';
 import './globals.css';
 
@@ -110,7 +110,16 @@ export const metadata: Metadata = {
   },
 };
 
+/** メニューの「ゲーム別」の中身。対応しているゲームだけ（games.ts の supported） */
+const gameLinks: NavItem[] = GAMES.filter((g) => g.supported).map((g) => ({
+  href: `/games/${g.id}`,
+  label: g.name,
+  sub: '必要なGPU・CPUと推定fps',
+}));
+const nav = mainNavGroups(gameLinks);
+
 const footerNav = [
+  BLOG_NAV,
   ...SITE_INFO_NAV,
   { href: '/privacy', label: 'プライバシーポリシー' },
   { href: '/terms', label: '利用規約' },
@@ -165,8 +174,6 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
           重なり順は 比較トレイ(z-10) < ヘッダー(z-20) < 比較モーダル(z-50)。
           紺の半透明の帯で、後ろをぼかす（イメージ画像のヘッダー）。
         */}
-        {/* ブログのときだけ、ヘッダーからフッターまでを明るい配色にする（ThemeScope。2026-10-13） */}
-        <ThemeScope>
         <header className="sticky top-0 z-20 border-b border-frame bg-paper/80 backdrop-blur-md">
           <div className="mx-auto flex h-(--header-h) max-w-[1240px] items-center gap-x-6 px-5">
             {/* ロゴはヒーローと同じ書体・同じ英語表記で揃える。左の錨はファビコンと同じ形 */}
@@ -181,10 +188,6 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
                   <span className="font-display text-xl leading-none font-extrabold tracking-[var(--display-tracking)] uppercase">
                     <Wordmark />
                   </span>
-                  {/* ブログのページだけに出る印（globals.css の .blog-only） */}
-                  <span className="blog-only rounded bg-accent-vivid px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-[0.14em] text-on-accent">
-                    BLOG
-                  </span>
                 </span>
                 {/* ロゴの下の文言（2026-09-30 ユーザーの指定）。メニューを3つにまとめたので、どの幅でも並べて入る */}
                 <span className="mt-1 font-cond text-[10px] leading-none font-bold tracking-[0.06em] whitespace-nowrap text-dim">
@@ -193,17 +196,20 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
               </span>
             </Link>
             {/*
-              PC 幅は「ホーム」「ツール ∨」「データベース ∨」。まとめにカーソルを合わせると下に一覧が出る（2026-09-30）。
-              スマホは MENU の中に同じまとめ方で縦に並べる（横スクロールで隠れないように）
+              メニューは5項目（2026-11-09 の全面再設計）: PC診断・ツール ∨／ゲーム別 ∨／GPU・CPUデータベース ∨／PC選びのガイド／PC ANCHOR について ∨。
+              ホームへはロゴから戻る。項目が増えて横幅を使うので、横に並べるのは lg（1024px）以上。
+              それより狭い幅（タブレット・スマホ）は MENU の中に同じまとめ方で縦に並べる（横スクロールで隠れないように）
             */}
-            <nav className="hidden h-full min-w-0 flex-1 md:flex md:gap-x-1" aria-label="メイン">
-              <NavLink href={HOME_NAV.href} label={HOME_NAV.label} />
-              {NAV_GROUPS.map((group) => (
+            <nav className="hidden h-full min-w-0 flex-1 justify-end lg:flex lg:gap-x-0.5" aria-label="メイン">
+              {nav.before.map((group) => (
                 <NavGroup key={group.label} group={group} />
               ))}
               <NavLink href={BLOG_NAV.href} label={BLOG_NAV.label} />
+              {nav.after.map((group) => (
+                <NavGroup key={group.label} group={group} align="right" />
+              ))}
             </nav>
-            <MobileMenu />
+            <MobileMenu groups={[...nav.before, ...nav.after]} />
           </div>
         </header>
 
@@ -246,7 +252,6 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
             <span className="mt-2 inline-block">© {SITE.name}</span>
           </div>
         </footer>
-        </ThemeScope>
       </body>
     </html>
   );

@@ -1,14 +1,7 @@
-import type { Viewport } from 'next';
-
 /**
- * ブログ（/blog 以下）の共通設定（2026-10-13）。
- * 明るい配色そのものは、ルートの layout の ThemeScope が URL を見て当てている。ここではブラウザのバーの色だけを明るくする。
+ * ブログ（/blog 以下）の共通の入れ物（2026-10-13）。
+ * 2026-11-09 にサイト全体と同じ暗い配色に統一した（ユーザーの決定）。ブラウザのバーの色もルートの layout と同じになる。
  */
-export const viewport: Viewport = {
-  themeColor: '#f6f7f9',
-  colorScheme: 'light',
-};
-
 export default function BlogLayout({ children }: { children: React.ReactNode }) {
   return children;
 }

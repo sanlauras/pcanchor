@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { AdSlot } from '@/components/AdSlot';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { PageHeader } from '@/components/PageHeader';
 import { RelatedArticles } from '@/components/blog/RelatedArticles';
@@ -120,13 +119,7 @@ CPU由来fps = そのCPUの「Valorant 天井」推定fps × ゲームの重さ`
             </p>
           </div>
         </section>
-
-        <div className="mt-10">
-          <AdSlot variant="inline" />
-        </div>
       </main>
-
-      <AdSlot variant="rail" />
     </div>
   );
 }

@@ -16,6 +16,43 @@ export function ToolIcon({ href, className = '' }: { href: string; className?: s
     'aria-hidden': true,
     className,
   };
+  // ゲーム別のページ（/games/valorant など）とガイド・サイト情報（2026-11-09 のメニューの作り直しで追加）
+  if (href.startsWith('/games/')) href = TOOLS.games.href;
+  if (href === '/blog') {
+    return (
+      // 開いた本
+      <svg {...common}>
+        <path d="M12 6.5C10.5 5.3 8.3 4.8 4 5v13c4.3-.2 6.5.3 8 1.5 1.5-1.2 3.7-1.7 8-1.5V5c-4.3-.2-6.5.3-8 1.5z" />
+        <path d="M12 6.5v13" />
+      </svg>
+    );
+  }
+  if (href === '/about') {
+    return (
+      // 人
+      <svg {...common}>
+        <circle cx="12" cy="8" r="3.5" />
+        <path d="M5 20a7 7 0 0 1 14 0" />
+      </svg>
+    );
+  }
+  if (href === '/methodology') {
+    return (
+      // 計算式（Σ）
+      <svg {...common}>
+        <path d="M17 5H7l5 7-5 7h10" />
+      </svg>
+    );
+  }
+  if (href === '/changelog') {
+    return (
+      // 時計
+      <svg {...common}>
+        <circle cx="12" cy="12" r="8" />
+        <path d="M12 7.5V12l3 2" />
+      </svg>
+    );
+  }
   switch (href) {
     case TOOLS.fps.href: // 速度計
       return (

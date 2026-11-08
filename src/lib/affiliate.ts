@@ -27,8 +27,18 @@
  */
 const TAG = process.env.NEXT_PUBLIC_AMAZON_TAG ?? 'sososi27-22';
 
+/**
+ * アフィリエイトのリンクを画面に出すかのスイッチ（2026-11-09 ユーザーの決定で false）。
+ *
+ * 全面再設計の方針「収益化は将来の予定。今は通常のリンクだけにする」により、Amazon のリンク・開示文を止めた。
+ * 部品（AffiliateLink・このファイル・src/content/products.ts）とタグは、あとで戻せるように残してある。
+ * true に戻すと、GPU・CPU の詳細、構成選び、感度換算のリンクと、フッターの開示文がまとめて出る
+ * （プライバシーポリシーのアフィリエイトの節も書き戻すこと）。
+ */
+export const AFFILIATE_LINKS_ENABLED = false;
+
 export function hasAmazonTag(): boolean {
-  return TAG !== '';
+  return AFFILIATE_LINKS_ENABLED && TAG !== '';
 }
 
 /** 規約で指定された開示文。文言を勝手に変えないこと */
@@ -56,7 +66,7 @@ export const AMAZON_DISCLOSURE =
  */
 
 export function amazonSearchUrl(query: string): string | null {
-  if (TAG === '') return null;
+  if (!hasAmazonTag()) return null;
   const url = new URL('https://www.amazon.co.jp/s');
   url.searchParams.set('k', query);
   // パソコン・周辺機器に限定して、別カテゴリの混入を減らす

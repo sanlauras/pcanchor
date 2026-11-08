@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { AdSlot } from '@/components/AdSlot';
 import { AffiliateLink } from '@/components/AffiliateLink';
+import { hasAmazonTag } from '@/lib/affiliate';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { FpsTables } from '@/components/model/FpsTables';
 import { IndexStrip } from '@/components/model/IndexStrip';
@@ -127,10 +127,12 @@ export default async function GpuDetailPage({ params }: PageProps<'/gpu/[slug]'>
           </p>
         </header>
 
-        {/* 販売ページへの導線。タグ未設定なら何も描画されない */}
-        <div className="mt-6">
-          <AffiliateLink query={gpu.name} variant="block" model={gpu} />
-        </div>
+        {/* 販売ページへの導線。アフィリエイトを止めている間（affiliate.ts のスイッチ）は箱ごと出さない */}
+        {hasAmazonTag() && (
+          <div className="mt-6">
+            <AffiliateLink query={gpu.name} variant="block" model={gpu} />
+          </div>
+        )}
 
         <FpsTables tables={tables} cpuName={cpu.name} />
 
@@ -352,13 +354,7 @@ export default async function GpuDetailPage({ params }: PageProps<'/gpu/[slug]'>
             から。
           </p>
         </section>
-
-        <div className="mt-10">
-          <AdSlot variant="inline" />
-        </div>
       </main>
-
-      <AdSlot variant="rail" />
     </div>
   );
 }

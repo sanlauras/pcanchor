@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { AdSlot } from '@/components/AdSlot';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { PageHeader } from '@/components/PageHeader';
 import { TOOLS } from '@/lib/nav';
@@ -53,13 +52,7 @@ export default function BuildToolPage() {
         <div className="py-6">
           <BuildTool />
         </div>
-
-        <div className="mt-10">
-          <AdSlot variant="inline" />
-        </div>
       </main>
-
-      <AdSlot variant="rail" />
     </div>
   );
 }

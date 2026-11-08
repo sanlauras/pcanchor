@@ -22,6 +22,12 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: '2026-11-09',
+    title: 'メニューを整理し、広告とアフィリエイトリンクを外す',
+    body: 'メニューを「PC診断・ツール」「ゲーム別」「GPU・CPUデータベース」「PC選びのガイド」「PC ANCHOR について」の5つにまとめました。GPU・CPUのページ、構成選び、感度換算にあった Amazon へのリンクと、空の広告枠を外しています。ガイド（ブログ）もサイト全体と同じ配色にしました。',
+    areas: ['/gpu', '/cpu', '/tools/build', '/tools/sensitivity', '/privacy'],
+  },
+  {
     date: '2026-10-13',
     title: 'Fortnite のページに公式の必要・推奨動作環境を掲載',
     body: 'Epic Games 公式の最小・推奨システム要件をそのまま載せ、確認日と出典を添えました。',

@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { AdSlot } from '@/components/AdSlot';
 import { EstimateNote } from '@/components/EstimateNote';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { Masthead } from '@/components/Masthead';
@@ -48,13 +47,7 @@ export default function GpuPage() {
           GPU {tally.gpuCount}モデルの性能指数とスペック
         </h2>
         <GpuTable />
-
-        <div className="mt-10">
-          <AdSlot variant="inline" />
-        </div>
       </main>
-
-      <AdSlot variant="rail" />
     </div>
   );
 }

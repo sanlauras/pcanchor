@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { AdSlot } from '@/components/AdSlot';
 import { AffiliateLink } from '@/components/AffiliateLink';
+import { hasAmazonTag } from '@/lib/affiliate';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { FpsTables } from '@/components/model/FpsTables';
 import { IndexStrip } from '@/components/model/IndexStrip';
@@ -120,27 +120,29 @@ export default async function CpuDetailPage({ params }: PageProps<'/cpu/[slug]'>
           </p>
         </header>
 
-        {/* 販売ページへの導線。タグ未設定なら何も描画されない */}
-        <div className="mt-6">
-          {/*
-            CPU には VRAM が無いので、GPU 向けの既定の注意書き（型番とVRAM容量）は使わない（2026-09-27 の SEO監査の指摘）。
-            CPU で間違えやすいのは、手持ちのマザーボードと合わないソケットを買うこと。
-          */}
-          <AffiliateLink
-            query={cpu.name}
-            variant="block"
-            model={cpu}
-            advice={
-              <>
-                検索結果には別のモデルやアクセサリも表示されます。
-                <strong className="font-medium text-ink">
-                  型番と、ソケット（このCPUは {cpu.socket}）がマザーボードに合うか
-                </strong>
-                を確認してから購入してください。CPUクーラーが付属するかは販売ページで確認できます。
-              </>
-            }
-          />
-        </div>
+        {/* 販売ページへの導線。アフィリエイトを止めている間（affiliate.ts のスイッチ）は箱ごと出さない */}
+        {hasAmazonTag() && (
+          <div className="mt-6">
+            {/*
+              CPU には VRAM が無いので、GPU 向けの既定の注意書き（型番とVRAM容量）は使わない（2026-09-27 の SEO監査の指摘）。
+              CPU で間違えやすいのは、手持ちのマザーボードと合わないソケットを買うこと。
+            */}
+            <AffiliateLink
+              query={cpu.name}
+              variant="block"
+              model={cpu}
+              advice={
+                <>
+                  検索結果には別のモデルやアクセサリも表示されます。
+                  <strong className="font-medium text-ink">
+                    型番と、ソケット（このCPUは {cpu.socket}）がマザーボードに合うか
+                  </strong>
+                  を確認してから購入してください。CPUクーラーが付属するかは販売ページで確認できます。
+                </>
+              }
+            />
+          </div>
+        )}
 
         <FpsTables tables={tables} cpuName={cpu.name} />
 
@@ -331,13 +333,7 @@ export default async function CpuDetailPage({ params }: PageProps<'/cpu/[slug]'>
             から。
           </p>
         </section>
-
-        <div className="mt-10">
-          <AdSlot variant="inline" />
-        </div>
       </main>
-
-      <AdSlot variant="rail" />
     </div>
   );
 }

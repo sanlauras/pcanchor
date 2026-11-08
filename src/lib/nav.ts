@@ -71,44 +71,67 @@ export type NavLink = {
   label: string;
   /** スマホのメニューで名前の下に小さく添える正式名。ページの見出しと同じ言葉を使う */
   sub?: string;
+  /**
+   * この項目の前に区切りを入れ、小見出しを付ける（2026-11-09。ツールのまとめで「感度換算」を一段下げるため）。
+   * 区切りより下は、まとめの中で優先度が低い項目
+   */
+  section?: string;
 };
 
-/** ヘッダーのいちばん左。まとめではなく、そのままのリンク */
+/** ホーム。2026-11-09 からヘッダーではロゴがホームへのリンクを兼ね、スマホのメニューの先頭にだけ置く */
 export const HOME_NAV: NavLink = { href: '/', label: 'ホーム' };
 
-/** ブログ（2026-10-13 追加）。ヘッダーでは「データベース」の右、スマホの MENU ではホームの下 */
-export const BLOG_NAV: NavLink = { href: '/blog', label: 'ブログ', sub: 'ゲーミングPCの選び方と解説' };
+/**
+ * ブログ（2026-10-13 追加）。2026-11-09 の全面再設計で、メニューでの名前を「PC選びのガイド」にした
+ * （記事の中身＝ゲーミングPCの選び方に合わせた名前。URL は /blog のまま）
+ */
+export const BLOG_NAV: NavLink = { href: '/blog', label: 'PC選びのガイド', sub: 'ゲーミングPCの選び方と解説' };
 
 export type NavGroup = { label: string; items: NavLink[] };
 
-/**
- * ヘッダーのメニューのまとめ（2026-09-30 ユーザーの要望。valorantnews.jp を参考にした形）。
- * PC は「ツール ∨」「データベース ∨」にカーソルを合わせると下に一覧が出る。スマホの MENU も同じまとめ方で区切る。
- *
- * 「推奨GPU」（ゲーム別の推奨GPU）は、ゲームごとに GPU の推定fps を並べたデータなので「データベース」に入れている。
- * 名前と説明は TOOLS と、GPU・CPU 一覧の既存の言葉をそのまま使う（新しい文言は作らない）。
- */
-export const NAV_GROUPS: NavGroup[] = [
-  {
-    label: 'ツール',
-    items: [TOOLS.fps, TOOLS.build, TOOLS.sensitivity].map((t) => ({ href: t.href, label: t.short, sub: t.long })),
-  },
-  {
-    label: 'データベース',
-    items: [
-      { href: '/gpu', label: 'GPU', sub: 'GPUスペック一覧' },
-      { href: '/cpu', label: 'CPU', sub: 'CPUスペック一覧' },
-      { href: TOOLS.games.href, label: TOOLS.games.short, sub: TOOLS.games.long },
-    ],
-  },
+/** サイトについての入口。メニューの「PC ANCHOR について」と、フッターで使う */
+export const SITE_INFO_NAV: NavLink[] = [
+  { href: '/about', label: 'このサイトについて・運営者', sub: '運営者と実測環境' },
+  { href: '/methodology', label: '算出方法', sub: '推定fpsと性能指数の計算のしかた' },
+  { href: '/changelog', label: '更新履歴', sub: 'データと計算の更新' },
 ];
 
-/** サイトについての入口。フッターと、スマホのメニューの下の段で使う */
-export const SITE_INFO_NAV: NavLink[] = [
-  { href: '/about', label: 'このサイトについて・運営者' },
-  { href: '/methodology', label: '算出方法' },
-  { href: '/changelog', label: '更新履歴' },
-];
+/**
+ * ヘッダーのメニュー（2026-11-09 の全面再設計。ユーザーの依頼の5項目）。
+ *   1. PC診断・ツール   2. ゲーム別   3. GPU・CPUデータベース   4. PC選びのガイド（/blog。まとめではなく1つのリンク）
+ *   5. PC ANCHOR について
+ * 4 は NAV_LINK_AFTER_GROUPS として別に持つ（まとめではないため）。
+ *
+ * ゲームの項目は、対応しているゲームの一覧（src/lib/fps/games.ts）から作るので、引数で受け取る。
+ * このファイルはヘッダーの部品（ブラウザで動く）からも読まれるため、計算の本体を含む games.ts をここで import しない。
+ * 作るのはサーバー側の layout（src/app/layout.tsx）。
+ */
+export function mainNavGroups(gameLinks: NavLink[]): { before: NavGroup[]; after: NavGroup[] } {
+  return {
+    before: [
+      {
+        label: 'PC診断・ツール',
+        items: [
+          { href: TOOLS.fps.href, label: TOOLS.fps.short, sub: TOOLS.fps.long },
+          { href: TOOLS.build.href, label: TOOLS.build.short, sub: TOOLS.build.long },
+          { href: TOOLS.sensitivity.href, label: TOOLS.sensitivity.short, sub: TOOLS.sensitivity.long, section: 'その他のツール' },
+        ],
+      },
+      {
+        label: 'ゲーム別',
+        items: [...gameLinks, { href: TOOLS.games.href, label: 'ゲーム一覧', sub: TOOLS.games.long, section: 'すべてのゲーム' }],
+      },
+      {
+        label: 'GPU・CPUデータベース',
+        items: [
+          { href: '/gpu', label: 'GPU', sub: 'GPUスペック一覧' },
+          { href: '/cpu', label: 'CPU', sub: 'CPUスペック一覧' },
+        ],
+      },
+    ],
+    after: [{ label: 'PC ANCHOR について', items: SITE_INFO_NAV }],
+  };
+}
 
 /**
  * いま開いているページが、そのメニュー項目の中か（ヘッダーの下線とスマホのメニューの印に使う）。

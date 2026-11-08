@@ -1,3 +1,4 @@
+import { AFFILIATE_LINKS_ENABLED } from '@/lib/affiliate';
 /**
  * 記事で紹介する製品（BTO パソコンなど）と、そのアフィリエイトリンク（2026-10-13 追加）。
  *
@@ -39,7 +40,8 @@ export const PRODUCTS: Product[] = [];
 
 /** 公開してよい製品か（アフィリエイトの URL と、確認日つきの情報がそろっている） */
 export function isProductReady(p: Product): boolean {
-  return p.affiliateUrl.trim() !== '' && p.priceCheckedOn !== null;
+  // アフィリエイトを止めている間（2026-11-09〜。affiliate.ts のスイッチ）は、登録があっても出さない
+  return AFFILIATE_LINKS_ENABLED && p.affiliateUrl.trim() !== '' && p.priceCheckedOn !== null;
 }
 
 /** その置き場所に出す、公開してよい製品 */

@@ -90,7 +90,7 @@ export default async function BlogPostPage({ params }: PageProps<'/blog/[slug]'>
           </span>
         </p>
         {m.status === 'draft' && (
-          <p className="mt-3 rounded bg-[#fff7ed] px-3 py-2 text-sm font-bold text-[#7c2d12]">下書きです（開発中だけ表示。公開のページには出ません）</p>
+          <p className="mt-3 rounded border border-caution bg-caution-soft px-3 py-2 text-sm font-bold text-caution">下書きです（開発中だけ表示。公開のページには出ません）</p>
         )}
         {/* 広告リンク（公開してよい製品）が記事に1つでもあるときだけ出す。無いのに出さない */}
         {hasAdIn(m.productSlots) && (

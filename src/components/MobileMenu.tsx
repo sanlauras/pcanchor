@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BLOG_NAV, HOME_NAV, NAV_GROUPS, type NavLink, SITE_INFO_NAV, isCurrentSection } from '@/lib/nav';
+import { Fragment } from 'react';
+import { BLOG_NAV, HOME_NAV, type NavGroup, type NavLink, isCurrentSection } from '@/lib/nav';
 
 /**
  * スマホ幅のメニュー。
@@ -20,8 +21,12 @@ import { BLOG_NAV, HOME_NAV, NAV_GROUPS, type NavLink, SITE_INFO_NAV, isCurrentS
  * - 幕と一覧は、ヘッダーの下端（top-full）から置いている。ヘッダーに背景のぼかし（backdrop-filter）が
  *   かかっているため、fixed で画面全体に広げようとしてもヘッダーの中に閉じ込められるので、
  *   ヘッダーを基準にした absolute で、高さだけ画面いっぱい（100dvh）にしている
+ *
+ * 2026-11-09 の全面再設計: 中身はヘッダーと同じ5項目（groups は layout が nav.ts の mainNavGroups から作って渡す）。
+ * 並びは ホーム → PC診断・ツール → ゲーム別 → GPU・CPUデータベース → PC選びのガイド → PC ANCHOR について。
+ * タブレット幅（lg 未満）でもこのメニューを使う。
  */
-export function MobileMenu() {
+export function MobileMenu({ groups }: { groups: NavGroup[] }) {
   const pathname = usePathname();
 
   function closeFrom(el: Element) {
@@ -30,7 +35,7 @@ export function MobileMenu() {
 
   return (
     <details
-      className="group ml-auto md:hidden"
+      className="group ml-auto lg:hidden"
       onKeyDown={(e) => {
         if (e.key === 'Escape' && e.currentTarget.open) {
           e.currentTarget.removeAttribute('open');
@@ -59,30 +64,33 @@ export function MobileMenu() {
         className="absolute inset-x-0 top-full max-h-[calc(100dvh-var(--header-h))] overflow-y-auto border-b border-frame bg-panel shadow-[0_24px_48px_-12px_rgba(0,0,0,0.7)]
                    motion-safe:transition motion-safe:duration-200 motion-safe:starting:-translate-y-2 motion-safe:starting:opacity-0"
       >
-        {/* PC のヘッダーと同じまとめ方（ホーム・ツール・データベース）。中身と順番は nav.ts の NAV_GROUPS */}
+        {/* PC のヘッダーと同じまとめ方。ガイド（ブログ）はまとめではないので、データベースと「PC ANCHOR について」の間に1行で置く */}
         <ul className="px-3 pt-3">
           <MenuItem item={HOME_NAV} pathname={pathname} onNavigate={closeFrom} />
-          <MenuItem item={BLOG_NAV} pathname={pathname} onNavigate={closeFrom} />
         </ul>
-        {NAV_GROUPS.map((group) => (
+        {groups.map((group, i) => (
           <div key={group.label}>
+            {i === groups.length - 1 && (
+              <ul className="px-3 pt-3">
+                <MenuItem item={BLOG_NAV} pathname={pathname} onNavigate={closeFrom} />
+              </ul>
+            )}
             <p className="px-5 pt-4 pb-1.5 font-mono text-[10px] font-semibold tracking-[0.18em] text-accent">{group.label}</p>
             <ul className="px-3">
               {group.items.map((item) => (
-                <MenuItem key={item.href} item={item} pathname={pathname} onNavigate={closeFrom} />
+                <Fragment key={item.href}>
+                  {item.section && (
+                    <li className="mx-3 mt-1.5 mb-1 border-t border-rule-soft pt-2 font-mono text-[10px] font-semibold tracking-[0.14em] text-dim">
+                      {item.section}
+                    </li>
+                  )}
+                  <MenuItem item={item} pathname={pathname} onNavigate={closeFrom} />
+                </Fragment>
               ))}
             </ul>
           </div>
         ))}
-        <ul className="mt-2 flex flex-wrap gap-x-5 gap-y-2 border-t border-rule-soft px-6 py-4 text-xs text-dim">
-          {SITE_INFO_NAV.map((item) => (
-            <li key={item.href}>
-              <Link href={item.href} onClick={(e) => closeFrom(e.currentTarget)} className="hover:text-accent">
-                {item.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <div className="h-4" />
       </nav>
     </details>
   );
@@ -111,7 +119,7 @@ function MenuItem({
         {/* いま開いているページの印 */}
         <span
           aria-hidden
-          className={`h-6 w-1 shrink-0 rounded-full ${active ? 'bg-accent shadow-[0_0_8px_var(--accent)]' : 'bg-rule'}`}
+          className={`h-6 w-1 shrink-0 rounded-full ${active ? 'bg-accent' : 'bg-rule'}`}
         />
         <span className="min-w-0 flex-1">
           <span className="block font-cond text-base leading-tight font-bold">{item.label}</span>

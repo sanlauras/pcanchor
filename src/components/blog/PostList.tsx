@@ -13,7 +13,7 @@ export function PostList({ posts, compact = false }: { posts: BlogPost[]; compac
             <p className="mb-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-dim">
               <span className="rounded bg-raise px-1.5 py-0.5 font-medium text-ink">{findCategory(m.category)?.label}</span>
               <time dateTime={m.updatedAt}>更新 {m.updatedAt}</time>
-              {m.status === 'draft' && <span className="font-bold text-[#b45309]">下書き（開発中だけ表示）</span>}
+              {m.status === 'draft' && <span className="font-bold text-caution">下書き（開発中だけ表示）</span>}
             </p>
             <p className="font-cond text-lg leading-snug font-bold group-hover:text-accent">{m.title}</p>
             {!compact && <p className="mt-1 text-sm leading-relaxed text-dim">{m.description}</p>}
