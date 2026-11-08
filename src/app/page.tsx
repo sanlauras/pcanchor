@@ -116,11 +116,14 @@ const round = (n: number) => Math.round(n).toLocaleString('ja-JP');
  * next/image ではなく <picture> を直接書いている。静的書き出しでは画像の自動変換が使えず、
  * 画面幅で別の切り抜きを出し分ける（アートディレクション）ためにも <picture> の方が素直なため。
  */
+// 2026-11-09（全面再設計 段階2の微修正）: 見出しが写真のモニターに重ならないよう、写真を文字の後ろに敷くのは lg（1024px）以上だけにした。
+// タブレット幅（768px）では写真のモニターが左から約34%の位置に来て、どの文字の大きさでも見出しと重なるため、
+// スマホと同じ「上部の帯にして下へ溶かす」形にしている。
 function HeroBackdrop() {
   return (
     <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden bg-paper">
       <picture>
-        <source media="(max-width: 767px)" type="image/webp" srcSet="/hero/hero-960.webp" />
+        <source media="(max-width: 1023px)" type="image/webp" srcSet="/hero/hero-960.webp" />
         <img
           src="/hero/hero-1920.webp"
           alt=""
@@ -130,15 +133,15 @@ function HeroBackdrop() {
           decoding="async"
           className="absolute inset-x-0 top-0 h-[300px] w-full object-cover object-[55%_45%]
                      [mask-image:linear-gradient(to_bottom,black_35%,transparent_95%)]
-                     md:h-auto md:min-h-[70%] md:object-right
-                     md:[mask-image:linear-gradient(to_bottom,black_70%,transparent)]"
+                     lg:h-auto lg:min-h-[70%] lg:object-right
+                     lg:[mask-image:linear-gradient(to_bottom,black_70%,transparent)]"
         />
       </picture>
       {/*
         PC は文字のある左側だけを暗くする。左端は真っ黒にせず、写真（観葉植物やソファ）がうっすら残る濃さにしている
         （2026-09-30 ユーザーの要望）。スマホは写真を文字の後ろに置かない（上部の帯にして下へ溶かす）ので重ねない
       */}
-      <div className="absolute inset-0 hidden md:block md:bg-gradient-to-r md:from-paper/80 md:via-paper/60 md:via-40% md:to-transparent md:to-65%" />
+      <div className="absolute inset-0 hidden lg:block lg:bg-gradient-to-r lg:from-paper/80 lg:via-paper/60 lg:via-40% lg:to-transparent lg:to-65%" />
       {/* 下端を背景の紺に溶かし、次の節との境目をなじませる */}
       <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-paper to-transparent" />
     </div>
@@ -158,7 +161,7 @@ export default function Home() {
       <section className="relative isolate border-b border-frame">
         <HeroBackdrop />
         {/* スマホは写真の帯（上300px）が見えるよう、文字を帯の溶けたあたりから始める */}
-        <div className="mx-auto max-w-[1240px] px-5 pt-[210px] pb-12 md:pt-16 md:pb-20">
+        <div className="mx-auto max-w-[1240px] px-5 pt-[210px] pb-12 sm:pt-[250px] lg:pt-16 lg:pb-20">
           <div className="max-w-[46rem] [text-shadow:0_2px_14px_rgba(7,13,24,0.9)]">
             <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
               <span className="font-display text-lg leading-none font-extrabold tracking-[var(--display-tracking)] uppercase">
@@ -169,9 +172,11 @@ export default function Home() {
             {/*
               キャッチコピー（ユーザーの指定）。読点で必ず2行に分ける。幅に任せると、見出しの日本語フォントが
               読み込まれた時点で字幅が変わって折り返しがずれ、下の中身が押し下げられる（CLS。2026-09-27 の SEO監査）。
-              2行目（11文字）がスマホ幅（本文の幅 約350px）でも1行に収まる大きさにしてある
+              2行目（11文字）がスマホ幅（本文の幅 約350px）でも1行に収まる大きさにしてある。
+              PC 幅（lg 以上）では、写真のモニターの左端（画面幅の約50%）より手前で終わるよう、
+              画面幅の 3.6%・最大 2.75rem に抑えている（2026-11-09。1024〜1920px で重ならないことを確認）
             */}
-            <h1 className="mt-5 font-cond text-[clamp(1.55rem,7.4vw,3.6rem)] leading-[1.25] font-bold whitespace-nowrap">
+            <h1 className="mt-5 font-cond text-[clamp(1.55rem,7.4vw,3rem)] leading-[1.25] font-bold whitespace-nowrap lg:text-[clamp(1.9rem,3.6vw,2.75rem)]">
               <span className="block">あなたのゲームに、</span>
               <span className="block text-accent">本当に必要なPC性能を。</span>
             </h1>
@@ -221,8 +226,12 @@ export default function Home() {
                             '確認中（未掲載）'
                           )}
                         </GameFact>
-                        <GameFact label="fps上限">
-                          {g.cap !== null ? `ゲーム側で ${g.cap} fps まで` : 'ゲーム側の上限なし'}
+                        {/*
+                          games.ts の cap（エンジン仕様の上限）だけを出す。ゲーム内で設定できる fps の制限とは別物なので、
+                          cap が無いゲームでも「上限なし」とは言い切らず、「計算に入れている上限は無い」と書く（2026-11-09 の指摘）
+                        */}
+                        <GameFact label="計算上のfps上限">
+                          {g.cap !== null ? `${g.cap} fps（エンジン仕様）` : '設けていない'}
                         </GameFact>
                         {featured && <GameFact label="基準の画質">{featured.label}</GameFact>}
                       </dl>
@@ -232,6 +241,9 @@ export default function Home() {
               );
             })}
           </ul>
+          <p className="mt-3 text-xs leading-relaxed text-dim">
+            「計算上のfps上限」は、当サイトの推定に入れているゲーム側の上限です。ゲーム内の設定で選べる fps の制限は含めていません。
+          </p>
         </section>
 
         {/* 3. FPS予想の紹介。計算例は当サイトが実測した構成だが、出す数字は推定（実測値そのものではない） */}
