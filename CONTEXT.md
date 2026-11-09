@@ -1709,6 +1709,18 @@ Search Console のデータ（ユーザーが書き出したもの）を見て�
 - **404**: not-found.tsx は metadata を export できず、本文の <title> はレイアウトの既定の <title> と2つになって既定が勝つ（ビルドの出力で確認）。global-not-found は実験的でレイアウトを通らないため使わず、ブラウザでタブの題名だけを差し替えた（DocumentTitle）。noindex は Next.js が自動で付け、Cloudflare は HTTP 404 を返す
 - **記事の重複と、カテゴリの noindex は報告だけ**（ユーザーの承認待ち）。検索流入のデータ（Search Console）はこの作業環境から取得できない
 
+### 最終調整（2026-11-09。段階6のあと、ユーザーの承認による）
+- **ガイドのカテゴリ3ページを noindex にした**（/blog/category/game-pc・fps・parts）。robots は index: false・follow: true。pageMetadata の noindex 引数で付ける
+  - 理由: 中身は1行の説明と記事カードだけで、同じ記事がガイドのトップに全部並んでいる（段階6の個別評価）
+  - ページ・URL・canonical（自分自身）・記事へのリンク・カテゴリへのリンクはそのまま。robots.txt では止めない（止めると noindex が読まれない）
+  - サイトマップから3件外した（146件 → 143件）
+  - 記事が増えて一覧に固有の価値が出たら、noindex を外すか見直す
+- **フォートナイトの記事2本の役割を分けた**
+  - fortnite-gaming-pc（おすすめのゲーミングPC）: 購入を考える人向けの中心の記事。目安の表（Performance 144/240・最高画質 60/144）はここに残す。「予算と性能の考え方」（価格は扱わない）と、公式の条件の読み方への案内を足した
+  - fortnite-system-requirements（推奨スペックとPC選び）: 公式の必要・推奨動作環境の読み方に絞った。目安の表は 1080p・Performance の1つだけ。結論の箇条書きから fps の計算値を外した（おすすめPC側と同じ値の繰り返しだったため）。ほかの目安と選び方はおすすめPCの記事へ案内する
+  - ユーザーの指示書には対象として fortnite-240fps-pc.tsx と書かれていたが、「推奨スペックとPC選び」は fortnite-system-requirements（/blog/fortnite-system-requirements）なので、そちらを直した。240fps の記事は変えていない
+  - slug・URL・publishedAt（2026-10-13）はそのまま。中身を変えた2本だけ updatedAt を 2026-11-09 にした
+
 ## 技術スタック
 
 - Next.js / TypeScript / Tailwind CSS / Supabase / Vercel

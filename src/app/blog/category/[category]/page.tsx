@@ -22,6 +22,9 @@ export async function generateMetadata({ params }: PageProps<'/blog/category/[ca
     title: `${c.label}の記事一覧｜${BLOG_NAV.label}`,
     description: `PC ANCHOR の${BLOG_NAV.label}の「${c.label}」の記事一覧。${c.description}`,
     path: `/blog/category/${c.id}`,
+    // 検索結果には出さない（2026-11-09。ユーザーの承認）。一覧の中身は記事カードと1行の説明だけで、
+    // 同じ記事がガイドのトップ（/blog）に全部並んでいるため。ページと URL、記事へのリンクはそのまま
+    noindex: true,
   });
 }
 

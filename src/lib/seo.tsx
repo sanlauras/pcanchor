@@ -26,6 +26,7 @@ export function pageMetadata({
   path,
   absoluteTitle = false,
   article,
+  noindex = false,
 }: {
   /** 検索結果に出る題名。absoluteTitle でなければ末尾に「｜PCアンカー」が付く */
   title: string;
@@ -39,6 +40,12 @@ export function pageMetadata({
    * 日付は記事の記録（meta.publishedAt / updatedAt）をそのまま渡す。渡さないページは今までどおり website
    */
   article?: { publishedTime: string; modifiedTime: string; author: string; section?: string };
+  /**
+   * 検索結果に出さないページ（2026-11-09。ガイドのカテゴリ一覧。ユーザーの承認）。
+   * index: false・follow: true。リンクはたどってもらう。robots.txt では止めない（止めると noindex が読まれないため）。
+   * canonical は自分自身のまま。サイトマップからは外す（sitemap.ts）
+   */
+  noindex?: boolean;
 }): Metadata {
   const fullTitle = absoluteTitle ? title : `${title}｜${SITE.name}`;
   const common = {
@@ -53,6 +60,7 @@ export function pageMetadata({
     title: absoluteTitle ? { absolute: title } : title,
     description,
     alternates: { canonical: path },
+    ...(noindex ? { robots: { index: false, follow: true } } : {}),
     openGraph: article
       ? {
           ...common,

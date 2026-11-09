@@ -11,12 +11,17 @@ import type { BlogPost } from './types';
  * 検索意図: フォートナイトを快適に遊べる PC を買いたい。予算・スペックの目安、144fps と 240fps の違い、モニターも要るかを知りたい。
  * 数字はすべて当サイトの計算（GameData の部品）から出す。予算の金額は書かない（価格データを持っていないため。
  * 製品が入ったら、確認日つきの価格が製品の枠に出る）。
+ *
+ * 2026-11-09 の整理（ユーザーの指示）: 購入を考える人向けの中心の記事として、目安の表（Performance・最高画質）はこの記事に残す。
+ * 「推奨スペックとPC選び」（fortnite-system-requirements）は公式の条件の読み方に絞り、表は 1080p・Performance の1つにした。
+ * この記事には「予算と性能の考え方」（価格は扱わない）と、公式の条件の読み方への案内を足した。
  */
 
 const S = {
   conclusion: { id: 'conclusion', label: '結論：目標fps別に必要なGPUとCPU' },
   decide: { id: 'decide', label: '最初に決める3つ（目標fps・解像度・画質）' },
   parts: { id: 'parts', label: 'GPU・CPU・メモリの役割' },
+  budget: { id: 'budget', label: '予算と性能の考え方' },
   mode: { id: 'mode', label: 'Performanceモードと最高画質の違い' },
   check: { id: 'check', label: '買う前に確認したいこと' },
   summary: { id: 'summary', label: 'まとめ' },
@@ -31,7 +36,8 @@ export const post: BlogPost = {
     lead: 'フォートナイト用にゲーミングPCを買いたいけれど、どのくらいのスペックが必要なのか分からない。そんな人に向けて、目標のfps（144・240）と解像度・画質から、必要なGPUとCPUの目安を表で示します。先に結論を出し、そのあとで理由と注意点を説明します。',
     category: 'game-pc',
     publishedAt: '2026-10-13',
-    updatedAt: '2026-10-13',
+    // 2026-11-09: 「予算と性能の考え方」の節と、公式の条件の読み方（推奨スペックの記事）への案内を足した
+    updatedAt: '2026-11-09',
     status: 'published',
     targetKeyword: 'フォートナイト おすすめPC',
     relatedKeywords: ['フォートナイト ゲーミングPC おすすめ', 'フォートナイト PC 何fps', 'フォートナイト 240fps PC'],
@@ -102,6 +108,15 @@ function Body() {
       <P>
         たとえば「フルHD・Performanceモードで240fps」と「WQHD・最高画質で144fps」では、必要なGPUがまったく違います。上の表で、自分の組み合わせの行と列を見てください。
       </P>
+      <Note title="公式の必要・推奨スペックとの関係">
+        <p>
+          Epic Games が公表している必要・推奨スペックは「ゲームが動くかどうか」の目安で、何fpsで遊べるかは書かれていません。この記事の表は、それとは別に、目標のfpsに届く GPU を当サイトの推定で出したものです。公式の条件の詳しい読み方は
+          <Link href="/blog/fortnite-system-requirements" className="text-accent underline">
+            フォートナイトの推奨スペックとPC選び
+          </Link>
+          で解説しています。
+        </p>
+      </Note>
 
       <H2 id={S.parts.id}>{S.parts.label}</H2>
       <H3>GPU（グラフィックボード）</H3>
@@ -131,6 +146,28 @@ function Body() {
         で詳しく説明しています。
       </P>
       <ProductSlot slot="fortnite-144" title="フルHD・144fps を目安にした構成のゲーミングPC" />
+
+      <H2 id={S.budget.id}>{S.budget.label}</H2>
+      <P>
+        当サイトは価格のデータを持っていないので、金額の目安は出していません。代わりに、性能の面から次の順に考えると、予算の配分を決めやすくなります。
+      </P>
+      <OL>
+        <li>
+          <B>目標に届く最小の GPU を基準にする</B>：上の表の GPU が、目標の fps に届く、いちばん性能の低い候補です
+        </li>
+        <li>
+          <B>余裕を見るなら1段上にする</B>：表の値は推定で、誤差が ±15〜20% あります。ぎりぎりの構成は、実際には目標を下回ることがあります
+        </li>
+        <li>
+          <B>カクつきまで抑えたいなら、さらに上にする</B>：平均fpsではなく 1% Low（カクつきの目安）まで目標に届かせるには、より速い GPU と CPU が要ります
+        </li>
+        <li>
+          <B>GPU に予算を寄せる</B>：解像度や画質を上げるほど、GPU の差がfpsの差になります。CPU の差がはっきり出るのは、240fps より上を狙うときです
+        </li>
+      </OL>
+      <P>
+        1〜3の3つの段階（必要十分な構成・余裕を持たせた構成・高性能構成）は、下の「必要スペック診断」で、目標のfpsを入れるとまとめて出せます。価格は、購入前に販売ページで確かめてください。
+      </P>
 
       <H2 id={S.mode.id}>{S.mode.label}</H2>
       <P>
@@ -190,6 +227,13 @@ function Body() {
         <li>出したいfpsに合ったリフレッシュレートのモニターを用意する</li>
         <li>高画質なら VRAM、買う前には価格・在庫・保証も確認する</li>
       </UL>
+      <P>
+        公式の必要・推奨スペックの読み方は
+        <Link href="/blog/fortnite-system-requirements" className="text-accent underline">
+          フォートナイトの推奨スペックとPC選び
+        </Link>
+        で解説しています。
+      </P>
       <P>
         数字はすべて当サイトの推定値（誤差±15〜20%）です。計算の方法は
         <Link href="/methodology" className="text-accent underline">

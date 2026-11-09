@@ -23,6 +23,12 @@ export type ChangelogEntry = {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     date: '2026-11-09',
+    title: 'フォートナイトの記事2本の役割を整理',
+    body: '「推奨スペックとPC選び」は公式の必要・推奨動作環境の読み方に絞り、fps の目安は 1080p・Performance の表1つにしました。「おすすめのゲーミングPC」には予算と性能の考え方を足しました（価格は扱っていません）。2本の記事が互いに案内するようにしています。',
+    areas: ['/blog/fortnite-gaming-pc', '/blog/fortnite-system-requirements'],
+  },
+  {
+    date: '2026-11-09',
     title: 'ガイドの名前とパンくずをメニューにそろえる',
     body: 'ブログを、メニューと同じ「PC選びのガイド」と呼ぶようにしました（URL は /blog のまま）。ガイドのトップでは、「まず読んでほしい記事」に出した記事を新しい記事の一覧で繰り返さないようにしています。',
     areas: ['/blog'],
