@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
+import { OfficialLink } from '@/components/OfficialLink';
 import { RelatedArticles } from '@/components/blog/RelatedArticles';
 import { Badge } from '@/components/ui/Badge';
 import { ButtonLink } from '@/components/ui/Button';
@@ -238,9 +239,9 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
             )}
             <p className="mt-2 text-[11px] text-dim">
               {'出典: '}
-              <a href={official.sourceUrl} target="_blank" rel="noopener" className="text-accent underline">
+              <OfficialLink href={official.sourceUrl} linkType="official_requirements" game={game.id} className="text-accent underline">
                 {official.sourceLabel}
-              </a>
+              </OfficialLink>
               {`（${official.checkedOn} 確認）`}
               {official.caveat && `。${official.caveat}`}
             </p>

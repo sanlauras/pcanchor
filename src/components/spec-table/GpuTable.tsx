@@ -22,6 +22,7 @@ export function GpuTable() {
       getVerified={(r) => r.verified}
       getYear={(r) => r.releaseYear}
       getHref={(r) => `/gpu/${r.slug}`}
+      kind="gpu"
     />
   );
 }

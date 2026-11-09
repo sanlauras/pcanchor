@@ -17,6 +17,7 @@ export function CpuTable() {
       getVerified={(r) => r.verified}
       getYear={(r) => r.releaseYear}
       getHref={(r) => `/cpu/${r.slug}`}
+      kind="cpu"
       badge={(r) => (r.has3dVCache ? '3D V-Cache' : null)}
     />
   );

@@ -1,3 +1,4 @@
+import { OfficialLink } from '@/components/OfficialLink';
 import { OFFICIAL_REQUIREMENTS, officialValue } from '@/lib/fps/official-requirements';
 import { DataTable } from './Prose';
 
@@ -15,9 +16,9 @@ export function OfficialSpecTables({ gameId }: { gameId: string }) {
       ))}
       <p className="-mt-2 mb-6 text-xs leading-relaxed text-dim">
         {'出典: '}
-        <a href={o.sourceUrl} target="_blank" rel="noopener" className="text-accent underline">
+        <OfficialLink href={o.sourceUrl} linkType="official_requirements" game={gameId} className="text-accent underline">
           {o.sourceLabel}
-        </a>
+        </OfficialLink>
         {`（${o.checkedOn} に確認。公式の記載をそのまま載せています）`}
         {o.caveat && `。${o.caveat}`}
       </p>

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import type { ColumnDef, DetailRow } from './columns';
 import { specStatus } from '@/components/model/DataStatus';
+import { trackEvent } from '@/lib/analytics';
 import { VerifiedTag } from './VerifiedTag';
 import { CompareDialog } from './CompareDialog';
 
@@ -25,6 +26,8 @@ type Props<T> = {
   badge?: (row: T) => string | null;
   /** 個別ページへのURL。あればモデル名をリンクにする */
   getHref?: (row: T) => string;
+  /** GPU か CPU か。GA4 の比較イベント（gpu_cpu_compare）の comparison_type に使う */
+  kind: 'gpu' | 'cpu';
 };
 
 export function SpecTable<T>({
@@ -39,6 +42,7 @@ export function SpecTable<T>({
   getYear,
   badge,
   getHref,
+  kind,
 }: Props<T>) {
   const [query, setQuery] = useState('');
   const [vendor, setVendor] = useState<string | null>(null);
@@ -440,7 +444,11 @@ export function SpecTable<T>({
             </button>
             <button
               type="button"
-              onClick={() => setCompareOpen(true)}
+              onClick={() => {
+                setCompareOpen(true);
+                // GA4（2026-11-09）: 2件以上を選んで比較を開いたときに1回（ボタンは2件未満では押せない）
+                if (picked.length >= 2) trackEvent('gpu_cpu_compare', { comparison_type: kind });
+              }}
               disabled={picked.length < 2}
               className="cursor-pointer rounded-md border border-accent-vivid bg-accent-vivid px-3 py-1.5 text-xs
                          font-medium text-on-accent disabled:cursor-not-allowed disabled:opacity-40"

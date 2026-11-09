@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
+import { OfficialLink } from '@/components/OfficialLink';
 import { PostList } from '@/components/blog/PostList';
 import { Toc } from '@/components/blog/Toc';
 import { findCategory } from '@/content/blog/categories';
@@ -135,9 +136,10 @@ export default async function BlogPostPage({ params }: PageProps<'/blog/[slug]'>
           <ul className="space-y-1.5 text-dim">
             {m.sources.map((s) => (
               <li key={s.url}>
-                <a href={s.url} target="_blank" rel="noopener" className="text-accent underline">
+                {/* 記事の出典は公式の情報（ブログの決まり: 公式の情報は出典と確認日を meta.sources に）。記事にはゲームの項目が無いので game は送らない */}
+                <OfficialLink href={s.url} linkType="article_source" className="text-accent underline">
                   {s.label}
-                </a>
+                </OfficialLink>
                 （{s.checkedOn} に確認）
               </li>
             ))}

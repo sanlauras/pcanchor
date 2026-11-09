@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useSyncExternalStore } from 'react';
+import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { AffiliateLink } from '@/components/AffiliateLink';
 import { Badge } from '@/components/ui/Badge';
+import { trackEvent } from '@/lib/analytics';
 import { type Cpu, type Gpu, cpus, gpus } from '@/lib/data';
 import { hasAmazonTag } from '@/lib/affiliate';
 import { stockNote } from '@/lib/generation';
@@ -124,18 +125,29 @@ export function BuildTool() {
   const preset = game.presets.find((p) => p.id === settings.preset) ?? game.presets[0];
   const presetId = preset?.id ?? '';
 
-  const setResolution = (v: ResolutionId) => updateSettings({ res: v });
-  const setPresetId = (v: string) => updateSettings({ preset: v === game.presets[0]?.id ? '' : v });
-  const setTarget = (v: string) => updateSettings({ fps: v.replace(/[^0-9]/g, '').slice(0, 4) });
-  const setGpuVendor = (v: string) => updateSettings({ gpuv: v as Settings['gpuv'] });
-  const setCpuVendor = (v: string) => updateSettings({ cpuv: v as Settings['cpuv'] });
+  /*
+   * GA4 の計測（2026-11-09）。build_diagnosis_complete は、ユーザーが条件（ゲーム・解像度・画質・目標fps・
+   * メーカー・世代）を変えて診断結果が出たときだけ送る。ページを開いただけ・段を切り替えただけ（表示の切り替え）では送らない。
+   * 入力の途中では送らず、1.5 秒落ち着いたら1回。同じ条件は2回送らない。
+   */
+  const interacted = useRef(false);
+  const sentKey = useRef<string | null>(null);
+  const input = (patch: Partial<Settings>) => {
+    interacted.current = true;
+    updateSettings(patch);
+  };
+  const setResolution = (v: ResolutionId) => input({ res: v });
+  const setPresetId = (v: string) => input({ preset: v === game.presets[0]?.id ? '' : v });
+  const setTarget = (v: string) => input({ fps: v.replace(/[^0-9]/g, '').slice(0, 4) });
+  const setGpuVendor = (v: string) => input({ gpuv: v as Settings['gpuv'] });
+  const setCpuVendor = (v: string) => input({ cpuv: v as Settings['cpuv'] });
   const setTier = (v: Tier) => updateSettings({ tier: v });
-  const setCurrentGenOnly = (on: boolean) => updateSettings({ gen: on ? 'new' : 'all' });
+  const setCurrentGenOnly = (on: boolean) => input({ gen: on ? 'new' : 'all' });
 
   // ゲームを変えるとプリセットの顔ぶれが変わるので、無効になったら先頭に戻す
   function changeGame(id: string) {
     const g = findGame(id);
-    updateSettings({ game: id, preset: g.presets.some((p) => p.id === presetId) && presetId !== g.presets[0]?.id ? presetId : '' });
+    input({ game: id, preset: g.presets.some((p) => p.id === presetId) && presetId !== g.presets[0]?.id ? presetId : '' });
   }
 
   const targetFps = Number(target);
@@ -165,6 +177,28 @@ export function BuildTool() {
   const current = result?.tiers?.find((t) => t.tier === tier);
   const views = result?.tiers && preset ? toViews(result.tiers, game, preset, resolution) : [];
   const currentMeta = TIERS.find((x) => x.id === tier)!;
+
+  // 計測に使う値（表示している診断結果そのもの。選んでいる段の先頭の GPU・CPU。候補が無ければ送らない）
+  const diagnosed = valid && !!result?.tiers;
+  const recGpu = current?.gpu.kind === 'ok' ? current.gpu.candidates[0]!.model.name : undefined;
+  const recCpu = current?.cpu.kind === 'ok' ? current.cpu.candidates[0]!.model.name : undefined;
+  const { res: resKey, gpuv: gpuvKey, cpuv: cpuvKey, gen: genKey } = settings;
+  useEffect(() => {
+    if (!interacted.current || !diagnosed) return;
+    const key = [gameId, resKey, presetId, targetFps, gpuvKey, cpuvKey, genKey].join('|');
+    if (sentKey.current === key) return;
+    const id = window.setTimeout(() => {
+      sentKey.current = key;
+      trackEvent('build_diagnosis_complete', {
+        game: gameId,
+        target_fps: targetFps,
+        selected_tier: tier,
+        recommended_gpu: recGpu,
+        recommended_cpu: recCpu,
+      });
+    }, 1500);
+    return () => window.clearTimeout(id);
+  }, [diagnosed, gameId, resKey, presetId, targetFps, gpuvKey, cpuvKey, genKey, tier, recGpu, recCpu]);
 
   return (
     <div className="grid gap-8 lg:grid-cols-[320px_1fr]">

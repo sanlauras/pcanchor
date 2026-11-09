@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Badge } from '@/components/ui/Badge';
+import { trackEvent } from '@/lib/analytics';
 import { cpus, gpus } from '@/lib/data';
 import { diagnose } from '@/lib/fps/diagnose';
 import { GAMES, findGame } from '@/lib/fps/games';
@@ -153,6 +154,17 @@ export function FpsTool() {
   const [memory, setMemory] = useState('');
   const [psu, setPsu] = useState('');
   const [copied, setCopied] = useState<'ok' | 'fail' | null>(null);
+  /*
+   * GA4 の計測（2026-11-09）。fps_prediction_complete は、ユーザーが条件を選び直して結果が出たときだけ送る。
+   * ページを開いただけ（既定の条件・共有された URL の条件）では送らない。
+   * 選択を続けて変えている間は送らず、最後の条件で 1.5 秒落ち着いたら1回だけ送る。同じ条件は2回送らない。
+   */
+  const interacted = useRef(false);
+  const sentKey = useRef<string | null>(null);
+  function choose(patch: Partial<Selection>) {
+    interacted.current = true;
+    updateSelection(patch);
+  }
 
   const gpu = gpus.find((g) => g.name === gpuName) ?? gpus[0]!;
   const cpu = cpus.find((c) => c.name === cpuName) ?? cpus[0]!;
@@ -163,7 +175,7 @@ export function FpsTool() {
   function selectGame(id: string) {
     const next = findGame(id);
     // 選び直したゲームにその画質が無ければ、そのゲームの基準の画質に戻す
-    updateSelection({ gameId: id, presetId: next.presets.some((p) => p.id === sel.presetId) ? sel.presetId : next.featuredPresetId });
+    choose({ gameId: id, presetId: next.presets.some((p) => p.id === sel.presetId) ? sel.presetId : next.featuredPresetId });
   }
 
   async function copyUrl() {
@@ -173,6 +185,8 @@ export function FpsTool() {
     try {
       await navigator.clipboard.writeText(url);
       setCopied('ok');
+      // コピーに成功したときだけ送る（失敗したら送らない）
+      trackEvent('result_url_copy', { tool_name: 'fps_prediction', game: gameId });
     } catch {
       setCopied('fail');
     }
@@ -200,6 +214,29 @@ export function FpsTool() {
     };
   }, [gpu, cpu, resolution, game, preset, memory, psu]);
 
+  // 計測に使う値（表示している予想の値そのもの。平均は理論値、1% Low は幅の下限）
+  const presetIdShown = preset?.id ?? null;
+  const avgShown = game.supported && result ? Math.round(result.prediction.uncapped) : null;
+  const lowShown = result?.prediction.fps1Low ? Math.round(result.prediction.fps1Low.min) : undefined;
+  useEffect(() => {
+    if (!interacted.current || avgShown === null || presetIdShown === null) return;
+    const key = [gameId, gpuName, cpuName, resolution, presetIdShown].join('|');
+    if (sentKey.current === key) return;
+    const id = window.setTimeout(() => {
+      sentKey.current = key;
+      trackEvent('fps_prediction_complete', {
+        game: gameId,
+        gpu_model: gpuName,
+        cpu_model: cpuName,
+        resolution,
+        preset: presetIdShown,
+        estimated_avg_fps: avgShown,
+        estimated_1_percent_low_fps: lowShown,
+      });
+    }, 1500);
+    return () => window.clearTimeout(id);
+  }, [gameId, gpuName, cpuName, resolution, presetIdShown, avgShown, lowShown]);
+
   const basis = preset ? basisOf(game, gpu.name, cpu.name, resolution, preset.id) : null;
   const notReference = [
     gpu.name !== ANCHOR.gpuName ? `GPU（${gpu.name}）` : null,
@@ -211,7 +248,7 @@ export function FpsTool() {
       {/* ------------------------------------------------ 入力 */}
       <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
         <Field label="GPU" required>
-          <Select value={gpuName} onChange={(v) => updateSelection({ gpuName: v })}>
+          <Select value={gpuName} onChange={(v) => choose({ gpuName: v })}>
             {gpus.map((g) => (
               <option key={g.name} value={g.name}>{g.name}</option>
             ))}
@@ -219,7 +256,7 @@ export function FpsTool() {
         </Field>
 
         <Field label="CPU" required>
-          <Select value={cpuName} onChange={(v) => updateSelection({ cpuName: v })}>
+          <Select value={cpuName} onChange={(v) => choose({ cpuName: v })}>
             {cpus.map((c) => (
               <option key={c.name} value={c.name}>{c.name}</option>
             ))}
@@ -271,7 +308,7 @@ export function FpsTool() {
               <Chips
                 items={RESOLUTIONS.map((r) => ({ id: r.id, label: r.short }))}
                 value={resolution}
-                onChange={(v) => updateSelection({ resolution: v as ResolutionId })}
+                onChange={(v) => choose({ resolution: v as ResolutionId })}
               />
             </Field>
 
@@ -279,7 +316,7 @@ export function FpsTool() {
               <Chips
                 items={game.presets.map((x) => ({ id: x.id, label: x.label }))}
                 value={preset?.id ?? ''}
-                onChange={(v) => updateSelection({ presetId: v })}
+                onChange={(v) => choose({ presetId: v })}
               />
             </Field>
           </>
