@@ -287,6 +287,8 @@ export function BuildTool() {
               前の段と GPU・CPU の両方が同じなら、カードを繰り返さずに「〜と同じ構成です」とだけ書く。
               表示の整理だけで、solveBuild() の結果は変えていない。
             */}
+            {/* 各カードの名前は H3。その上の見出し（2026-11-09 段階6。H1 の次が H3 になっていた） */}
+            <h2 className="sr-only">3つの構成</h2>
             <div className="grid gap-4" data-tiers>
               {views.map((v, i) => (
                 <TierCard

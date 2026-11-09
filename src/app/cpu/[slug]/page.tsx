@@ -44,12 +44,16 @@ export async function generateMetadata({
    * 題名と説明文（2026-10-10 に見直し）。GPU 個別ページと同じ理由（表示はされているのにクリック率 2.7%、
    * 検索語は「core ultra 7 ゲーム性能」「9950 cpu」など型番＋性能）。説明文の前半に性能指数・順位・主なスペックを寄せた。
    */
+  /*
+   * 2026-11-09（段階6）: GPU と同じ形にそろえ、題名にコア数・スレッド数・ソケットを入れた（型番＋性能・スペックで探されるため）。
+   * 説明文はアーキテクチャ・発売年・ブーストクロック・対応メモリを足した。どれもページに出している値
+   */
   return pageMetadata({
-    title: `${cpu.name}の性能｜ゲームでのfps上限と合うGPU・スペック`,
+    title: `${cpu.name}の性能とスペック（${cpu.cores}コア${cpu.threads}スレッド・${cpu.socket}）`,
     description:
-      `${cpu.name}のゲーム向け性能指数は${cpu.perfIndex.toFixed(1)}（9800X3D=100）で、CPU ${cpus.length}モデル中${rankByIndex(cpus, cpu)}位。` +
-      `${cpu.cores}コア${cpu.threads}スレッド・L3 ${cpu.l3CacheMb}MB・TDP ${cpu.tdpW}W・${cpu.socket}。` +
-      `${supportedGameNames('・')}でのfps上限の推定値と、性能を出し切れるGPUの目安を掲載。推定値・誤差±15〜20%。`,
+      `${cpu.name}（${cpu.arch}・${cpu.releaseYear}年）のゲーム向け性能指数は${cpu.perfIndex.toFixed(1)}（9800X3D=100）で、CPU ${cpus.length}モデル中${rankByIndex(cpus, cpu)}位。` +
+      `${cpu.cores}コア${cpu.threads}スレッド・最大${cpu.boostClockGhz.toFixed(1)}GHz・L3 ${cpu.l3CacheMb}MB・TDP ${cpu.tdpW}W・${cpu.socket}・${cpu.memSupport}。` +
+      `${supportedGameNames('・')}でのCPU側のfps上限の推定と、性能を出し切れるGPUの目安を載せています。推定値・誤差±15〜20%。`,
     path: `/cpu/${cpu.slug}`,
   });
 }
@@ -81,7 +85,7 @@ export default async function CpuDetailPage({ params }: PageProps<'/cpu/[slug]'>
       <main className="min-w-0 flex-1">
         <Breadcrumbs
           trail={[
-            { href: '/cpu', label: 'CPU一覧' },
+            { href: '/cpu', label: 'CPUスペック一覧' },
             { href: `/cpu/${cpu.slug}`, label: cpu.name },
           ]}
         />

@@ -23,6 +23,12 @@ export type ChangelogEntry = {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     date: '2026-11-09',
+    title: 'ガイドの名前とパンくずをメニューにそろえる',
+    body: 'ブログを、メニューと同じ「PC選びのガイド」と呼ぶようにしました（URL は /blog のまま）。ガイドのトップでは、「まず読んでほしい記事」に出した記事を新しい記事の一覧で繰り返さないようにしています。',
+    areas: ['/blog'],
+  },
+  {
+    date: '2026-11-09',
     title: 'VALORANT のページに公式の必要・推奨動作環境を掲載',
     body: 'Riot Games のサポートページの必要・推奨・ハイエンドの3区分と注意書きを、記載のまま載せ、確認日と出典を添えました。',
     areas: ['/games/valorant', '/'],

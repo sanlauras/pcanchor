@@ -4,6 +4,7 @@ import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { PostList } from '@/components/blog/PostList';
 import { BLOG_CATEGORIES, findCategory } from '@/content/blog/categories';
 import { postsInCategory } from '@/content/blog';
+import { BLOG_NAV } from '@/lib/nav';
 import { pageMetadata } from '@/lib/seo';
 
 export const dynamicParams = false;
@@ -18,8 +19,8 @@ export async function generateMetadata({ params }: PageProps<'/blog/category/[ca
   const c = findCategory(category);
   if (!c) return {};
   return pageMetadata({
-    title: `${c.label}の記事一覧｜ブログ`,
-    description: `PC ANCHOR のブログの「${c.label}」の記事一覧。${c.description}`,
+    title: `${c.label}の記事一覧｜${BLOG_NAV.label}`,
+    description: `PC ANCHOR の${BLOG_NAV.label}の「${c.label}」の記事一覧。${c.description}`,
     path: `/blog/category/${c.id}`,
   });
 }
@@ -35,7 +36,7 @@ export default async function BlogCategoryPage({ params }: PageProps<'/blog/cate
     <main className="mx-auto max-w-[920px] px-5 pb-10">
       <Breadcrumbs
         trail={[
-          { href: '/blog', label: 'ブログ' },
+          { href: '/blog', label: BLOG_NAV.label },
           { href: `/blog/category/${c.id}`, label: c.label },
         ]}
         updated={latestUpdate}

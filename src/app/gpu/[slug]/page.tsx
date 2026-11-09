@@ -50,12 +50,17 @@ export async function generateMetadata({
    * 題名に「性能」を入れ、説明文の前半（検索結果で切られない範囲）に性能指数・順位・VRAM・TDP を寄せた。
    * 数字はページに出している値と同じ。経緯と変更前の数字は CONTEXT.md「検索流入の改善（2026-10-10）」
    */
+  /*
+   * 2026-11-09（段階6）: 題名を短くし、検索語「型番＋性能」「型番＋VRAM」「型番＋TDP」に答える具体的な値を題名に入れた
+   * （前は「ゲーム別の推定fps・スペック（VRAM・TDP）」と項目名だけで、サイト名を含めて60字前後あった）。
+   * 説明文はメーカー・アーキテクチャ・発売年・メモリ規格を足した。どれもページに出している値
+   */
   return pageMetadata({
-    title: `${gpu.name}の性能｜ゲーム別の推定fps・スペック（VRAM・TDP）`,
+    title: `${gpu.name}の性能とスペック（VRAM ${gpu.vramGb}GB・TDP ${gpu.tdpW}W）`,
     description:
-      `${gpu.name}の性能指数は${gpu.perfIndex.toFixed(1)}（RX 9070 XT=100）で、GPU ${gpus.length}モデル中${rankByIndex(gpus, gpu)}位。` +
-      `VRAM ${gpu.vramGb}GB・TDP ${gpu.tdpW}W。` +
-      `${supportedGameNames('・')}の推定fpsを1080p・1440p・4Kと画質別に掲載し、組み合わせるCPUの目安も。推定値・誤差±15〜20%。`,
+      `${gpu.vendor}の${gpu.name}（${gpu.arch}・${gpu.releaseYear}年）は、性能指数${gpu.perfIndex.toFixed(1)}（RX 9070 XT=100）でGPU ${gpus.length}モデル中${rankByIndex(gpus, gpu)}位。` +
+      `VRAM ${gpu.vramGb}GB ${gpu.memType}・TDP ${gpu.tdpW}W。` +
+      `${supportedGameNames('・')}の推定fpsを解像度・画質別に載せ、合わせるCPUの目安も紹介します。推定値・誤差±15〜20%。`,
     path: `/gpu/${gpu.slug}`,
   });
 }
@@ -90,7 +95,7 @@ export default async function GpuDetailPage({ params }: PageProps<'/gpu/[slug]'>
       <main className="min-w-0 flex-1">
         <Breadcrumbs
           trail={[
-            { href: '/gpu', label: 'GPU一覧' },
+            { href: '/gpu', label: 'GPUスペック一覧' },
             { href: `/gpu/${gpu.slug}`, label: gpu.name },
           ]}
         />

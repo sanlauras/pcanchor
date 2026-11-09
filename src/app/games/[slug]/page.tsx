@@ -130,7 +130,7 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
       <main className="min-w-0 flex-1">
         <Breadcrumbs
           trail={[
-            { href: '/games', label: 'ゲーム別' },
+            { href: '/games', label: 'ゲーム一覧' },
             { href: `/games/${game.id}`, label: game.name },
           ]}
         />

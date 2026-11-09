@@ -15,7 +15,7 @@ export const metadata: Metadata = pageMetadata({
 export default function AboutPage() {
   return (
     <main className="mx-auto max-w-[820px] px-5">
-      <Breadcrumbs trail={[{ href: '/about', label: 'このサイトについて' }]} />
+      <Breadcrumbs trail={[{ href: '/about', label: 'このサイトについて・運営者' }]} />
 
       <header className="border-b border-frame pt-8 pb-7">
         <p className="mb-3 font-mono text-[11px] tracking-[0.18em] text-signal uppercase">

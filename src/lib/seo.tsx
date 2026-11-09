@@ -25,6 +25,7 @@ export function pageMetadata({
   description,
   path,
   absoluteTitle = false,
+  article,
 }: {
   /** 検索結果に出る題名。absoluteTitle でなければ末尾に「｜PCアンカー」が付く */
   title: string;
@@ -33,21 +34,35 @@ export function pageMetadata({
   path: string;
   /** サイト名を付け足さない（ホームのように、題名にサイト名が既に入っているページ用） */
   absoluteTitle?: boolean;
+  /**
+   * 記事のページ（2026-11-09 の全面再設計・段階6）。渡すと og:type を article にし、公開日・更新日を添える。
+   * 日付は記事の記録（meta.publishedAt / updatedAt）をそのまま渡す。渡さないページは今までどおり website
+   */
+  article?: { publishedTime: string; modifiedTime: string; author: string; section?: string };
 }): Metadata {
   const fullTitle = absoluteTitle ? title : `${title}｜${SITE.name}`;
+  const common = {
+    locale: 'ja_JP',
+    siteName: SITE.name,
+    title: fullTitle,
+    description,
+    url: absoluteUrl(path),
+    images: [OG_IMAGE],
+  };
   return {
     title: absoluteTitle ? { absolute: title } : title,
     description,
     alternates: { canonical: path },
-    openGraph: {
-      type: 'website',
-      locale: 'ja_JP',
-      siteName: SITE.name,
-      title: fullTitle,
-      description,
-      url: absoluteUrl(path),
-      images: [OG_IMAGE],
-    },
+    openGraph: article
+      ? {
+          ...common,
+          type: 'article',
+          publishedTime: article.publishedTime,
+          modifiedTime: article.modifiedTime,
+          authors: [article.author],
+          ...(article.section ? { section: article.section } : {}),
+        }
+      : { ...common, type: 'website' },
     twitter: {
       card: 'summary_large_image',
       title: fullTitle,

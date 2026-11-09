@@ -7,6 +7,7 @@ import { Toc } from '@/components/blog/Toc';
 import { findCategory } from '@/content/blog/categories';
 import { findPost, relatedPosts, visiblePosts } from '@/content/blog';
 import { hasAdIn } from '@/content/products';
+import { BLOG_NAV } from '@/lib/nav';
 import { JsonLd, pageMetadata } from '@/lib/seo';
 import { OPERATOR, SITE, absoluteUrl } from '@/lib/site';
 
@@ -26,7 +27,18 @@ export async function generateMetadata({ params }: PageProps<'/blog/[slug]'>): P
   const { slug } = await params;
   const post = findPost(slug);
   if (!post) return {};
-  return pageMetadata({ title: post.meta.title, description: post.meta.description, path: `/blog/${slug}` });
+  return pageMetadata({
+    title: post.meta.title,
+    description: post.meta.description,
+    path: `/blog/${slug}`,
+    // og:type=article と公開日・更新日（記事の記録のまま。BlogPosting の datePublished・dateModified と同じ値）
+    article: {
+      publishedTime: post.meta.publishedAt,
+      modifiedTime: post.meta.updatedAt,
+      author: OPERATOR.name,
+      section: findCategory(post.meta.category)?.label,
+    },
+  });
 }
 
 export default async function BlogPostPage({ params }: PageProps<'/blog/[slug]'>) {
@@ -59,7 +71,7 @@ export default async function BlogPostPage({ params }: PageProps<'/blog/[slug]'>
       />
       <Breadcrumbs
         trail={[
-          { href: '/blog', label: 'ブログ' },
+          { href: '/blog', label: BLOG_NAV.label },
           { href: `/blog/category/${category.id}`, label: category.label },
           { href: `/blog/${m.slug}`, label: m.title },
         ]}

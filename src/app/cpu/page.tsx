@@ -21,7 +21,7 @@ export default function CpuPage() {
   return (
     <div className="mx-auto flex max-w-[1240px] gap-8 px-5">
       <main className="min-w-0 flex-1">
-        <Breadcrumbs trail={[{ href: '/cpu', label: 'CPU一覧' }]} />
+        <Breadcrumbs trail={[{ href: '/cpu', label: 'CPUスペック一覧' }]} />
         {/* データセットの構造化データ（2026-09-27）。項目名は表の列と同じものを使う */}
         <JsonLd
           data={datasetJsonLd({

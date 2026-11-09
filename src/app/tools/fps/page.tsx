@@ -38,8 +38,8 @@ export default function FpsToolPage() {
         />
         <Breadcrumbs
           trail={[
-            { href: '/tools', label: 'ツール' },
-            { href: '/tools/fps', label: 'ゲーム別fps予想・ボトルネック診断' },
+            { href: '/tools', label: 'PC診断・ツール' },
+            { href: '/tools/fps', label: TOOLS.fps.short },
           ]}
         />
         <PageHeader

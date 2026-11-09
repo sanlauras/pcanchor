@@ -34,7 +34,7 @@ export default function SensitivityPage() {
         />
         <Breadcrumbs
           trail={[
-            { href: '/tools', label: 'ツール' },
+            { href: '/tools', label: 'PC診断・ツール' },
             { href: '/tools/sensitivity', label: '感度換算' },
           ]}
         />

@@ -5,13 +5,15 @@ import { PostList } from '@/components/blog/PostList';
 import { ToolCta } from '@/components/blog/ToolCta';
 import { BLOG_CATEGORIES } from '@/content/blog/categories';
 import { postsInCategory, visiblePosts } from '@/content/blog';
+import { BLOG_NAV } from '@/lib/nav';
 import { pageMetadata } from '@/lib/seo';
 import { OPERATOR, SITE } from '@/lib/site';
 
 export const metadata: Metadata = pageMetadata({
-  title: 'ブログ｜ゲーミングPCの選び方と性能の解説',
+  // メニューと同じ「PC選びのガイド」に統一（2026-11-09 段階6。URL は /blog のまま）
+  title: 'PC選びのガイド｜ゲーミングPCの選び方と性能の解説',
   description:
-    'PC ANCHOR のブログ。ゲームと目標fpsから必要なGPU・CPUを選ぶ方法や、スペックの読み方を、当サイトの性能の推定値（誤差±15〜20%）と公式の情報をもとに解説します。',
+    'PC ANCHOR のPC選びのガイド。ゲームと目標fpsから必要なGPU・CPUを選ぶ方法や、スペックの読み方を、当サイトの性能の推定値（誤差±15〜20%）と公式の情報をもとに解説します。',
   path: '/blog',
 });
 
@@ -23,17 +25,20 @@ export const metadata: Metadata = pageMetadata({
 export default function BlogIndexPage() {
   const posts = visiblePosts();
   const featured = posts.filter((p) => p.meta.featured);
+  // 「まず読んでほしい記事」に出した記事は、新しい記事の一覧で繰り返さない（2026-11-09 段階6）
+  const latest = posts.filter((p) => !p.meta.featured).slice(0, 10);
   const latestUpdate = posts.map((p) => p.meta.updatedAt).sort().at(-1);
 
   return (
     <main className="mx-auto max-w-[920px] px-5 pb-10">
-      <Breadcrumbs trail={[{ href: '/blog', label: 'ブログ' }]} updated={latestUpdate} />
+      <Breadcrumbs trail={[{ href: '/blog', label: BLOG_NAV.label }]} updated={latestUpdate} />
 
       <header className="border-b border-rule pt-8 pb-8">
-        <p className="mb-3 font-mono text-[11px] font-semibold tracking-[0.18em] text-accent">PC ANCHOR BLOG</p>
-        <h1 className="font-cond text-[clamp(1.9rem,5vw,2.8rem)] leading-tight font-bold">ゲーミングPCの選び方と解説</h1>
+        <p className="mb-3 font-mono text-[11px] font-semibold tracking-[0.18em] text-accent">PC ANCHOR GUIDE</p>
+        <h1 className="font-cond text-[clamp(1.9rem,5vw,2.8rem)] leading-tight font-bold">{BLOG_NAV.label}</h1>
+        <p className="mt-2 font-cond text-lg font-bold text-dim">{BLOG_NAV.sub}</p>
         <p className="mt-4 max-w-[62ch] leading-[1.9] text-dim">
-          {`${SITE.name}のブログです。ゲームと目標のfpsから、必要なGPUとCPUを選ぶための記事を書いています。`}
+          {`${SITE.name}の「${BLOG_NAV.label}」です。ゲームと目標のfpsから、必要なGPUとCPUを選ぶための記事を書いています。`}
           {'記事の fps は、当サイトのツールと同じ計算で出した推定値（誤差±15〜20%）で、測ったものではありません。公式の情報は出典と確認日を添えています。'}
           {`執筆は運営者の${OPERATOR.name}です。`}
         </p>
@@ -47,7 +52,7 @@ export default function BlogIndexPage() {
               <li key={m.slug}>
                 <Link
                   href={`/blog/${m.slug}`}
-                  className="group flex h-full flex-col rounded-xl border border-frame bg-panel p-5 shadow-glow hover:border-accent"
+                  className="group flex h-full flex-col rounded-xl border border-frame bg-panel p-5 hover:border-accent"
                 >
                   <p className="mb-2 text-xs text-dim">
                     <time dateTime={m.updatedAt}>更新 {m.updatedAt}</time>
@@ -61,10 +66,12 @@ export default function BlogIndexPage() {
         </section>
       )}
 
-      <section className="pt-12">
-        <h2 className="mb-4 font-cond text-xl font-bold">新しい記事</h2>
-        <PostList posts={posts.slice(0, 10)} />
-      </section>
+      {latest.length > 0 && (
+        <section className="pt-12">
+          <h2 className="mb-4 font-cond text-xl font-bold">{featured.length > 0 ? 'そのほかの新しい記事' : '新しい記事'}</h2>
+          <PostList posts={latest} />
+        </section>
+      )}
 
       <section className="pt-12">
         <h2 className="mb-4 font-cond text-xl font-bold">カテゴリ</h2>

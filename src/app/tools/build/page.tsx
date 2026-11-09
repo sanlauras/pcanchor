@@ -32,7 +32,7 @@ export default function BuildToolPage() {
         />
         <Breadcrumbs
           trail={[
-            { href: '/tools', label: 'ツール' },
+            { href: '/tools', label: 'PC診断・ツール' },
             { href: '/tools/build', label: '必要スペック診断' },
           ]}
         />

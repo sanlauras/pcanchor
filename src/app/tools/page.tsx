@@ -24,7 +24,7 @@ const planned = [
 export default function ToolsPage() {
   return (
     <main className="mx-auto max-w-[1240px] px-5">
-      <Breadcrumbs trail={[{ href: '/tools', label: 'ツール' }]} />
+      <Breadcrumbs trail={[{ href: '/tools', label: 'PC診断・ツール' }]} />
       <PageHeader
         eyebrow="TOOLS"
         title="ツール一覧"

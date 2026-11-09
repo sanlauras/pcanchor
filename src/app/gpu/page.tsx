@@ -21,7 +21,7 @@ export default function GpuPage() {
   return (
     <div className="mx-auto flex max-w-[1240px] gap-8 px-5">
       <main className="min-w-0 flex-1">
-        <Breadcrumbs trail={[{ href: '/gpu', label: 'GPU一覧' }]} />
+        <Breadcrumbs trail={[{ href: '/gpu', label: 'GPUスペック一覧' }]} />
         {/* データセットの構造化データ（2026-09-27）。項目名は表の列と同じものを使う */}
         <JsonLd
           data={datasetJsonLd({

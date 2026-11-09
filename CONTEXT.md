@@ -1699,6 +1699,16 @@ Search Console のデータ（ユーザーが書き出したもの）を見て�
   - 30・60・144 FPS は Riot が示す目安で、当サイトの推定ではない
 - 感度換算: ナビは段階1で「その他のツール」に置いた。ページの上に、換算できるもの（腰だめの感度・対応ゲームの相互換算・eDPI・cm/360）と対象外（ADS・スコープ倍率・R6S）を出した。換算のロジックは変えていない
 
+### 段階6: SEOの整理・ガイド・最終確認（2026-11-09）
+- 計算・係数・データ・URL は変えていない。全149ページの URL・canonical・本文の数字が段階5と同じことを機械的に確かめた
+- **名前の統一**: パンくずをメニューの名前にそろえた（/blog=PC選びのガイド、/tools=PC診断・ツール、/tools/fps=FPS予想、/games=ゲーム一覧、/gpu・/cpu=GPU・CPUスペック一覧、/about=このサイトについて・運営者）。ガイドのトップの title・H1 も「PC選びのガイド」
+- **記事の OGP**: pageMetadata に任意の article 引数を足し、記事だけ og:type=article と article:published_time・modified_time・author・section を出す。日付は記事の記録（publishedAt・updatedAt）のまま。記事の中身は変えていないので updatedAt は動かしていない
+- **ガイドのトップ**: 注目記事を新しい記事の一覧で繰り返さない
+- **GPU・CPU 個別ページの title**: 「型番の性能とスペック（VRAM・TDP／コア・スレッド・ソケット）」。説明文にメーカー・アーキテクチャ・発売年・メモリ規格（CPU は最大クロック・対応メモリ）を足した。値はどれもページに出しているもの
+- **見出し**: /tools/fps と /tools/build で H1 の次が H3 になっていたので、画面に出ない H2（予想の結果・3つの構成）を足した
+- **404**: not-found.tsx は metadata を export できず、本文の <title> はレイアウトの既定の <title> と2つになって既定が勝つ（ビルドの出力で確認）。global-not-found は実験的でレイアウトを通らないため使わず、ブラウザでタブの題名だけを差し替えた（DocumentTitle）。noindex は Next.js が自動で付け、Cloudflare は HTTP 404 を返す
+- **記事の重複と、カテゴリの noindex は報告だけ**（ユーザーの承認待ち）。検索流入のデータ（Search Console）はこの作業環境から取得できない
+
 ## 技術スタック
 
 - Next.js / TypeScript / Tailwind CSS / Supabase / Vercel

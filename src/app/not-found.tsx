@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { DocumentTitle } from '@/components/DocumentTitle';
 import { tally } from '@/lib/data/summary';
 import { supportedGameNames } from '@/lib/fps/games';
 
@@ -21,7 +22,7 @@ const links = [
   { href: '/', label: 'ホーム', note: 'サイトの入口' },
   {
     href: '/tools/fps',
-    label: 'ゲーム別fps予想・ボトルネック診断',
+    label: 'FPS予想',
     note: 'GPUとCPUを選ぶと推定fpsとカクつきの底が出ます',
   },
   {
@@ -37,6 +38,8 @@ const links = [
 export default function NotFound() {
   return (
     <main className="mx-auto max-w-[1240px] px-5">
+      {/* 404 の題名（2026-11-09 段階6）。理由は DocumentTitle.tsx。noindex は Next.js が自動で付ける（out/404.html で確認済み） */}
+      <DocumentTitle title="ページが見つかりません｜PCアンカー" />
       <header className="border-b border-frame pt-14 pb-8">
         <p className="mb-3 font-mono text-[11px] tracking-[0.18em] text-signal uppercase">
           404 NOT FOUND

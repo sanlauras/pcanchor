@@ -11,7 +11,7 @@ export function RelatedArticles({ path, className = '' }: { path: string; classN
   return (
     <section className={`border-t border-frame pt-5 ${className}`}>
       <h2 className="mb-1 font-cond text-lg font-bold">関連する記事</h2>
-      <p className="mb-3 text-xs text-dim">選び方や数字の見方を、ブログで詳しく解説しています。</p>
+      <p className="mb-3 text-xs text-dim">選び方や数字の見方を、PC選びのガイドで詳しく解説しています。</p>
       <ul className="space-y-2">
         {posts.map(({ meta: m }) => (
           <li key={m.slug}>

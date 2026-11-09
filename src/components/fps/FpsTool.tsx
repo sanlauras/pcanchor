@@ -308,6 +308,8 @@ export function FpsTool() {
             id="fps-result"
             className="rounded-lg scroll-mt-[calc(var(--header-h)+1rem)] border border-rule bg-panel p-5"
           >
+            {/* 見出しの階層をそろえるための見出し（下の「この数字の根拠」が H3 のため。2026-11-09 段階6） */}
+            <h2 className="sr-only">予想の結果</h2>
             {/* 1. 選んだ条件。どの条件の数字なのかを、数字より先に見せる */}
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <dl className="grid min-w-0 flex-1 grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-sm" data-conditions>

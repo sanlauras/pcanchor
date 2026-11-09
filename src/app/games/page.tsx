@@ -20,7 +20,7 @@ export default function GamesPage() {
 
   return (
     <main className="mx-auto max-w-[1240px] px-5">
-      <Breadcrumbs trail={[{ href: '/games', label: 'ゲーム別' }]} />
+      <Breadcrumbs trail={[{ href: '/games', label: 'ゲーム一覧' }]} />
 
       <PageHeader
         eyebrow={TOOLS.games.eyebrow}
