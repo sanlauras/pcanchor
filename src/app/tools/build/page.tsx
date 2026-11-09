@@ -12,9 +12,9 @@ import { JsonLd, pageMetadata, webApplicationJsonLd } from '@/lib/seo';
 assertBuildInverts(gpus, cpus);
 
 export const metadata: Metadata = pageMetadata({
-  title: '目標fpsから選ぶPC構成｜ゲームと設定を入れるだけ',
+  title: '必要スペック診断｜目標fpsから必要なGPUとCPUが分かる',
   description:
-    'プレイするゲーム・解像度・画質・出したいfpsを入れると、必要なGPUとCPUが分かります。コスパ／余裕／安定の3段階と、設定を下げた場合の代替案も表示。メーカー公式スペックと実測から計算した推定値です（誤差±15〜20%）。',
+    'プレイするゲーム・解像度・画質・出したいfpsを入れると、必要なGPUとCPUが分かります。必要十分・余裕を持たせた・高性能の3つの構成と、設定を下げた場合の代替案も表示。メーカー公式スペックと実測から計算した推定値です（誤差±15〜20%）。',
   path: '/tools/build',
 });
 
@@ -33,7 +33,7 @@ export default function BuildToolPage() {
         <Breadcrumbs
           trail={[
             { href: '/tools', label: 'ツール' },
-            { href: '/tools/build', label: '目標fpsから選ぶPC構成' },
+            { href: '/tools/build', label: '必要スペック診断' },
           ]}
         />
         <PageHeader
@@ -44,7 +44,7 @@ export default function BuildToolPage() {
             <>
               ゲーム・解像度・画質・出したいfpsを入れると、
               <b className="font-semibold text-ink">それを満たす最小のGPUとCPU</b>
-              が出ます。fps予想ツールの逆向きです。コスパ／余裕／安定の3段階で見比べられます。計算はすべてブラウザ内で完結します。
+              が出ます。FPS予想の逆向きです。必要十分な構成・余裕を持たせた構成・高性能構成の3つを見比べられます。価格は考慮していません。計算はすべてブラウザ内で完結します。
             </>
           }
         />

@@ -36,9 +36,9 @@ export const TOOLS = {
   },
   build: {
     href: '/tools/build',
-    short: '構成選び',
-    long: '目標fpsから選ぶPC構成',
-    eyebrow: 'TOOL / BUILD PICKER',
+    short: '必要スペック診断',
+    long: '目標fpsから必要なGPU・CPUを調べる',
+    eyebrow: 'TOOL / REQUIRED SPEC',
     note: '出したいfpsを入れると、それを満たすGPUとCPUが分かります',
     input: 'ゲーム・画質・目標fps',
     output: '届く最小のGPU・CPU',

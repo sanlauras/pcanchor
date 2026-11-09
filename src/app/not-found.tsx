@@ -26,7 +26,7 @@ const links = [
   },
   {
     href: '/tools/build',
-    label: '目標fpsから選ぶPC構成',
+    label: '必要スペック診断',
     note: '出したいfpsから必要なGPUとCPUを逆引きします',
   },
   { href: '/games', label: 'ゲーム別の推奨GPU', note: supportedGameNames(' / ') },

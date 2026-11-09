@@ -155,9 +155,9 @@ function Body() {
       <ToolCta
         href="/tools/build?game=fortnite&fps=240"
         title="240fps に届く GPU と CPU の組み合わせを逆引きする"
-        button="構成選びを開く"
+        button="必要スペック診断を開く"
       >
-        解像度と画質を選ぶと、240fps を満たす最小の構成を、コスパ・余裕・安定の3段階で出します。
+        解像度と画質を選ぶと、240fps を満たす構成を、必要十分な構成・余裕を持たせた構成・高性能構成の3つで出します。
       </ToolCta>
 
       <H2 id={S.summary.id}>{S.summary.label}</H2>

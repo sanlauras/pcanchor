@@ -36,7 +36,7 @@ const BOTTLENECK_SHORT: Record<Prediction['bottleneck'], string> = {
  *
  *   ?game=valorant&gpu=radeon-rx-9070-xt&cpu=ryzen-7-9800x3d&res=1440p&preset=high
  *
- * - 選び直すたびに history.replaceState で書き換える（履歴は増やさない）。構成選び（BuildTool）と同じ書き方
+ * - 選び直すたびに history.replaceState で書き換える（履歴は増やさない）。必要スペック診断（BuildTool）と同じ書き方
  * - 書くときは5つ全部を書く。コピーした URL だけで、同じ条件と同じ結果を開けるようにするため
  * - 読むときは1つずつ確かめ、知らない値・壊れた値は既定値に落とす。
  *   以前の ?game= ?gpu= ?cpu= だけの URL（ゲーム・GPU・CPU のページやホームからのリンク）もそのまま読める
@@ -618,7 +618,7 @@ export function FpsTool() {
         <p className="border-t border-rule-soft pt-3 text-xs text-dim">
           逆に「この目標fpsを出すには何が必要か」を調べるなら
           <Link href="/tools/build" className="text-accent underline">
-            目標fpsから選ぶPC構成
+            必要スペック診断
           </Link>
           が使えます。
         </p>

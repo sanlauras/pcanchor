@@ -1670,6 +1670,17 @@ Search Console のデータ（ユーザーが書き出したもの）を見て�
 - **URL**: ?game=&gpu=&cpu=&res=&preset= の5つを history.replaceState で書く（選び直すたびに5つ全部）。知らない値は既定値に落とす。以前の ?game=&gpu=&cpu= だけの URL もそのまま読める。canonical は /tools/fps のまま。メモリ・電源の任意入力は URL に載せない
 - 「この結果のURLをコピー」ボタンを足した。コピーできないブラウザでは、アドレス欄の URL を使うよう案内する
 
+### 段階4: 必要スペック診断（2026-11-09）
+- 「構成選び」を「必要スペック診断」に改めた（nav.ts の TOOLS.build、title・H1・パンくず・404 の案内・FPS予想からのリンク・記事2本のボタン）。URL /tools/build と canonical は変えていない
+- 段の名前だけを変えた（build.ts の TIERS の label・summary）。**id（value・headroom・stable）と判定の基準（requiredAvg）は変えていない**。?tier= の値も同じ
+  - コスパ構成 → 必要十分な構成（平均が目標に届く最小）。価格を見ていないのに「コスパ」と名乗っていたため
+  - 余裕構成 → 余裕を持たせた構成（目標×1.2）
+  - 安定構成 → 高性能構成（1% Low の低い側が目標に届く）
+- 各カードの推定平均fps・1% Low・律速は、その段の先頭の GPU と CPU を predict() に入れた結果（assertBuildInverts と同じ入れ直し）。計算は足していない
+- 重複のまとめ: 前の段と GPU・CPU の**両方**が同じときだけ、カードを繰り返さず「この条件では〇〇と同じ構成です」と書く。solveBuild() の結果と、下の「ほかの候補」の帯はそのまま
+- 選定理由は、段の基準（必要な平均fps）と GPU側・CPU側の推定fps から文章を作る。価格には触れない（「価格は考慮していません」を残した）
+- 記事2本は名前の言い換えだけなので、記事の更新日（updatedAt）は動かしていない
+
 ## 技術スタック
 
 - Next.js / TypeScript / Tailwind CSS / Supabase / Vercel

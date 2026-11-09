@@ -3,12 +3,22 @@
 import Link from 'next/link';
 import { useSyncExternalStore } from 'react';
 import { AffiliateLink } from '@/components/AffiliateLink';
-import { cpus, gpus } from '@/lib/data';
+import { Badge } from '@/components/ui/Badge';
+import { type Cpu, type Gpu, cpus, gpus } from '@/lib/data';
 import { hasAmazonTag } from '@/lib/affiliate';
 import { stockNote } from '@/lib/generation';
-import { type Side, type Tier, TIERS, alternatives, solveBuild } from '@/lib/fps/build';
+import { type Candidate, type Side, type Tier, type TierResult, TIERS, alternatives, solveBuild } from '@/lib/fps/build';
+import { VRAM_MB_PER_GB } from '@/lib/fps/diagnose';
 import { GAMES, findGame } from '@/lib/fps/games';
-import { REFRESH_RATES, RESOLUTIONS, type ResolutionId } from '@/lib/fps/model';
+import {
+  type GameProfile,
+  type Prediction,
+  type PresetProfile,
+  REFRESH_RATES,
+  RESOLUTIONS,
+  type ResolutionId,
+  predict,
+} from '@/lib/fps/model';
 
 /**
  * 目標fpsからPC構成を逆引きするツール。
@@ -153,6 +163,7 @@ export function BuildTool() {
   }
 
   const current = result?.tiers?.find((t) => t.tier === tier);
+  const views = result?.tiers && preset ? toViews(result.tiers, game, preset, resolution) : [];
   const currentMeta = TIERS.find((x) => x.id === tier)!;
 
   return (
@@ -270,50 +281,38 @@ export function BuildTool() {
               {preset?.label} / 目標 {targetFps} fps
             </p>
 
-            {/* 3段階を並べて見比べられるようにする。押すと下に詳細が出る */}
-            <div className="grid gap-3 sm:grid-cols-3">
-              {result.tiers.map((t) => {
-                const meta = TIERS.find((x) => x.id === t.tier)!;
-                const on = t.tier === tier;
-                const g = t.gpu.kind === 'ok' ? t.gpu.candidates[0]!.model.name : null;
-                const c = t.cpu.kind === 'ok' ? t.cpu.candidates[0]!.model.name : null;
-                return (
-                  <button
-                    key={t.tier}
-                    type="button"
-                    onClick={() => setTier(t.tier)}
-                    aria-pressed={on}
-                    className={`cursor-pointer rounded-lg border p-4 text-left ${
-                      on ? 'border-accent bg-accent-soft' : 'border-rule bg-panel hover:border-accent'
-                    }`}
-                  >
-                    <p className={`font-cond font-bold ${on ? 'text-accent' : 'text-ink'}`}>
-                      {meta.label}
-                    </p>
-                    <dl className="mt-2 space-y-1.5 font-mono text-xs">
-                      <div>
-                        <dt className="text-[10px] text-dim">GPU</dt>
-                        <dd className={g ? 'text-ink' : 'text-dim'}>{g ?? '該当なし'}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-[10px] text-dim">CPU</dt>
-                        <dd className={c ? 'text-ink' : 'text-dim'}>{c ?? '該当なし'}</dd>
-                      </div>
-                    </dl>
-                  </button>
-                );
-              })}
+            {/*
+              3つの構成を縦に並べる（2026-11-09 段階4）。各カードに GPU・CPU・選定理由・目標・解像度・
+              推定平均fps・推定1% Low・VRAM・律速・ゲーム側の上限の注意を出す。
+              前の段と GPU・CPU の両方が同じなら、カードを繰り返さずに「〜と同じ構成です」とだけ書く。
+              表示の整理だけで、solveBuild() の結果は変えていない。
+            */}
+            <div className="grid gap-4" data-tiers>
+              {views.map((v, i) => (
+                <TierCard
+                  key={v.tier.tier}
+                  step={i + 1}
+                  view={v}
+                  selected={v.tier.tier === tier}
+                  onSelect={() => setTier(v.tier.tier)}
+                  game={game}
+                  targetFps={targetFps}
+                  resolutionShort={RESOLUTIONS.find((r) => r.id === resolution)?.short ?? resolution}
+                  presetLabel={preset?.label ?? ''}
+                  lowRatio={preset?.lowRatio ?? null}
+                />
+              ))}
             </div>
 
             {current && (
-              <section className="rounded-lg border border-rule bg-panel p-5">
-                <h2 className="font-cond text-lg font-bold">{currentMeta.label}</h2>
+              <section className="rounded-lg border border-rule bg-panel p-5" data-band>
+                <h2 className="font-cond text-lg font-bold">{currentMeta.label}のほかの候補</h2>
                 <p className="mt-1 max-w-[62ch] text-sm text-dim">
                   {currentMeta.summary}
                   {current.requiredAvg > 0 && (
                     <>（平均 {current.requiredAvg.toFixed(0)} fps 以上が必要）</>
                   )}
-                  {/* 余裕・安定の必要値はゲーム側の上限を超えることがある。性能（理論値）で探している旨を書く */}
+                  {/* 余裕・高性能の必要値はゲーム側の上限を超えることがある。性能（理論値）で探している旨を書く */}
                   {game.cap !== null && current.requiredAvg > game.cap && (
                     <>
                       。{game.cap} fps を超える部分は理論値で、実際の画面では {game.cap} fps で止まります。
@@ -322,8 +321,8 @@ export function BuildTool() {
                 </p>
 
                 <div className="mt-4 grid gap-5 sm:grid-cols-2">
-                  <Band title="GPU" side={current.gpu} hrefBase="/gpu" />
-                  <Band title="CPU" side={current.cpu} hrefBase="/cpu" />
+                  <Band title="GPU（GPU側の上限・推定）" side={current.gpu} hrefBase="/gpu" />
+                  <Band title="CPU（CPU側の上限・推定）" side={current.cpu} hrefBase="/cpu" />
                 </div>
 
                 {(current.gpu.kind === 'ok' || current.cpu.kind === 'ok') && (
@@ -351,7 +350,7 @@ export function BuildTool() {
               <section className="rounded-lg border border-rule bg-panel p-5">
                 <h2 className="font-cond text-lg font-bold">設定を下げた場合</h2>
                 <p className="mt-1 mb-3 max-w-[62ch] text-xs text-dim">
-                  同じ {targetFps} fps を別の解像度・画質で狙った場合に必要な、最小のGPUです（コスパ構成の基準）。要求が高すぎるときに、何を妥協すればどこまで下がるかが分かります。
+                  同じ {targetFps} fps を別の解像度・画質で狙った場合に必要な、最小のGPUです（必要十分な構成の基準）。要求が高すぎるときに、何を妥協すればどこまで下がるかが分かります。
                 </p>
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse text-sm">
@@ -396,14 +395,17 @@ export function BuildTool() {
               <h2 className="mb-1.5 font-cond text-base font-bold text-ink">この結果について</h2>
               <ul className="max-w-[70ch] space-y-1">
                 <li>
-                  ・<strong className="font-medium text-ink">価格は見ていません。</strong>
-                  当サイトは価格データを持っていないため、「コスパ構成」は「目標をちょうど満たす、最も性能の低い構成」という意味です。円あたりの性能で選んだものではありません。
+                  ・<strong className="font-medium text-ink">価格は考慮していません。</strong>
+                  当サイトは価格データを持っていないため、「必要十分な構成」は「目標を満たす、最も性能の低い構成」という意味です。円あたりの性能で選んだものではありません。
                 </li>
                 <li>
-                  ・推定値です（誤差 ±15〜20%）。ぎりぎりの構成は実際には目標を下回ることがあります。避けたい場合は余裕構成を見てください。
+                  ・推定値です（誤差 ±15〜20%）。ぎりぎりの構成は実際には目標を下回ることがあります。避けたい場合は「余裕を持たせた構成」を見てください。
                 </li>
                 <li>
                   ・GPUは目標fpsだけでなく、その設定で必要なVRAMを満たすものだけを出しています。
+                </li>
+                <li>
+                  ・前の構成と GPU・CPU がどちらも同じになったときは、カードを繰り返さず「〜と同じ構成です」とまとめています。
                 </li>
                 <li>
                   ・逆に「この構成で何fps出るか」を調べるなら
@@ -418,6 +420,204 @@ export function BuildTool() {
         )}
       </div>
     </div>
+  );
+}
+
+/* ------------------------------------------------------------------ 3つの構成のカード */
+
+type TierView = {
+  tier: TierResult;
+  meta: (typeof TIERS)[number];
+  /** 前の段と GPU・CPU の両方が同じなら、その段の名前 */
+  sameAs: string | null;
+  /** 先頭の GPU と CPU を組み合わせた推定（predict() の結果そのまま）。どちらかが出せなければ null */
+  pair: { gpu: Candidate<Gpu>; cpu: Candidate<Cpu>; p: Prediction } | null;
+};
+
+/**
+ * solveBuild() の結果を、カードに出す形にする。計算は増やさない:
+ * 推定平均fps・1% Low・律速は、その段の先頭の GPU と CPU を predict() に入れた結果をそのまま使う
+ * （逆引きの自己テスト assertBuildInverts と同じ入れ直し）。
+ */
+function toViews(tiers: TierResult[], game: GameProfile, preset: PresetProfile, resolution: ResolutionId): TierView[] {
+  const views: TierView[] = [];
+  for (const t of tiers) {
+    const meta = TIERS.find((x) => x.id === t.tier)!;
+    const gpu = t.gpu.kind === 'ok' ? t.gpu.candidates[0]! : null;
+    const cpu = t.cpu.kind === 'ok' ? t.cpu.candidates[0]! : null;
+    const pair =
+      gpu && cpu
+        ? {
+            gpu,
+            cpu,
+            p: predict({ gpuFps4kHigh: gpu.model.fpsValorant4kHigh, cpuCeiling: cpu.model.fpsValorantCeiling, resolution, game, preset }),
+          }
+        : null;
+    // GPU と CPU の両方が一致したときだけ「同じ構成」とする
+    const same = pair
+      ? views.find((v) => v.pair && v.sameAs === null && v.pair.gpu.model.name === pair.gpu.model.name && v.pair.cpu.model.name === pair.cpu.model.name)
+      : undefined;
+    views.push({ tier: t, meta, sameAs: same ? same.meta.label : null, pair });
+  }
+  return views;
+}
+
+/** 選定理由。どの基準（必要な平均fps）で選び、GPU側・CPU側がいくつの見込みかを、計算した値から書く */
+function reasonOf(v: TierView, targetFps: number, lowRatio: PresetProfile['lowRatio']): string {
+  const need = Math.ceil(v.tier.requiredAvg);
+  const pick = 'GPU と CPU のうち、それぞれ性能指数がいちばん低いものを選びました';
+  let head: string;
+  if (v.tier.tier === 'value') head = `平均fpsが目標の ${targetFps} fps に届く ${pick}。`;
+  else if (v.tier.tier === 'headroom') head = `目標の1.2倍（平均 ${need} fps）に届く ${pick}。`;
+  else {
+    const r = lowRatio ? `この画質の 1% Low は平均の約${Math.round(lowRatio.min * 100)}〜${Math.round(lowRatio.max * 100)}%なので、低い側でも` : '';
+    head = `${r}1% Low が目標の ${targetFps} fps に届くよう、平均 ${need} fps 以上が出る ${pick}。`;
+  }
+  if (!v.pair) return head;
+  return `${head}GPU側は ${v.pair.gpu.fps.toFixed(0)} fps、CPU側は ${v.pair.cpu.fps.toFixed(0)} fps の見込みです（推定）。`;
+}
+
+function TierCard({
+  step,
+  view: v,
+  selected,
+  onSelect,
+  game,
+  targetFps,
+  resolutionShort,
+  presetLabel,
+  lowRatio,
+}: {
+  step: number;
+  view: TierView;
+  selected: boolean;
+  onSelect: () => void;
+  game: GameProfile;
+  targetFps: number;
+  resolutionShort: string;
+  presetLabel: string;
+  lowRatio: PresetProfile['lowRatio'];
+}) {
+  const { pair } = v;
+  const vramNeed = v.tier.vramNeedMb;
+  return (
+    <article
+      data-tier={v.tier.tier}
+      className={`rounded-lg border bg-panel p-4 sm:p-5 ${selected ? 'border-accent' : 'border-rule'}`}
+    >
+      <header className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <span className="font-mono text-[11px] text-dim">{step}</span>
+        <h3 className="font-cond text-lg font-bold">{v.meta.label}</h3>
+        <p className="w-full text-xs text-dim sm:w-auto sm:flex-1">{v.meta.summary}</p>
+      </header>
+
+      {v.sameAs ? (
+        <p className="mt-3 rounded-md border border-rule-soft px-3 py-2 text-sm" data-same>
+          この条件では{v.sameAs}と同じ構成です（GPU・CPU とも同じ）。
+        </p>
+      ) : pair ? (
+        <>
+          <dl className="mt-3 grid gap-2 sm:grid-cols-2">
+            <div className="min-w-0">
+              <dt className="font-mono text-[10px] text-dim">GPU</dt>
+              <dd className="font-medium">
+                <Link href={`/gpu/${pair.gpu.model.slug}`} className="hover:text-accent" data-gpu>
+                  {pair.gpu.model.name}
+                </Link>
+              </dd>
+            </div>
+            <div className="min-w-0">
+              <dt className="font-mono text-[10px] text-dim">CPU</dt>
+              <dd className="font-medium">
+                <Link href={`/cpu/${pair.cpu.model.slug}`} className="hover:text-accent" data-cpu>
+                  {pair.cpu.model.name}
+                </Link>
+              </dd>
+            </div>
+          </dl>
+
+          <div className="mt-3 grid grid-cols-2 gap-3 border-t border-rule-soft pt-3">
+            <div>
+              <p className="flex flex-wrap items-center gap-1.5 text-[11px] text-dim">
+                推定平均fps <Badge tone="estimate">推定</Badge>
+              </p>
+              <p className="mt-0.5 font-mono text-2xl font-semibold tabular-nums text-accent sm:text-3xl" data-avg>
+                {pair.p.uncapped.toFixed(0)}
+              </p>
+            </div>
+            <div>
+              <p className="flex flex-wrap items-center gap-1.5 text-[11px] text-dim">
+                推定1% Low <Badge tone="estimate">推定</Badge>
+              </p>
+              <p className="mt-0.5 font-mono text-2xl font-semibold whitespace-nowrap tabular-nums sm:text-3xl" data-low>
+                {pair.p.fps1Low ? `${pair.p.fps1Low.min.toFixed(0)}〜${pair.p.fps1Low.max.toFixed(0)}` : '—'}
+              </p>
+            </div>
+          </div>
+          <p className="mt-1 text-[11px] text-dim">
+            目標 {targetFps} fps ・ {resolutionShort} ・ {presetLabel}
+            {!pair.p.fps1Low && '・この画質では 1% Low を出していません'}
+          </p>
+
+          <h4 className="mt-3 font-mono text-[10px] tracking-wider text-dim">選定理由</h4>
+          <p className="mt-0.5 text-sm text-dim" data-reason>
+            {reasonOf(v, targetFps, lowRatio)}
+          </p>
+
+          <ul className="mt-3 space-y-1 text-xs text-dim" data-notes>
+            <li>
+              <span className="font-medium text-ink">VRAM：</span>
+              {vramNeed === null
+                ? 'この画質は VRAM の必要量を見積もれないため、判定していません。'
+                : `この設定の目安は約 ${(vramNeed / VRAM_MB_PER_GB).toFixed(1)}GB。${pair.gpu.model.name}（${pair.gpu.model.vramGb}GB）は足りる見込みです。`}
+            </li>
+            <li>
+              <span className="font-medium text-ink">律速：</span>
+              {pair.p.bottleneck === 'cpu'
+                ? 'CPU が上限を決めています（CPU律速）。GPU を上げても、平均fpsはほとんど伸びません。'
+                : pair.p.bottleneck === 'gpu'
+                  ? 'GPU が上限を決めています（GPU律速）。CPU を上げても、平均fpsはほとんど伸びません。'
+                  : 'GPU と CPU がほぼ同じところで上限を決めています。片方だけ上げても、伸びは小さめです。'}
+            </li>
+            <li>
+              <span className="font-medium text-ink">fps上限：</span>
+              {pair.p.cap === null
+                ? '計算上のゲーム側の上限は設けていません（ゲーム内で選べる fps 制限の設定は含めていません）。'
+                : pair.p.capped
+                  ? `理論値 ${pair.p.uncapped.toFixed(0)} fps はゲーム側の上限 ${pair.p.cap} fps を超えるため、画面では ${pair.p.cap} fps で止まります。`
+                  : `ゲーム側の上限（${pair.p.cap} fps）より下です。`}
+            </li>
+          </ul>
+        </>
+      ) : (
+        <dl className="mt-3 space-y-1.5 text-sm">
+          <div>
+            <dt className="font-mono text-[10px] text-dim">GPU</dt>
+            <dd className="text-dim">{v.tier.gpu.kind === 'ok' ? v.tier.gpu.candidates[0]!.model.name : ngText(v.tier.gpu)}</dd>
+          </div>
+          <div>
+            <dt className="font-mono text-[10px] text-dim">CPU</dt>
+            <dd className="text-dim">{v.tier.cpu.kind === 'ok' ? v.tier.cpu.candidates[0]!.model.name : ngText(v.tier.cpu)}</dd>
+          </div>
+        </dl>
+      )}
+      {!v.sameAs && !pair && game.cap !== null && targetFps > game.cap && (
+        <p className="mt-2 text-xs text-dim">目標を {game.cap} fps 以下にすると出せます。</p>
+      )}
+
+      {(v.tier.gpu.kind === 'ok' || v.tier.cpu.kind === 'ok') && (
+        <button
+          type="button"
+          onClick={onSelect}
+          aria-pressed={selected}
+          className={`mt-3 min-h-9 cursor-pointer rounded-md border px-3 py-1.5 text-xs ${
+            selected ? 'border-accent bg-accent-soft text-accent' : 'border-rule text-dim hover:border-accent hover:text-ink'
+          }`}
+        >
+          {selected ? 'ほかの候補を下に表示中' : 'ほかの候補を見る'}
+        </button>
+      )}
+    </article>
   );
 }
 

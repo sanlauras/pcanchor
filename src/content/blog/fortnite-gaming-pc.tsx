@@ -178,9 +178,9 @@ function Body() {
       <ToolCta
         href="/tools/build?game=fortnite&fps=240"
         title="目標のfpsから、届くGPUとCPUの組み合わせを逆引きする"
-        button="構成選びを開く"
+        button="必要スペック診断を開く"
       >
-        ゲーム・解像度・画質と出したいfpsを入れると、それを満たす最小のGPUとCPUが分かります（コスパ・余裕・安定の3段階）。
+        ゲーム・解像度・画質と出したいfpsを入れると、それを満たす最小のGPUとCPUが分かります（必要十分な構成・余裕を持たせた構成・高性能構成の3つ）。
       </ToolCta>
 
       <H2 id={S.summary.id}>{S.summary.label}</H2>

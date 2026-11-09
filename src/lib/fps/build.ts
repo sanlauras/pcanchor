@@ -17,27 +17,32 @@ import { type GameProfile, type PresetProfile, type ResolutionId, predict } from
  * 画面上でもその旨を明記すること。
  */
 
+/*
+ * 段の id（value・headroom・stable）は URL の ?tier= に出るので変えない。
+ * 変えたのは画面に出す名前と説明だけ（2026-11-09 の全面再設計・段階4。
+ * 価格を見ていないのに「コスパ」と名乗っていたため）。判定の基準は requiredAvg() のまま。
+ */
 export type Tier = 'value' | 'headroom' | 'stable';
 
 export const TIERS: { id: Tier; label: string; summary: string }[] = [
   {
     id: 'value',
-    label: 'コスパ構成',
-    summary: '平均fpsが目標にちょうど届く、最も性能の低い構成',
+    label: '必要十分な構成',
+    summary: '平均fpsが目標に届く、最も性能の低い構成',
   },
   {
     id: 'headroom',
-    label: '余裕構成',
-    summary: '推定の誤差が下振れしても目標を割らないよう、2割の余裕を見た構成',
+    label: '余裕を持たせた構成',
+    summary: '目標fpsの1.2倍を基準にした構成（推定の誤差が下振れしても目標を割りにくい）',
   },
   {
     id: 'stable',
-    label: '安定構成',
-    summary: 'カクつきの底（1% Low）まで目標を保てる構成',
+    label: '高性能構成',
+    summary: 'カクつきの底（1% Low）まで目標fpsに届く構成',
   },
 ];
 
-/** 余裕構成の係数。誤差 ±20% の下振れをちょうど吸収する */
+/** 余裕を持たせた構成の係数。誤差 ±20% の下振れをちょうど吸収する */
 const HEADROOM = 1.2;
 
 export type Candidate<T> = { model: T; fps: number };
@@ -202,7 +207,7 @@ export type Alternative = {
 /**
  * 設定を下げた場合の代替案。
  * 要求が高すぎて買えないときに、何を妥協すればどこまで下がるかを見せる。
- * 段階は「コスパ」固定（一番軽い条件で、どこまで落とせるかを見たいため）。
+ * 段階は「必要十分」（value）固定（一番軽い条件で、どこまで落とせるかを見たいため）。
  */
 export function alternatives(args: {
   req: BuildRequest;

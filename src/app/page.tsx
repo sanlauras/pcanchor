@@ -336,7 +336,7 @@ export default function Home() {
               ))}
             </dl>
             <p className="mt-3 text-xs leading-relaxed text-dim">
-              {`${bx.summary}の、それぞれ最も性能の低い候補です（新品で買える世代から。誤差 ±15〜20%）。ツールでは、2割の余裕を見た構成と、1% Low まで目標を保てる構成も出します。`}
+              {`${bx.summary}の、それぞれ最も性能の低い候補です（新品で買える世代から。誤差 ±15〜20%）。ツールでは、余裕を持たせた構成（目標の1.2倍）と、高性能構成（1% Low まで目標に届く）も出します。`}
             </p>
             <p className="mt-3 text-sm">
               <Link
