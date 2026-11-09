@@ -7,7 +7,8 @@ import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { FpsTables } from '@/components/model/FpsTables';
 import { IndexStrip } from '@/components/model/IndexStrip';
 import { SpecList } from '@/components/model/SpecList';
-import { VerifiedTag } from '@/components/spec-table/VerifiedTag';
+import { DataStatusSection, SpecStatusTag, isReferencePart, specStatus } from '@/components/model/DataStatus';
+import { Badge } from '@/components/ui/Badge';
 import { cpus, gpus } from '@/lib/data';
 import { VRAM_MB_PER_GB } from '@/lib/fps/diagnose';
 import { GAMES, supportedGameNames } from '@/lib/fps/games';
@@ -22,6 +23,12 @@ import {
 } from '@/lib/model-summary';
 import { pageMetadata } from '@/lib/seo';
 
+/*
+ * 節の並びは GPU と CPU で同じ（2026-11-09 の全面再設計・段階5）:
+ *   1. 概要  2. 主要ゲームの推定fps  3. 組み合わせの目安  4. 詳細スペック
+ *   5. 全モデル中の位置  6. 近いモデル  7. データの出典と確認状態
+ * スペックの確認とゲーム性能の確認は分けて書く（DataStatus.tsx）。fps はどのモデルも推定。
+ */
 export function generateStaticParams() {
   return gpus.map((g) => ({ slug: g.slug }));
 }
@@ -91,7 +98,12 @@ export default async function GpuDetailPage({ params }: PageProps<'/gpu/[slug]'>
         <header className="border-b border-frame pt-6 pb-7">
           <p className="mb-3 flex flex-wrap items-center gap-2 font-mono text-[11px] tracking-[0.18em] text-signal uppercase">
             {gpu.vendor} / {gpu.arch} / {gpu.releaseYear}
-            <VerifiedTag verified={gpu.verified} />
+          </p>
+          <p className="mb-3 flex flex-wrap gap-2" data-badges>
+            <SpecStatusTag verified={gpu.verified} />
+            <Badge tone="estimate">
+              {isReferencePart('gpu', gpu.name) ? 'ゲーム性能: 推定（VALORANT は基準機として実測あり）' : 'ゲーム性能: 推定（実測なし）'}
+            </Badge>
           </p>
           <h1 className="mb-4 grid gap-2">
             <span className="font-cond text-[clamp(1.8rem,5vw,3rem)] leading-none font-bold tracking-tight">
@@ -179,7 +191,7 @@ export default async function GpuDetailPage({ params }: PageProps<'/gpu/[slug]'>
         */}
         {pairings.length > 0 && (
           <section className="mt-10">
-            <h2 className="mb-1 font-cond text-xl font-bold">このGPUと組み合わせるCPUの目安</h2>
+            <h2 className="mb-1 font-cond text-xl font-bold">組み合わせの目安：このGPUに合わせるCPU</h2>
             <p className="mb-3 max-w-[70ch] text-xs text-dim">
               {PAIRING_RESOLUTION}・各ゲームの基準の画質で、CPUが足を引っ張らない（CPU側の上限がGPU側とほぼ同じか上回る）最も性能指数の低いCPUです。新品で流通している可能性が高い世代から選んでいます。推定値・誤差 ±15〜20%。
             </p>
@@ -216,14 +228,15 @@ export default async function GpuDetailPage({ params }: PageProps<'/gpu/[slug]'>
         )}
 
         <section className="mt-10">
-          <h2 className="mb-3 font-cond text-xl font-bold">スペック</h2>
+          <h2 className="mb-3 font-cond text-xl font-bold">詳細スペック</h2>
           <SpecList
             items={[
               ['アーキテクチャ', gpu.arch],
               ['発売年', String(gpu.releaseYear)],
               ['シェーダーユニット', gpu.shaderUnits.toLocaleString('ja-JP')],
               ['ブーストクロック', `${gpu.boostClockMhz.toLocaleString('ja-JP')} MHz`],
-              ['VRAM', `${gpu.vramGb} GB ${gpu.memType}`],
+              ['VRAM', `${gpu.vramGb} GB`],
+              ['メモリ規格', gpu.memType],
               ['メモリバス', `${gpu.busWidthBit} bit`],
               ['メモリ速度', `${gpu.memSpeedGbps} Gbps`],
               ['メモリ帯域幅', `${gpu.bandwidthGbs.toLocaleString('ja-JP')} GB/s`],
@@ -233,7 +246,7 @@ export default async function GpuDetailPage({ params }: PageProps<'/gpu/[slug]'>
                 gpu.infinityCacheMb ? `${gpu.infinityCacheMb} MB` : '—',
               ],
               ['性能指数（推定）', gpu.perfIndex.toFixed(1)],
-              ['検証状態', gpu.verified],
+              ['スペックの確認', specStatus(gpu.verified).label],
             ]}
           />
           <p className="mt-3 text-xs text-dim">
@@ -256,7 +269,7 @@ export default async function GpuDetailPage({ params }: PageProps<'/gpu/[slug]'>
 
         {/* 全モデルの中での位置と、前後の世代の同じクラスとの差。どちらも性能指数だけから出す */}
         <section className="mt-10">
-          <h2 className="mb-1 font-cond text-xl font-bold">GPU {gpus.length}モデルの中での位置</h2>
+          <h2 className="mb-1 font-cond text-xl font-bold">全モデル中の位置（GPU {gpus.length}モデル）</h2>
           <p className="mb-3 max-w-[70ch] text-xs text-dim">
             横軸は性能指数（推定・誤差 ±15〜20%）。細い線が掲載している各GPU、明るい青の太い線がこのGPUです。
           </p>
@@ -298,7 +311,7 @@ export default async function GpuDetailPage({ params }: PageProps<'/gpu/[slug]'>
         </section>
 
         <section className="mt-10">
-          <h2 className="mb-1 font-cond text-xl font-bold">性能が近いGPU</h2>
+          <h2 className="mb-1 font-cond text-xl font-bold">近いモデル：性能が近いGPU</h2>
           <p className="mb-3 max-w-[70ch] text-xs text-dim">
             指数が近いモデルを並べています。
             <strong className="font-medium text-ink">
@@ -325,7 +338,7 @@ export default async function GpuDetailPage({ params }: PageProps<'/gpu/[slug]'>
 
         {sameArch.length > 0 && (
           <section className="mt-8">
-            <h2 className="mb-3 font-cond text-xl font-bold">同じ {gpu.arch} のGPU</h2>
+            <h3 className="mb-3 font-cond text-lg font-bold">同じ {gpu.arch} のGPU</h3>
             <ul className="flex flex-wrap gap-2">
               {sameArch.map((g) => (
                 <li key={g.slug}>
@@ -340,6 +353,8 @@ export default async function GpuDetailPage({ params }: PageProps<'/gpu/[slug]'>
             </ul>
           </section>
         )}
+
+        <DataStatusSection kind="gpu" name={gpu.name} verified={gpu.verified} releaseYear={gpu.releaseYear} />
 
         <section className="mt-10 border-t border-rule-soft pt-5">
           <p className="text-sm text-dim">

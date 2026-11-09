@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { PageHeader } from '@/components/PageHeader';
+import { Notice } from '@/components/ui/Notice';
 import { TOOLS } from '@/lib/nav';
 import { SensTool } from '@/components/sens/SensTool';
 import { SENS_GAMES } from '@/lib/sens/games';
@@ -47,6 +48,20 @@ export default function SensitivityPage() {
             </>
           }
         />
+
+        {/*
+          対応範囲をページの上で先に伝える（2026-11-09 の全面再設計・段階5）。
+          換算のロジックは変えていない。ゲームの一覧は SENS_GAMES から出す。
+        */}
+        <Notice title="換算できるもの・できないもの" className="mt-6">
+          <p>
+            <strong className="font-medium text-ink">換算できる:</strong>
+            {` 腰だめ（覗いていないとき）の感度。${SENS_GAMES.map((g) => g.name).join('・')} の相互換算と、eDPI・振り向き距離（cm/360）。`}
+          </p>
+          <p>
+            <strong className="font-medium text-ink">対象外:</strong> ADS（覗き込み）の感度、スコープ倍率ごとの感度の換算、Rainbow Six Siege。
+          </p>
+        </Notice>
 
         <div className="py-6">
           <SensTool />

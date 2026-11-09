@@ -15,6 +15,7 @@ export function CpuTable() {
       getArch={(r) => r.arch}
       getIndex={(r) => r.perfIndex}
       getVerified={(r) => r.verified}
+      getYear={(r) => r.releaseYear}
       getHref={(r) => `/cpu/${r.slug}`}
       badge={(r) => (r.has3dVCache ? '3D V-Cache' : null)}
     />

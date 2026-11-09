@@ -20,6 +20,7 @@ export function GpuTable() {
       getArch={(r) => r.arch}
       getIndex={(r) => r.perfIndex}
       getVerified={(r) => r.verified}
+      getYear={(r) => r.releaseYear}
       getHref={(r) => `/gpu/${r.slug}`}
     />
   );

@@ -7,7 +7,8 @@ import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { FpsTables } from '@/components/model/FpsTables';
 import { IndexStrip } from '@/components/model/IndexStrip';
 import { SpecList } from '@/components/model/SpecList';
-import { VerifiedTag } from '@/components/spec-table/VerifiedTag';
+import { DataStatusSection, SpecStatusTag, isReferencePart, specStatus } from '@/components/model/DataStatus';
+import { Badge } from '@/components/ui/Badge';
 import { cpus, gpus } from '@/lib/data';
 import { GAMES, supportedGameNames } from '@/lib/fps/games';
 import { PAIRING_RESOLUTION, gpuForCpu } from '@/lib/fps/pairing';
@@ -18,6 +19,12 @@ import { pageMetadata } from '@/lib/seo';
 /** CPUページで組み合わせる基準GPU。実測アンカーのGPUを使う */
 const REFERENCE_GPU_NAME = 'Radeon RX 9070 XT';
 
+/*
+ * 節の並びは GPU と CPU で同じ（2026-11-09 の全面再設計・段階5）:
+ *   1. 概要  2. 主要ゲームの推定fps  3. 組み合わせの目安  4. 詳細スペック
+ *   5. 全モデル中の位置  6. 近いモデル  7. データの出典と確認状態
+ * スペックの確認とゲーム性能の確認は分けて書く（DataStatus.tsx）。fps はどのモデルも推定。
+ */
 export function generateStaticParams() {
   return cpus.map((c) => ({ slug: c.slug }));
 }
@@ -82,7 +89,12 @@ export default async function CpuDetailPage({ params }: PageProps<'/cpu/[slug]'>
         <header className="border-b border-frame pt-6 pb-7">
           <p className="mb-3 flex flex-wrap items-center gap-2 font-mono text-[11px] tracking-[0.18em] text-signal uppercase">
             {cpu.vendor} / {cpu.arch} / {cpu.releaseYear}
-            <VerifiedTag verified={cpu.verified} />
+          </p>
+          <p className="mb-3 flex flex-wrap gap-2" data-badges>
+            <SpecStatusTag verified={cpu.verified} />
+            <Badge tone="estimate">
+              {isReferencePart('cpu', cpu.name) ? 'ゲーム性能: 推定（VALORANT は基準機として実測あり）' : 'ゲーム性能: 推定（実測なし）'}
+            </Badge>
           </p>
           <h1 className="mb-4 grid gap-2">
             <span className="font-cond text-[clamp(1.8rem,5vw,3rem)] leading-none font-bold tracking-tight">
@@ -152,7 +164,7 @@ export default async function CpuDetailPage({ params }: PageProps<'/cpu/[slug]'>
         */}
         {pairings.length > 0 && (
           <section className="mt-10">
-            <h2 className="mb-1 font-cond text-xl font-bold">このCPUで性能を出し切れるGPUの目安</h2>
+            <h2 className="mb-1 font-cond text-xl font-bold">組み合わせの目安：このCPUで性能を出し切れるGPU</h2>
             <p className="mb-3 max-w-[70ch] text-xs text-dim">
               {PAIRING_RESOLUTION}・各ゲームの基準の画質で、このCPUが足を引っ張らずに済む（GPU側がCPU側の上限とほぼ同じか下回る）最も性能指数の高いGPUです。これより速いGPUにしても、fpsはCPUで頭打ちになります。新品で流通している可能性が高い世代から選んでいます。推定値・誤差 ±15〜20%。
             </p>
@@ -189,7 +201,7 @@ export default async function CpuDetailPage({ params }: PageProps<'/cpu/[slug]'>
         )}
 
         <section className="mt-10">
-          <h2 className="mb-3 font-cond text-xl font-bold">スペック</h2>
+          <h2 className="mb-3 font-cond text-xl font-bold">詳細スペック</h2>
           <SpecList
             items={[
               ['アーキテクチャ', cpu.arch],
@@ -204,7 +216,7 @@ export default async function CpuDetailPage({ params }: PageProps<'/cpu/[slug]'>
               ['対応メモリ', cpu.memSupport],
               ['3D V-Cache', cpu.has3dVCache ? '搭載' : '—'],
               ['性能指数（推定）', cpu.perfIndex.toFixed(1)],
-              ['検証状態', cpu.verified],
+              ['スペックの確認', specStatus(cpu.verified).label],
             ]}
           />
         </section>
@@ -236,7 +248,7 @@ export default async function CpuDetailPage({ params }: PageProps<'/cpu/[slug]'>
 
         {/* 全モデルの中での位置と、前後の世代の同じクラスとの差。どちらも性能指数だけから出す */}
         <section className="mt-10">
-          <h2 className="mb-1 font-cond text-xl font-bold">CPU {cpus.length}モデルの中での位置</h2>
+          <h2 className="mb-1 font-cond text-xl font-bold">全モデル中の位置（CPU {cpus.length}モデル）</h2>
           <p className="mb-3 max-w-[70ch] text-xs text-dim">
             横軸はゲーム向けの性能指数（推定・誤差 ±15〜20%）。細い線が掲載している各CPU、明るい青の太い線がこのCPUです。
           </p>
@@ -278,7 +290,7 @@ export default async function CpuDetailPage({ params }: PageProps<'/cpu/[slug]'>
         </section>
 
         <section className="mt-10">
-          <h2 className="mb-1 font-cond text-xl font-bold">性能が近いCPU</h2>
+          <h2 className="mb-1 font-cond text-xl font-bold">近いモデル：性能が近いCPU</h2>
           <p className="mb-3 max-w-[70ch] text-xs text-dim">
             指数が近いモデルを並べています。
             <strong className="font-medium text-ink">
@@ -304,7 +316,7 @@ export default async function CpuDetailPage({ params }: PageProps<'/cpu/[slug]'>
 
         {sameArch.length > 0 && (
           <section className="mt-8">
-            <h2 className="mb-3 font-cond text-xl font-bold">同じ {cpu.arch} のCPU</h2>
+            <h3 className="mb-3 font-cond text-lg font-bold">同じ {cpu.arch} のCPU</h3>
             <ul className="flex flex-wrap gap-2">
               {sameArch.map((c) => (
                 <li key={c.slug}>
@@ -319,6 +331,8 @@ export default async function CpuDetailPage({ params }: PageProps<'/cpu/[slug]'>
             </ul>
           </section>
         )}
+
+        <DataStatusSection kind="cpu" name={cpu.name} verified={cpu.verified} releaseYear={cpu.releaseYear} />
 
         <section className="mt-10 border-t border-rule-soft pt-5">
           <p className="text-sm text-dim">

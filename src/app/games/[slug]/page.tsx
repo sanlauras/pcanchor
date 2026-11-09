@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { RelatedArticles } from '@/components/blog/RelatedArticles';
+import { Badge } from '@/components/ui/Badge';
+import { ButtonLink } from '@/components/ui/Button';
 import { cpus, gpus } from '@/lib/data';
 import { GAMES } from '@/lib/fps/games';
 import { RESOLUTIONS, type ResolutionId } from '@/lib/fps/model';
@@ -11,6 +13,14 @@ import { cpuSideFps } from '@/lib/fps/pairing';
 import { sceneSentence } from '@/lib/fps/scene';
 import { rankGpusForGame, referenceCpu } from '@/lib/fps/table';
 import { JsonLd, pageMetadata } from '@/lib/seo';
+
+/*
+ * 3つのゲームのページは同じ並び（2026-11-09 の全面再設計・段階5）:
+ *   1. ゲーム概要  2. 公式の必要・推奨動作環境  3. 目標fps別の必要性能  4. GPU別の推定fps
+ *   5. CPU別の性能比較  6. FPS予想・必要スペック診断への導線  7. よくある質問  8. 計算方法・出典・注意
+ * 公式の情報（札「公式」）と当サイトの推定（札「推定」）を節ごとに分ける。
+ * 表の数字は理論値（ゲーム側の上限を除いた値）で、上限で止まる値には「画面では N」と添える。
+ */
 
 /** 一覧に出す基準の条件。最も一般的な組み合わせを既定にする */
 const BASE_RESOLUTION: ResolutionId = '1080p';
@@ -112,6 +122,7 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
     scene: game.highlight ? sceneSentence(game.highlight, game.cap) : null,
   });
   const diagnoseHref = `/tools/fps?game=${game.id}`;
+  const buildHref = `/tools/build?game=${game.id}`;
   const official = OFFICIAL_REQUIREMENTS[game.id] ?? null;
 
   return (
@@ -132,12 +143,16 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
             {game.name} の推奨スペック
           </h1>
           <p className="max-w-[62ch] text-dim">
-            GPU {gpus.length}モデルそれぞれで {game.name} が何fps出るかの推定値です。CPUは {cpu.name} を組み合わせた場合。推定値・誤差 ±15〜20%。
+            {game.name} の公式の動作環境と、GPU {gpus.length}モデルそれぞれで何fps出るかの推定値をまとめています。推定値は CPU に {cpu.name} を組み合わせた場合で、誤差は ±15〜20% です。
+          </p>
+          <p className="mt-3 flex flex-wrap items-center gap-2 text-xs text-dim">
+            <Badge tone="official">公式</Badge>ゲーム会社の記載をそのまま
+            <Badge tone="estimate" className="ml-2">推定</Badge>当サイトの計算
           </p>
           {/* 検索から来た人が、そのままこのゲームで診断に入れるように */}
           <Link
             href={diagnoseHref}
-            className="group mt-5 inline-flex items-center gap-3 rounded-lg border border-accent-vivid bg-accent-vivid px-4 py-2.5 font-cond text-base font-bold text-on-accent shadow-glow hover:brightness-110"
+            className="group mt-5 inline-flex items-center gap-3 rounded-lg border border-accent-vivid bg-accent-vivid px-4 py-2.5 font-cond text-base font-bold text-on-accent hover:brightness-110"
           >
             {game.name}で自分の構成を診断する
             <span aria-hidden className="transition-transform group-hover:translate-x-1 motion-reduce:transition-none">
@@ -186,13 +201,15 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
           ゲーム会社の公式の動作環境。公式ページの記載をそのまま写し、確認日と出典を添える。
           fps の計算には使っていないことも明記する（このサイトの推定とは別物のため）。
         */}
-        {official && (
-          <section className="pt-7">
-            <h2 className="mb-1 font-cond text-xl font-bold">公式の必要・推奨動作環境</h2>
+        {official ? (
+          <section className="pt-7" data-official>
+            <h2 className="mb-1 flex flex-wrap items-center gap-2 font-cond text-xl font-bold">
+              公式の必要・推奨動作環境 <Badge tone="official">公式</Badge>
+            </h2>
             <p className="mb-3 max-w-[70ch] text-xs text-dim">
-              {`ゲーム会社が公表している条件です（${official.checkedOn} に確認）。「動くかどうか」の目安で、このページの推定fpsの計算には使っていません。何fps出るかは、この下の表を見てください。`}
+              {`ゲーム会社が公表している条件を、記載のまま載せています（${official.checkedOn} に確認）。「動くかどうか」の目安で、このページの推定fpsの計算には使っていません。何fps出るかは、この下の推定を見てください。`}
             </p>
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className={`grid gap-4 md:grid-cols-2 ${official.tiers.length >= 3 ? 'lg:grid-cols-3' : ''}`}>
               {official.tiers.map((tier) => (
                 <div key={tier.label} className="rounded-lg border border-frame bg-panel">
                   <h3 className="border-b-2 border-frame bg-rule-soft px-3 py-1.5 font-cond text-sm font-bold">
@@ -209,24 +226,41 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
                 </div>
               ))}
             </div>
+            {official.notes && (
+              <div className="mt-3">
+                <p className="mb-1 font-mono text-[10px] tracking-wider text-dim">公式ページの注意書き（原文のまま）</p>
+                <ul className="space-y-1 text-xs text-dim">
+                  {official.notes.map((n) => (
+                    <li key={n}>・{n}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
             <p className="mt-2 text-[11px] text-dim">
               {'出典: '}
               <a href={official.sourceUrl} target="_blank" rel="noopener" className="text-accent underline">
                 {official.sourceLabel}
               </a>
+              {`（${official.checkedOn} 確認）`}
               {official.caveat && `。${official.caveat}`}
             </p>
+          </section>
+        ) : (
+          <section className="pt-7" data-official>
+            <h2 className="mb-1 font-cond text-xl font-bold">公式の必要・推奨動作環境</h2>
+            <p className="max-w-[70ch] text-sm text-dim">確認中です。公式ページで確かめられたら、記載のまま載せます。</p>
           </section>
         )}
 
         <section className="py-7">
-          <h2 className="mb-1 font-cond text-xl font-bold">
-            解像度別：目標fpsに届く最小のGPU（{featured.label}）
+          <h2 className="mb-1 flex flex-wrap items-center gap-2 font-cond text-xl font-bold">
+            目標fps別の必要性能：届く最小のGPU（{featured.label}） <Badge tone="estimate">推定</Badge>
           </h2>
           <p className="mb-4 max-w-[70ch] text-xs text-dim">
             各解像度で、それぞれのfpsに届く最も性能指数が低いGPUです。CPUは {cpu.name} の場合。近接モデルの順位は誤差に埋もれるため、目安として見てください。
             {floor !== null &&
               `性能指数${floor}未満のGPUは予想が高めに出るため、ここには出していません。`}
+            {game.cap !== null && `fps はゲーム側の上限（${game.cap} fps）を除いた理論値で比べています。`}
           </p>
           <div className="md:overflow-x-auto">
             <table className="spec-table w-full border-collapse rounded-lg border border-frame bg-panel text-sm">
@@ -282,9 +316,13 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
         </section>
 
         <section className="mt-4">
-          <h2 className="mb-1 font-cond text-xl font-bold">GPU別の推定fps</h2>
+          <h2 className="mb-1 flex flex-wrap items-center gap-2 font-cond text-xl font-bold">
+            GPU別の推定fps <Badge tone="estimate">推定</Badge>
+          </h2>
           <p className="mb-3 max-w-[70ch] text-xs text-dim">
-            {BASE_RESOLUTION} / {featured.label}を基準にした推定値です。他の解像度や画質、CPUを変えた場合は
+            {BASE_RESOLUTION} / {featured.label}を基準にした推定値です。
+            {game.cap !== null &&
+              `数字はゲーム側の上限を除いた理論値で、上限（${game.cap} fps）を超えるものには「画面では ${game.cap}」と添えています。`}他の解像度や画質、CPUを変えた場合は
             <Link href="/tools/fps" className="text-accent underline">
               ゲーム別fps予想ツール
             </Link>
@@ -302,9 +340,11 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
                   <th className="px-2 py-2 text-left font-cond text-xs">GPU</th>
                   <th className="px-2 py-2 text-right font-cond text-xs whitespace-nowrap">
                     {featured.label}
+                    {game.cap !== null && '（理論値）'}
                   </th>
                   <th className="px-2 py-2 text-right font-cond text-xs whitespace-nowrap">
                     {other.label}
+                    {game.cap !== null && '（理論値）'}
                   </th>
                   <th className="px-2 py-2 text-right font-cond text-xs whitespace-nowrap">
                     VRAM
@@ -353,7 +393,9 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
         </section>
 
         <section className="mt-10">
-          <h2 className="mb-1 font-cond text-xl font-bold">CPU別のfps上限</h2>
+          <h2 className="mb-1 flex flex-wrap items-center gap-2 font-cond text-xl font-bold">
+            CPU別の性能比較（CPU側のfps上限） <Badge tone="estimate">推定</Badge>
+          </h2>
           <p className="mb-3 max-w-[70ch] text-xs text-dim">
             GPUが十分に速いときに、各CPUで {game.name} が出せるfpsの上限（CPU側の値）です。このサイトの計算では、CPU側の値は解像度と画質によらず一定で、GPU側のfpsがこれを超えるとCPUが上限を決めます。推定値・誤差 ±15〜20%。
           </p>
@@ -366,12 +408,25 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
                 <span className="shrink-0 font-mono text-xs tabular-nums">
                   {fps.toFixed(0)} fps
                   {game.cap !== null && fps > game.cap && (
-                    <span className="ml-1.5 text-[10px] text-dim">上限{game.cap}</span>
+                    <span className="ml-1.5 text-[10px] text-dim">画面では{game.cap}</span>
                   )}
                 </span>
               </li>
             ))}
           </ol>
+        </section>
+
+        <section className="mt-10 rounded-lg border border-frame bg-panel p-4 sm:p-5" data-tools>
+          <h2 className="mb-1 font-cond text-xl font-bold">自分の構成で調べる</h2>
+          <p className="mb-3 max-w-[70ch] text-sm text-dim">
+            {`手持ちや検討中の GPU・CPU で ${game.name} が何fps出るかは FPS予想で、出したいfpsに必要な GPU・CPU は必要スペック診断で調べられます。どちらも ${game.name} を選んだ状態で開きます。`}
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <ButtonLink href={diagnoseHref}>{`${game.name}でFPS予想`}</ButtonLink>
+            <ButtonLink href={buildHref} variant="secondary">
+              {`${game.name}の必要スペックを調べる`}
+            </ButtonLink>
+          </div>
         </section>
 
         <section className="mt-10">
@@ -398,18 +453,30 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
           />
         </section>
 
-        <section className="mt-8 border-l-2 border-accent pl-4 text-sm text-dim">
+        <section className="mt-8 border-l-2 border-accent pl-4 text-sm text-dim" data-method>
           <h2 className="mb-1.5 font-cond text-base font-bold text-ink">
-            この数値について
+            計算方法・出典・注意
           </h2>
           <ul className="max-w-[70ch] space-y-1">
+            <li>
+              ・推定fpsは、メーカー公式スペックから計算した GPU・CPU の性能指数に、ゲームごとの係数を掛けて出しています。当サイトの実測データは、基準機（Radeon RX 9070 XT＋Ryzen 7 9800X3D）で VALORANT を測ったものだけです。計算式は
+              <Link href="/methodology" className="text-accent underline">
+                算出方法
+              </Link>
+              にあります。
+            </li>
+            <li>・このゲームの係数の出どころ: {game.confidenceLabel}</li>
+            {official && (
+              <li>
+                ・公式の動作環境の出典: {official.sourceLabel}（{official.checkedOn} 確認）。fps の計算には使っていません。
+              </li>
+            )}
             {game.notes.map((n) => (
               <li key={n}>・{n}</li>
             ))}
-            <li>・根拠: {game.confidenceLabel}</li>
             {game.cap !== null && (
               <li>
-                ・表の数値は、ゲーム側のfps上限が無い場合の理論値です。「上限{game.cap}」と付いたものは、実際の画面では {game.cap} fps で止まります。上限を超える部分は確かめることができません。
+                ・表の数値は、ゲーム側のfps上限が無い場合の理論値です。「画面では{game.cap}」と付いたものは、実際の画面では {game.cap} fps で止まります。上限を超える部分は確かめることができません。
               </li>
             )}
             {featured.note && <li>・{featured.label}: {featured.note}</li>}
@@ -433,17 +500,6 @@ export default async function GameDetailPage({ params }: PageProps<'/games/[slug
         {/* ブログの関連する記事（2026-10-13）。そのゲームの記事が無ければ何も出さない */}
         <RelatedArticles path={`/games/${game.id}`} className="mt-8" />
 
-        {RESOLUTIONS.length > 0 && (
-          <section className="mt-8 border-t border-rule-soft pt-5">
-            <p className="text-sm text-dim">
-              自分の構成で調べるなら
-              <Link href={diagnoseHref} className="text-accent underline">
-                ゲーム別fps予想・ボトルネック診断
-              </Link>
-              が便利です。GPUとCPUを選ぶだけで、どちらが足を引っ張っているかまで出ます。
-            </p>
-          </section>
-        )}
       </main>
     </div>
   );
@@ -464,7 +520,7 @@ function FpsCell({
     <>
       {entry.uncapped.toFixed(0)}
       {entry.capped && cap !== null && (
-        <span className="ml-1.5 text-[10px] text-dim">上限{cap}</span>
+        <span className="ml-1.5 text-[10px] text-dim">画面では{cap}</span>
       )}
     </>
   );

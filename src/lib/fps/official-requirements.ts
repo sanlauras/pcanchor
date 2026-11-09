@@ -5,7 +5,9 @@
  * 確認日と出典の URL を必ず添え、公式が更新されたら確認し直す。
  * ここの値は fps の計算には使わない（公式の条件は「動くかどうか」の目安で、fps の根拠ではないため）。
  *
- * VALORANT は、公式ページを取得して確認できていないため載せていない。確認できたら同じ形で足す。
+ * VALORANT は 2026-11-09 に追加（全面再設計・段階5）。Riot Games のサポートページ（日本語）を取得し、表と注意書きを原文どおりに写した。
+ *   表の RAM と OS の欄は、公式の表で3つの区分にまたがる1つの欄（colspan=3）なので、3つの区分すべてに同じ値を入れた。
+ *   箇条書きの項目は「 / 」でつないだ（語句は変えていない）。
  * Fortnite は 2026-10-13 に追加。Epic のページは自動の取得を拒否されたため、ユーザーが公式ページのスクリーンショットを
  * 撮ってくれたものを、原文どおりに写した（同じページの「クオリティプリセット『最高』の要件」は画像に無かったので入れていない）。
  */
@@ -19,9 +21,55 @@ export type OfficialRequirements = {
   checkedOn: string;
   /** 公式の記載そのものについての注意（例: 数字の食い違い）。書き換えずに注意だけ添える */
   caveat?: string;
+  /** 公式ページの表の外にある注意書き。原文のまま */
+  notes?: string[];
 };
 
 export const OFFICIAL_REQUIREMENTS: Record<string, OfficialRequirements> = {
+  valorant: {
+    tiers: [
+      {
+        label: '必要動作環境（30 FPS）',
+        rows: [
+          ['CPU', 'Intel i3-540 / AMD Athlon 200GE / ARM：非対応'],
+          ['GPU', 'Intel HD 4000 / AMD Radeon R5 220'],
+          ['RAM', '4GB'],
+          ['OS', 'Windows 10（ビルド19041以降）64-bit / Windows 11 64ビット'],
+        ],
+      },
+      {
+        label: '推奨動作環境（60 FPS）',
+        rows: [
+          ['CPU', 'Intel i3-4150 / AMD Ryzen 3 1200 / ARM：非対応'],
+          ['GPU', 'NVIDIA GeForce GT 730 / AMD Radeon R7 240'],
+          ['RAM', '4GB'],
+          ['OS', 'Windows 10（ビルド19041以降）64-bit / Windows 11 64ビット'],
+        ],
+      },
+      {
+        label: 'ハイエンド動作環境（144 FPS）',
+        rows: [
+          ['CPU', 'Intel i5-9400F 2.90GHz / AMD Ryzen 5 2600X / ARM：非対応'],
+          ['GPU', 'NVIDIA GTX 1050 Ti / AMD Radeon R7 370 / Intel Arc A310'],
+          ['RAM', '4GB'],
+          ['OS', 'Windows 10（ビルド19041以降）64-bit / Windows 11 64ビット'],
+        ],
+      },
+    ],
+    notes: [
+      'SSE 4.2またはAVXサポートが必要',
+      '注意：あなたのPCが専用グラフィックスカードまたはディスクリートGPUを使用している場合、少なくとも1GBのVRAMも必要になります。',
+      'DirectX 11対応必須',
+      'Windows 10のサポートが利用可能です（Build 10904以上）。ただし、このゲームには最新のグラフィックドライバーが必要であり、そのためにはより新しいWindowsビルドが必要になる場合があります。',
+      'Windows 11ではTPM 2.0とUEFI Secure Bootの有効化も必要です。',
+      'VALORANTはクラウドゲームや仮想マシンには対応していません。',
+    ],
+    sourceLabel: 'Riot Games「PCの必要動作環境と推奨動作環境 - VALORANT Support」',
+    sourceUrl: 'https://support.riotgames.com/ja/valorant/support-tools/minimum-recommended-pc-specs',
+    checkedOn: '2026-11-09',
+    caveat:
+      'RAM と OS は、公式の表では3つの区分に共通の1つの欄です。また、表の OS 欄は「ビルド19041以降」、同じページの Windows 10 の説明は「Build 10904以上」とビルド番号が食い違っていますが、公式の記載のまま載せています。（30 FPS）などの fps は Riot Games が示している目安で、当サイトの推定ではありません',
+  },
   fortnite: {
     tiers: [
       {

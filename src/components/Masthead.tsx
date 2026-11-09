@@ -20,7 +20,7 @@ export function Masthead({ eyebrow, title, lead }: Props) {
       facts={[
         { label: 'GPUモデル', value: tally.gpuCount },
         { label: 'CPUモデル', value: tally.cpuCount },
-        { label: 'ソース確認済み', value: tally.verifiedCount },
+        { label: 'スペック公式照合済み', value: tally.verifiedCount },
         { label: '誤りを発見・修正', value: tally.correctionsFound },
       ]}
     />

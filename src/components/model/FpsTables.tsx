@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Badge } from '@/components/ui/Badge';
 import type { GameFpsTable } from '@/lib/fps/table';
 import { RESOLUTIONS } from '@/lib/fps/model';
 import { lighterSentence } from '@/lib/fps/scene';
@@ -26,7 +27,9 @@ export function FpsTables({
 }) {
   return (
     <section className="mt-8">
-      <h2 className="mb-1 font-cond text-xl font-bold">ゲーム別の推定fps</h2>
+      <h2 className="mb-1 flex flex-wrap items-center gap-2 font-cond text-xl font-bold">
+        主要ゲームの推定fps <Badge tone="estimate">推定</Badge>
+      </h2>
       <p className="mb-4 max-w-[70ch] text-xs text-dim">
         CPUに {cpuName} を組み合わせた場合の平均fpsです。推定値・誤差 ±15〜20%。括弧内は、そのときGPUとCPUのどちらが上限を決めているかを示します。
       </p>
